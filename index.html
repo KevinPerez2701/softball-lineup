@@ -207,7 +207,7 @@ button,input,select,textarea{font:inherit;color:inherit}
 .field-head .spacer{margin-left:auto}
 .field-options{display:flex;align-items:center;gap:7px;flex-wrap:wrap}
 .dh-slot{
-  /* El DH usa las mismas coordenadas del sistema de slots del diamante. */
+  /* El BD usa las mismas coordenadas del sistema de slots del diamante. */
   --x:50%;
   --y:79%;
   width:19cqw;
@@ -620,9 +620,13 @@ dialog::backdrop{background:rgba(10,16,11,.55)}
               <input id="toggleSF" type="checkbox" checked>
               <span>SF</span>
             </label>
+            <label class="toggle" title="Jugar con cuatro jardineros (4F / 4 Outfield). Puede jugar junto con SF.">
+              <input id="toggle4F" type="checkbox">
+              <span>4F</span>
+            </label>
             <label class="toggle" title="Activar o desactivar Bateador Designado">
               <input id="toggleDH" type="checkbox">
-              <span>DH</span>
+              <span>BD</span>
             </label>
           </div>
           <button class="btn btn-sm no-print" id="btnAutoField" type="button">Autoasignar</button>
@@ -735,7 +739,7 @@ dialog::backdrop{background:rgba(10,16,11,.55)}
 
   <footer class="foot no-print">
     <span>Todo se guarda en este navegador. Nada sale de tu equipo.</span>
-    <span>Posiciones · SF y DH se pueden activar o desactivar según el partido.</span>
+    <span>Posiciones · SF y 4F pueden activarse simultáneamente. BD se activa o desactiva según el partido.</span>
   </footer>
 </main>
 
@@ -803,21 +807,23 @@ dialog::backdrop{background:rgba(10,16,11,.55)}
 
 /* ============ posiciones ============ */
 var POS = [
-  {k:"P",  n:1,  es:"Lanzador",          x:50,   y:63.0, mx:50, my:68},
-  {k:"C",  n:2,  es:"Receptor",          x:50,   y:92.4, mx:50, my:91},
-  {k:"1B", n:3,  es:"Primera base",      x:72.0, y:61.0, mx:79, my:62},
-  {k:"2B", n:4,  es:"Segunda base",      x:61.8, y:50.0, mx:68, my:49},
-  {k:"3B", n:5,  es:"Tercera base",      x:28.0, y:61.0, mx:21, my:62},
-  {k:"SS", n:6,  es:"Campocorto",        x:38.2, y:50.0, mx:32, my:49},
-  {k:"LF", n:7,  es:"Jardín izquierdo",  x:20.0, y:30.0, mx:17, my:28},
-  {k:"CF", n:8,  es:"Jardín central",    x:50,   y:22.7, mx:50, my:20},
-  {k:"RF", n:9,  es:"Jardín derecho",    x:80.0, y:30.0, mx:83, my:28},
-  {k:"SF", n:10, es:"Short fielder",     x:50,   y:40.2, mx:50, my:38}
+  {k:"P",   n:1,  es:"Lanzador",                 x:50,   y:63.0, mx:50, my:68},
+  {k:"C",   n:2,  es:"Receptor",                 x:50,   y:92.4, mx:50, my:91},
+  {k:"1B",  n:3,  es:"Primera base",             x:72.0, y:61.0, mx:79, my:62},
+  {k:"2B",  n:4,  es:"Segunda base",             x:61.8, y:50.0, mx:68, my:49},
+  {k:"3B",  n:5,  es:"Tercera base",             x:28.0, y:61.0, mx:21, my:62},
+  {k:"SS",  n:6,  es:"Campocorto",               x:38.2, y:50.0, mx:32, my:49},
+  {k:"LF",  n:7,  es:"Jardín izquierdo",         x:20.0, y:30.0, mx:17, my:28},
+  {k:"CF",  n:8,  es:"Jardín central",           x:50,   y:22.7, mx:50, my:20},
+  {k:"LCF", n:8,  es:"Jardín izquierdo central", x:36,   y:22.7, mx:35, my:20},
+  {k:"RCF", n:9,  es:"Jardín derecho central",   x:64,   y:22.7, mx:65, my:20},
+  {k:"RF",  n:9,  es:"Jardín derecho",           x:80.0, y:30.0, mx:83, my:28},
+  {k:"SF",  n:10, es:"Short fielder",            x:50,   y:40.2, mx:50, my:38}
 ];
 var POS_ORDER = POS.map(function(p){return p.k;});
 
 /* ============ almacenamiento ============ */
-var K_CUR = "diamante10.current.v6";
+var K_CUR = "diamante10.current.v7";
 var K_SAVED = "diamante10.saved.v1";
 var K_TEAM = "diamante10.teamRoster.v1";
 
@@ -840,7 +846,7 @@ function blankState(){
   return {
     team:"", opp:"", home:"them", date:"", start:"", end:"",
     roster:[], assign:a, order:[], dh:null,
-    enabledSF:true, enabledDH:false,
+    enabledSF:true, enabled4F:false, enabledDH:false,
     innings:7, us:[0,0,0,0,0,0,0], them:[0,0,0,0,0,0,0]
   };
 }
@@ -891,6 +897,7 @@ function ensureState(){
   if(!Array.isArray(S.us)) S.us = [0,0,0,0,0,0,0];
   if(!Array.isArray(S.them)) S.them = [0,0,0,0,0,0,0];
   if(typeof S.enabledSF !== "boolean") S.enabledSF = true;
+  if(typeof S.enabled4F !== "boolean") S.enabled4F = false;
   if(typeof S.enabledDH !== "boolean") S.enabledDH = false;
   if(!Object.prototype.hasOwnProperty.call(S, "dh")) S.dh = null;
   if(S.dh && !S.roster.some(function(pl){ return pl.id === S.dh; })) S.dh = null;
@@ -974,7 +981,17 @@ function assignedIds(){
 }
 function isPosEnabled(k){
   if(k === "SF") return S.enabledSF !== false;
+  if(k === "CF") return S.enabled4F !== true;
+  if(k === "LCF" || k === "RCF") return S.enabled4F === true;
   return true;
+}
+function displayPosNumber(p){
+  if(S.enabled4F){
+    if(p.k === "LCF") return 8;
+    if(p.k === "RCF") return 9;
+    if(p.k === "RF") return 10;
+  }
+  return p.n;
 }
 function isInOrder(id){ return S.order.indexOf(id) >= 0; }
 function save(){ lsSet(K_CUR, S); }
@@ -1015,20 +1032,20 @@ function renderField(){
     dhb.type = "button";
     dhb.dataset.pos = "DH";
     dhb.setAttribute("draggable","true");
-    dhb.innerHTML = '<span class="slot-num">DH</span><span class="slot-key">DH</span><span class="slot-name">Bateador designado</span>';
+    dhb.innerHTML = '<span class="slot-num">BD</span><span class="slot-key">BD</span><span class="slot-name">Bateador designado</span>';
     stage.appendChild(dhb);
   }
   dhb.style.display = S.enabledDH ? "" : "none";
   var dhpl = S.enabledDH ? player(S.dh) : null;
   if(dhpl){
     dhb.className = "slot dh-slot filled";
-    dhb.querySelector(".slot-key").textContent = "DH";
+    dhb.querySelector(".slot-key").textContent = "BD";
     dhb.querySelector(".slot-name").textContent = shortName(dhpl.name);
     dhb.setAttribute("aria-label", "Bateador designado: " + dhpl.name);
     dhb.title = "Bateador designado · " + dhpl.name;
   }else{
     dhb.className = "slot dh-slot empty";
-    dhb.querySelector(".slot-key").textContent = "DH";
+    dhb.querySelector(".slot-key").textContent = "BD";
     dhb.querySelector(".slot-name").textContent = "Bateador designado";
     dhb.setAttribute("aria-label", "Bateador designado: sin asignar");
     dhb.title = "Bateador designado · sin asignar";
@@ -1042,6 +1059,8 @@ function renderField(){
     var pl = player(S.assign[p.k]);
     var key = b.querySelector(".slot-key");
     var nm = b.querySelector(".slot-name");
+    var numEl = b.querySelector(".slot-num");
+    if(numEl) numEl.textContent = displayPosNumber(p);
     key.innerHTML = "";
     key.appendChild(document.createTextNode(p.k));
     if(pl){
@@ -1141,7 +1160,7 @@ function openPicker(posKey){
   pickerPos = posKey;
   var p = POS.filter(function(q){ return q.k === posKey; })[0];
   if(posKey === "DH") {
-    $("pickTitle").textContent = "DH · Bateador designado";
+    $("pickTitle").textContent = "BD · Bateador designado";
     $("pickSub").textContent = "No ocupa una posición defensiva";
   } else {
     $("pickTitle").textContent = p.k + " · " + p.n;
@@ -1710,6 +1729,18 @@ $("toggleSF").addEventListener("change", function(){
   renderAll();
   toast(S.enabledSF ? "Short fielder activado" : "Short fielder desactivado");
 });
+$("toggle4F").addEventListener("change", function(){
+  S.enabled4F = $("toggle4F").checked;
+  if(S.enabled4F){
+    // 4F reemplaza CF por LCF + RCF, pero puede convivir con SF.
+    S.assign.CF = null;
+  }else{
+    S.assign.LCF = null;
+    S.assign.RCF = null;
+  }
+  renderAll();
+  toast(S.enabled4F ? "4F / 4 Outfield activado" : "4F / 4 Outfield desactivado");
+});
 $("toggleDH").addEventListener("change", function(){
   S.enabledDH = $("toggleDH").checked;
   if(!S.enabledDH){
@@ -1717,7 +1748,7 @@ $("toggleDH").addEventListener("change", function(){
     S.order = S.order.filter(function(id){ return !!posOf(id); });
   }
   renderAll();
-  toast(S.enabledDH ? "Bateador designado activado" : "Bateador designado desactivado");
+  toast(S.enabledDH ? "Bateador designado (BD) activado" : "Bateador designado (BD) desactivado");
 });
 
 /* ============ render ============ */
@@ -1726,7 +1757,7 @@ function renderAll(){
   // Elimina asignaciones de posiciones desactivadas.
   POS_ORDER.forEach(function(k){ if(!isPosEnabled(k)) S.assign[k] = null; });
   // Sin DH, el orden al bate no puede contener más jugadores que las posiciones activas.
-  var maxOrder = S.enabledDH ? Math.min(11, S.roster.length) : assignedIds().length;
+  var maxOrder = S.enabledDH ? Math.min(12, S.roster.length) : assignedIds().length;
   if(!S.enabledDH){
     S.order = S.order.filter(function(id){ return assignedIds().indexOf(id) >= 0; });
   }else if(S.dh){
@@ -1740,6 +1771,8 @@ function renderAll(){
   renderInnings();
   $("toggleSF").checked = S.enabledSF !== false;
   $("toggleSF").parentElement.classList.toggle("off", S.enabledSF === false);
+  $("toggle4F").checked = S.enabled4F === true;
+  $("toggle4F").parentElement.classList.toggle("off", S.enabled4F !== true);
   $("toggleDH").checked = S.enabledDH === true;
   $("toggleDH").parentElement.classList.toggle("off", S.enabledDH !== true);
   save();
