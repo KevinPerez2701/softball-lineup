@@ -313,6 +313,10 @@ ul.list{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;ga
   font-family:var(--cond);font-weight:700;font-size:15px;line-height:1;
   font-variant-numeric:tabular-nums;
 }
+.jersey.ghost{
+  background:transparent;color:var(--ink-3);
+  border:1px dashed var(--line-2);font-weight:600;
+}
 .row .nm{font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
 .posbadge{
   font-family:var(--cond);font-weight:700;font-size:12.5px;letter-spacing:.07em;
@@ -487,6 +491,7 @@ dialog::backdrop{background:rgba(10,16,11,.55)}
   .slot.filled{box-shadow:inset .3cqw 0 0 #111}
   .slot.filled .slot-num{background:#111;color:#fff}
   .slot.empty{background:#fff}
+  .jersey.ghost{border-color:#bbb;color:#777}
 
   .rail{gap:7px}
   .panel-head{padding:4px 8px;border-bottom:1px solid #ccc}
@@ -572,12 +577,6 @@ dialog::backdrop{background:rgba(10,16,11,.55)}
     </div>
   </section>
 
-  <div class="demo no-print" id="demoBanner">
-    <strong>Ejemplo cargado</strong>
-    <span>Roster y alineación de muestra para que veas cómo funciona.</span>
-    <button class="btn btn-sm" id="btnClearDemo" type="button">Empezar en blanco</button>
-  </div>
-
   <div class="work" style="margin-top:18px">
 
     <div>
@@ -658,6 +657,7 @@ dialog::backdrop{background:rgba(10,16,11,.55)}
           <h2>Roster</h2>
           <span class="count" id="rosterCount">0</span>
           <span class="spacer"></span>
+          <button class="btn btn-sm" id="btnResetRoster" type="button">Restaurar equipo</button>
           <button class="btn btn-sm" id="btnSortRoster" type="button">Ordenar A–Z</button>
         </div>
         <div class="panel-body">
@@ -774,7 +774,7 @@ var POS = [
 var POS_ORDER = POS.map(function(p){return p.k;});
 
 /* ============ almacenamiento ============ */
-var K_CUR = "diamante10.current.v1";
+var K_CUR = "diamante10.current.v2";
 var K_SAVED = "diamante10.saved.v1";
 
 function lsGet(k, fb){
@@ -796,33 +796,29 @@ function blankState(){
   return {
     team:"", opp:"", date:"", start:"", end:"",
     roster:[], assign:a, order:[],
-    innings:7, us:[0,0,0,0,0,0,0], them:[0,0,0,0,0,0,0],
-    demo:false
+    innings:7, us:[0,0,0,0,0,0,0], them:[0,0,0,0,0,0,0]
   };
 }
 
-function demoState(){
-  var names = [
-    [7,"Luis Herrera"],[12,"José Rondón"],[3,"Carlos Mendoza"],[21,"Rafael Pérez"],
-    [9,"Ángel Suárez"],[14,"Daniel Colmenárez"],[5,"Jesús Alvarado"],[33,"Miguel Torrealba"],
-    [8,"Andrés Gil"],[27,"Víctor Camacaro"],[2,"Eduardo Sequera"],[18,"Ramón Yépez"]
-  ];
+var TEAM_ROSTER = [
+  "Jose Ochoa", "Ismael Mendoza", "Simon Melendez", "Cachin",
+  "Henry Matheus", "Franklin Quevedo", "Elias", "Luis Adames",
+  "Angelo Crespo", "Jesus", "Miguel Granado", "Kevin Perez"
+];
+
+function seedState(){
   var s = blankState();
-  s.team = "Turpiales SC";
-  s.opp = "Semeruco BBC";
   s.date = new Date().toISOString().slice(0,10);
-  s.start = "17:30";
-  s.roster = names.map(function(r){ return {id:nid(), num:String(r[0]), name:r[1]}; });
-  POS_ORDER.forEach(function(k,i){ s.assign[k] = s.roster[i].id; });
-  s.order = s.roster.slice(0,11).map(function(p){ return p.id; });
-  s.us   = [1,0,3,0,2,1,0];
-  s.them = [0,2,0,1,0,0,1];
-  s.demo = true;
+  s.roster = TEAM_ROSTER.map(function(n){ return {id:nid(), num:"", name:n}; });
+  POS_ORDER.forEach(function(k, i){
+    if(s.roster[i]) s.assign[k] = s.roster[i].id;
+  });
+  s.order = s.roster.map(function(p){ return p.id; });
   return s;
 }
 
 var S = lsGet(K_CUR, null);
-if(!S || !S.assign || !Array.isArray(S.roster)) S = demoState();
+if(!S || !S.assign || !Array.isArray(S.roster)) S = seedState();
 if(!Array.isArray(S.us)) S.us = [0,0,0,0,0,0,0];
 if(!Array.isArray(S.them)) S.them = [0,0,0,0,0,0,0];
 
@@ -1001,7 +997,7 @@ function openPicker(posKey){
     var here = posOf(pl.id);
     var it = el("button", "pickitem");
     it.type = "button";
-    var j = el("span", "jersey", pl.num || "–");
+    var j = el("span", "jersey" + (pl.num ? "" : " ghost"), pl.num || "–");
     var nm = el("span", null, pl.name);
     nm.style.fontWeight = "600";
     nm.style.overflow = "hidden";
@@ -1029,7 +1025,7 @@ function rowFor(pl, opts){
   if(opts.ordinal != null){
     li.appendChild(el("span", "ordnum", opts.ordinal));
   }else{
-    li.appendChild(el("span", "jersey", pl.num || "–"));
+    li.appendChild(el("span", "jersey" + (pl.num ? "" : " ghost"), pl.num || "–"));
   }
 
   var nm = el("span", "nm", pl.name);
@@ -1114,8 +1110,17 @@ $("addForm").addEventListener("submit", function(ev){
   S.roster.push({id:nid(), num:num, name:name});
   $("newName").value = ""; $("newNum").value = "";
   $("newNum").focus();
-  S.demo = false;
   renderAll();
+});
+
+$("btnResetRoster").addEventListener("click", function(){
+  var have = {};
+  S.roster.forEach(function(p){ have[p.name.toLowerCase()] = 1; });
+  var add = TEAM_ROSTER.filter(function(n){ return !have[n.toLowerCase()]; });
+  if(!add.length){ toast("El roster del equipo ya está completo"); return; }
+  add.forEach(function(n){ S.roster.push({id:nid(), num:"", name:n}); });
+  renderAll();
+  toast(add.length === 1 ? "1 jugador restaurado" : add.length + " jugadores restaurados");
 });
 
 $("btnSortRoster").addEventListener("click", function(){
@@ -1305,15 +1310,12 @@ bind.forEach(function(b){
   var e = $(b[0]);
   e.addEventListener("input", function(){
     S[b[1]] = e.value;
-    S.demo = false;
     if(b[1] === "team" || b[1] === "opp") renderInnings();
-    $("demoBanner").style.display = "none";
     save();
   });
 });
 function renderGame(){
   bind.forEach(function(b){ $(b[0]).value = S[b[1]] || ""; });
-  $("demoBanner").style.display = S.demo ? "" : "none";
 }
 
 /* ============ guardar / cargar ============ */
@@ -1325,13 +1327,6 @@ $("btnNew").addEventListener("click", function(){
   S.date = new Date().toISOString().slice(0,10);
   renderAll();
   toast("Alineación nueva");
-});
-
-$("btnClearDemo").addEventListener("click", function(){
-  S = blankState();
-  S.date = new Date().toISOString().slice(0,10);
-  renderAll();
-  toast("Listo, todo en blanco");
 });
 
 $("btnSave").addEventListener("click", function(){
@@ -1371,7 +1366,6 @@ $("btnLoad").addEventListener("click", function(){
       S = item.state;
       if(!Array.isArray(S.us)) S.us = [0,0,0,0,0,0,0];
       if(!Array.isArray(S.them)) S.them = [0,0,0,0,0,0,0];
-      S.demo = false;
       renderAll(); $("saved").close(); toast("Alineación cargada");
     });
     var bd = el("button", "btn btn-sm btn-danger", "✕");
@@ -1406,7 +1400,6 @@ $("btnImport").addEventListener("click", function(){
     var data = JSON.parse($("backupText").value);
     if(data.current) S = data.current;
     if(Array.isArray(data.saved)) lsSet(K_SAVED, data.saved);
-    S.demo = false;
     renderAll(); $("backup").close(); toast("Respaldo importado");
   }catch(e){
     toast("Ese texto no es un respaldo válido");
