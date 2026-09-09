@@ -834,15 +834,17 @@ function player(id){
   for(var i=0;i<S.roster.length;i++) if(S.roster[i].id === id) return S.roster[i];
   return null;
 }
+/* Nombre para el recuadro del campo: siempre inicial + apellido cuando hay
+   más de una palabra, para que todas las posiciones se lean igual y quepan. */
 function shortName(n){
   n = (n || "").trim();
-  if(n.length <= 14) return n;
+  if(!n) return "";
   var parts = n.split(/\s+/);
-  if(parts.length < 2) return n;
+  if(parts.length === 1) return n;
   var ini = parts[0].charAt(0).toUpperCase() + ". ";
-  var s = ini + parts.slice(1).join(" ");
-  if(s.length > 15) s = ini + parts[parts.length - 1];
-  return s;
+  var rest = parts.slice(1).join(" ");
+  if((ini + rest).length <= 13) return ini + rest;
+  return ini + (parts.length >= 4 ? parts[2] : parts[1]);
 }
 function posOf(id){
   for(var i=0;i<POS_ORDER.length;i++) if(S.assign[POS_ORDER[i]] === id) return POS_ORDER[i];
