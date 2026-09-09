@@ -148,7 +148,9 @@ button,input,select,textarea{font:inherit;color:inherit}
 .btn-key:hover{background:var(--accent);filter:brightness(1.06)}
 .btn-sm{padding:3px 8px;font-size:12.5px;border-radius:6px}
 .btn-icon{padding:3px 7px;font-family:var(--cond);font-weight:700;font-size:15px}
-.btn-danger:hover{background:var(--bad);color:#fff;border-color:transparent}
+.btn-danger:hover{background:var(--bad);color:#fff;border-color:transparent}.btn-add-order{padding:3px 8px}
+.btn-remove-order{padding:3px 8px}
+
 
 /* ---------- scorecard strip ---------- */
 .card{
@@ -158,7 +160,7 @@ button,input,select,textarea{font:inherit;color:inherit}
 .scorecard{
   margin:18px 0;padding:14px;
   display:grid;gap:12px;
-  grid-template-columns:minmax(210px,1.6fr) minmax(190px,1.4fr) repeat(3,minmax(96px,.7fr)) auto;
+  grid-template-columns:minmax(210px,1.6fr) minmax(190px,1.4fr) minmax(130px,.9fr) minmax(120px,.8fr) auto;
   align-items:end;
 }
 .fieldset{display:flex;flex-direction:column;gap:5px;min-width:0}
@@ -485,7 +487,7 @@ dialog::backdrop{background:rgba(10,16,11,.55)}
 
   .scorecard{
     margin:0 0 6px;padding:6px 8px;gap:6px 10px;
-    grid-template-columns:1.5fr 1.5fr .8fr .7fr .7fr auto;
+    grid-template-columns:1.5fr 1.5fr .9fr .8fr auto;
   }
   .lbl{font-size:8.5px;padding:1px 5px;letter-spacing:.1em}
   .inp{border:none;background:#fff;padding:0;font-size:12px;border-bottom:1px solid #ccc;border-radius:0}
@@ -583,14 +585,6 @@ dialog::backdrop{background:rgba(10,16,11,.55)}
       <label class="lbl" for="fDate">Fecha</label>
       <input class="inp" id="fDate" type="date">
     </div>
-    <div class="fieldset">
-      <label class="lbl" for="fStart">Inicio</label>
-      <input class="inp" id="fStart" type="time">
-    </div>
-    <div class="fieldset">
-      <label class="lbl" for="fEnd">Fin</label>
-      <input class="inp" id="fEnd" type="time">
-    </div>
     <div class="fieldset sc-score">
       <span class="lbl">Marcador</span>
       <div class="score">
@@ -680,11 +674,12 @@ dialog::backdrop{background:rgba(10,16,11,.55)}
           <h2>Roster</h2>
           <span class="count" id="rosterCount">0</span>
           <span class="spacer"></span>
+          <button class="btn btn-sm no-print" id="btnTeamRosterInline" type="button">Jugadores</button>
           <button class="btn btn-sm no-print" id="btnFillOrder" type="button">Completar orden</button>
           <button class="btn btn-sm no-print" id="btnClearOrder" type="button">Vaciar orden</button>
         </div>
         <div class="panel-body">
-          <p class="panel-hint no-print">Arrastra un jugador al campo para asignarle posición. Arrastra las filas para cambiar el orden al bate.</p>
+          <p class="panel-hint no-print">Usa <b>+</b> para agregar jugadores <b>uno por uno</b> al orden al bate. Arrastra un jugador al campo para asignarle posición y arrastra las filas para cambiar el orden.</p>
           <ul class="list" id="rosterList"></ul>
         </div>
       </section>
@@ -744,7 +739,7 @@ dialog::backdrop{background:rgba(10,16,11,.55)}
       <input class="inp" id="newName" type="text" placeholder="Nombre del jugador" aria-label="Nombre">
       <button class="btn btn-key" type="submit">Agregar</button>
     </form>
-    <p class="panel-hint">Marca los jugadores que asistieron a este partido. Los desmarcados quedan fuera de la alineación.</p>
+    <p class="panel-hint">Marca los jugadores que asistieron a este partido. Después, en el Roster de la derecha, pulsa <b>Agregar</b> en cada jugador que quieras poner <b>uno por uno</b> en el orden al bate. El botón ✕ elimina al jugador definitivamente del roster del equipo.</p>
     <ul class="list" id="teamRosterList"></ul>
   </div>
 </dialog>
@@ -1140,9 +1135,10 @@ function renderRoster(){
     });
 
     var ord = S.order.indexOf(pl.id);
-    var toggle = el("button", "btn btn-sm btn-icon", ord >= 0 ? "−" : "+");
+    var toggle = el("button", "btn btn-sm" + (ord >= 0 ? " btn-remove-order" : " btn-add-order"), ord >= 0 ? "Quitar" : "Agregar");
     toggle.type = "button";
-    toggle.title = ord >= 0 ? "Quitar del orden al bate" : "Agregar al orden al bate";
+    toggle.title = ord >= 0 ? "Quitar del orden al bate" : "Agregar uno por uno al orden al bate";
+    toggle.setAttribute("aria-label", toggle.title);
     toggle.addEventListener("click", function(){
       if(S.order.indexOf(pl.id) >= 0) S.order = S.order.filter(function(x){ return x !== pl.id; });
       else S.order.push(pl.id);
@@ -1234,7 +1230,8 @@ function renderTeamRoster(){
       saveTeam(); renderTeamRoster(); renderAll();
     });
     var del = el("button","btn btn-sm btn-icon btn-danger","✕");
-    del.type="button"; del.title="Eliminar del roster del equipo";
+    del.type="button"; del.title="Eliminar definitivamente del roster del equipo";
+    del.setAttribute("aria-label", del.title);
     del.addEventListener("click",function(){
       if(!confirm("¿Eliminar a " + tp.name + " del roster del equipo?")) return;
       TEAM=TEAM.filter(function(x){return x.id!==tp.id;});
@@ -1246,10 +1243,12 @@ function renderTeamRoster(){
   });
 }
 
-$("btnTeamRoster").addEventListener("click", function(){
+function openTeamRoster(){
   renderTeamRoster();
   $("teamRoster").showModal();
-});
+}
+$("btnTeamRoster").addEventListener("click", openTeamRoster);
+$("btnTeamRosterInline").addEventListener("click", openTeamRoster);
 $("teamRosterClose").addEventListener("click", function(){ $("teamRoster").close(); });
 
 
@@ -1388,7 +1387,7 @@ $("btnDelInn").addEventListener("click", function(){
 });
 
 /* ============ datos del juego ============ */
-var bind = [["fTeam","team"],["fOpp","opp"],["fDate","date"],["fStart","start"],["fEnd","end"]];
+var bind = [["fTeam","team"],["fOpp","opp"],["fDate","date"]];
 bind.forEach(function(b){
   var e = $(b[0]);
   e.addEventListener("input", function(){
