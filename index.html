@@ -729,7 +729,7 @@ dialog::backdrop{background:rgba(10,16,11,.55)}
 <dialog id="teamRoster">
   <div class="dlg-head">
     <h3>Roster del equipo</h3>
-    <span class="sub">Jugadores disponibles para cada partido</span>
+    <span class="sub">Marca solo los jugadores que asistieron a este partido</span>
     <span style="margin-left:auto"></span>
     <button class="btn btn-sm btn-ghost" id="teamRosterClear" type="button">Desmarcar todos</button>
     <button class="btn btn-sm" id="teamRosterClose" type="button">Cerrar</button>
@@ -794,7 +794,7 @@ var POS = [
 var POS_ORDER = POS.map(function(p){return p.k;});
 
 /* ============ almacenamiento ============ */
-var K_CUR = "diamante10.current.v3";
+var K_CUR = "diamante10.current.v5";
 var K_SAVED = "diamante10.saved.v1";
 var K_TEAM = "diamante10.teamRoster.v1";
 
@@ -842,8 +842,29 @@ function seedState(){
 var S = lsGet(K_CUR, null);
 var TEAM = lsGet(K_TEAM, null);
 
+/* Normaliza el roster permanente: cada jugador debe tener un ID único.
+   Esto evita que una selección de asistencia afecte a varios jugadores. */
+function normalizeTeam(){
+  var src = Array.isArray(TEAM) ? TEAM : [];
+  var seenNames = {}, seenIds = {}, clean = [];
+  src.forEach(function(tp){
+    tp = tp || {};
+    var name = String(tp.name || "").trim();
+    if(!name) return;
+    var nk = name.toLowerCase();
+    if(seenNames[nk]) return;
+    var id = String(tp.id || "");
+    if(!id || seenIds[id]) id = nid();
+    seenNames[nk] = 1;
+    seenIds[id] = 1;
+    clean.push({id:id, num:String(tp.num || "").slice(0,2), name:name});
+  });
+  TEAM = clean;
+  lsSet(K_TEAM, TEAM);
+}
+
 function ensureState(){
-  if(!S || !S.assign || !Array.isArray(S.roster)) S = seedState();
+  if(!S || !S.assign || !Array.isArray(S.roster)) S = blankState();
   if(!Array.isArray(S.us)) S.us = [0,0,0,0,0,0,0];
   if(!Array.isArray(S.them)) S.them = [0,0,0,0,0,0,0];
   if(typeof S.enabledSF !== "boolean") S.enabledSF = true;
@@ -853,25 +874,9 @@ function ensureState(){
 }
 
 if(!Array.isArray(TEAM)){
-  TEAM = S && Array.isArray(S.roster) && S.roster.length ? S.roster.map(function(p){
-    return {id:p.id, num:p.num || "", name:p.name || ""};
-  }) : TEAM_ROSTER.map(function(n){ return {id:nid(), num:"", name:n}; });
-  lsSet(K_TEAM, TEAM);
+  TEAM = TEAM_ROSTER.map(function(n){ return {id:nid(), num:"", name:n}; });
 }
-// Elimina duplicados del roster permanente (por ID o por nombre).
-(function dedupeTeam(){
-  var seenId = {}, seenName = {}, clean = [];
-  TEAM.forEach(function(tp){
-    var id = tp.id;
-    var name = String(tp.name || "").trim().toLowerCase();
-    if((id && seenId[id]) || (name && seenName[name])) return;
-    if(id) seenId[id] = 1;
-    if(name) seenName[name] = 1;
-    clean.push(tp);
-  });
-  TEAM = clean;
-  lsSet(K_TEAM, TEAM);
-})();
+normalizeTeam();
 ensureState();
 
 // Limpia duplicados que puedan existir en partidas creadas con versiones anteriores.
@@ -900,6 +905,24 @@ function el(tag, cls, txt){
   if(txt != null) e.textContent = txt;
   return e;
 }
+/* Sincroniza jugadores del partido con el roster permanente por ID/nombre. */
+(function normalizeGameRoster(){
+  var byId = {}, byName = {};
+  TEAM.forEach(function(tp){ byId[tp.id] = tp; byName[tp.name.trim().toLowerCase()] = tp; });
+  var clean = [], seen = {};
+  (Array.isArray(S.roster) ? S.roster : []).forEach(function(pl){
+    var tp = byId[pl.id] || byName[String(pl.name || "").trim().toLowerCase()];
+    if(!tp || seen[tp.id]) return;
+    seen[tp.id] = 1;
+    clean.push({id:tp.id, num:tp.num || pl.num || "", name:tp.name});
+  });
+  var valid = {};
+  clean.forEach(function(pl){ valid[pl.id] = 1; });
+  S.roster = clean;
+  S.order = (Array.isArray(S.order) ? S.order : []).filter(function(id){ return !!valid[id]; });
+  POS_ORDER.forEach(function(k){ if(S.assign[k] && !valid[S.assign[k]]) S.assign[k] = null; });
+})();
+
 function player(id){
   for(var i=0;i<S.roster.length;i++) if(S.roster[i].id === id) return S.roster[i];
   return null;
@@ -1242,12 +1265,17 @@ function renderTeamRoster(){
     cb.type = "checkbox"; cb.className = "check"; cb.checked = active;
     cb.title = "Participa en este partido";
     cb.addEventListener("change", function(){
+      /* IMPORTANTE: esta acción solo afecta al jugador de ESTA fila. */
+      var id = tp.id;
       if(cb.checked){
-        if(!player(tp.id)) S.roster.push({id:tp.id, num:tp.num || "", name:tp.name});
+        if(!S.roster.some(function(pl){ return pl.id === id; })){
+          S.roster.push({id:id, num:tp.num || "", name:tp.name});
+        }
       }else{
-        removePlayerEverywhere(tp.id);
+        removePlayerEverywhere(id);
       }
-      renderAll(); renderTeamRoster();
+      save();
+      renderAll();
       toast(cb.checked ? tp.name + " agregado al partido" : tp.name + " retirado del partido");
     });
     li.appendChild(cb);
