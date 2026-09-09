@@ -245,7 +245,7 @@ button,input,select,textarea{font:inherit;color:inherit}
 }
 .slot.filled .slot-key{color:var(--ink-2)}
 .slot-name{
-  grid-area:name;font-weight:600;font-size:1.66cqw;line-height:1.2;
+  grid-area:name;font-weight:600;font-size:1.74cqw;line-height:1.2;
   white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
 }
 .slot.empty .slot-name{color:var(--ink-3);font-weight:500;font-style:italic}
@@ -376,10 +376,73 @@ dialog::backdrop{background:rgba(10,16,11,.55)}
   .scorecard .sc-score{grid-column:1/-1}
   .score{justify-content:center}
 }
-@media (max-width:560px){
-  .wrap{padding:0 11px 44px}
-  .topbar-in{padding:8px 11px}
-  .scorecard{grid-template-columns:minmax(0,1fr)}
+/* ---- teléfono: diamante reubicado y controles más grandes ---- */
+@media (max-width:680px){
+  .wrap{padding:0 10px 40px}
+
+  .topbar-in{padding:7px 10px;gap:6px;flex-wrap:wrap}
+  .brand{margin-right:auto;flex:0 0 auto}
+  .brand b{font-size:20px}
+  .brand span{display:none}
+  .tools{
+    flex:1 0 100%;flex-wrap:nowrap;overflow-x:auto;justify-content:flex-start;
+    gap:6px;padding-bottom:2px;scrollbar-width:none;
+  }
+  .tools::-webkit-scrollbar{display:none}
+  .tools .btn{flex:0 0 auto;padding:6px 10px}
+
+  .scorecard{margin:12px 0;padding:11px;gap:9px;grid-template-columns:repeat(2,minmax(0,1fr))}
+  .scorecard .fieldset:nth-child(1),
+  .scorecard .fieldset:nth-child(2){grid-column:1/-1}
+  .scorecard .sc-score{grid-column:auto}
+  .score b{font-size:29px}
+  .inp{font-size:16px;padding:8px 9px}
+  .inp-big{font-size:20px;padding:6px 9px}
+  .score{justify-content:center;padding:8px 14px}
+
+  .work{gap:14px}
+  .field-head{padding:9px 11px;gap:7px}
+  .field-head h2{font-size:15px}
+  .field-scroll{padding:6px}
+  .field-stage{min-width:0}
+
+  .slot{
+    left:var(--mx);top:var(--my);
+    width:27cqw;padding:.95cqw 1.15cqw;border-radius:1.5cqw;
+    border-width:.3cqw;column-gap:1.1cqw;
+  }
+  .slot:hover{transform:translate(-50%,-50%)}
+  .slot.filled{box-shadow:var(--shadow-2),inset .5cqw 0 0 var(--accent)}
+  .slot.drop{box-shadow:0 0 0 .6cqw var(--accent-soft),var(--shadow-2)}
+  .slot-num{width:4.5cqw;height:4.5cqw;border-radius:.8cqw;font-size:2.9cqw}
+  .slot-key{font-size:2.3cqw;gap:.8cqw;letter-spacing:.06em}
+  .slot-jersey{font-size:2cqw}
+  .slot-name{font-size:2.95cqw}
+
+  .innings{padding:10px 11px 12px}
+  table.inn{min-width:0;border-spacing:2px}
+  table.inn tbody th{
+    font-size:12px;max-width:74px;overflow:hidden;
+    text-overflow:ellipsis;white-space:nowrap;padding-right:4px;
+  }
+  table.inn input{min-width:0;font-size:16px;padding:6px 1px}
+  table.inn .tot{font-size:16px;padding:6px 5px}
+
+  .panel-head{padding:10px 11px}
+  .panel-body{padding:10px 11px 12px}
+  .addrow{grid-template-columns:52px minmax(0,1fr) auto}
+  .row{padding:7px 8px;gap:8px}
+  .btn-sm{padding:5px 9px}
+  .btn-icon{padding:5px 9px;font-size:14px}
+  .pickitem{padding:10px 11px}
+  .dlg-body{max-height:64vh}
+}
+
+@media (max-width:420px){
+  .brand b{font-size:18px}
+  .slot{width:28.5cqw}
+  .slot-name{font-size:3.15cqw}
+  .slot-num{width:4.8cqw;height:4.8cqw;font-size:3.1cqw}
 }
 @media (prefers-reduced-motion:reduce){
   *{transition:none !important;animation:none !important}
@@ -697,16 +760,16 @@ dialog::backdrop{background:rgba(10,16,11,.55)}
 
 /* ============ posiciones ============ */
 var POS = [
-  {k:"P",  n:1,  es:"Lanzador",          x:50,   y:63.0},
-  {k:"C",  n:2,  es:"Receptor",          x:50,   y:92.4},
-  {k:"1B", n:3,  es:"Primera base",      x:72.0, y:61.0},
-  {k:"2B", n:4,  es:"Segunda base",      x:61.8, y:50.0},
-  {k:"3B", n:5,  es:"Tercera base",      x:28.0, y:61.0},
-  {k:"SS", n:6,  es:"Campocorto",        x:38.2, y:50.0},
-  {k:"LF", n:7,  es:"Jardín izquierdo",  x:20.0, y:30.0},
-  {k:"CF", n:8,  es:"Jardín central",    x:50,   y:22.7},
-  {k:"RF", n:9,  es:"Jardín derecho",    x:80.0, y:30.0},
-  {k:"SF", n:10, es:"Short fielder",     x:50,   y:40.2}
+  {k:"P",  n:1,  es:"Lanzador",          x:50,   y:63.0, mx:50, my:68},
+  {k:"C",  n:2,  es:"Receptor",          x:50,   y:92.4, mx:50, my:91},
+  {k:"1B", n:3,  es:"Primera base",      x:72.0, y:61.0, mx:79, my:62},
+  {k:"2B", n:4,  es:"Segunda base",      x:61.8, y:50.0, mx:68, my:49},
+  {k:"3B", n:5,  es:"Tercera base",      x:28.0, y:61.0, mx:21, my:62},
+  {k:"SS", n:6,  es:"Campocorto",        x:38.2, y:50.0, mx:32, my:49},
+  {k:"LF", n:7,  es:"Jardín izquierdo",  x:20.0, y:30.0, mx:17, my:28},
+  {k:"CF", n:8,  es:"Jardín central",    x:50,   y:22.7, mx:50, my:20},
+  {k:"RF", n:9,  es:"Jardín derecho",    x:80.0, y:30.0, mx:83, my:28},
+  {k:"SF", n:10, es:"Short fielder",     x:50,   y:40.2, mx:50, my:38}
 ];
 var POS_ORDER = POS.map(function(p){return p.k;});
 
@@ -811,6 +874,8 @@ POS.forEach(function(p){
   b.dataset.pos = p.k;
   b.style.setProperty("--x", p.x + "%");
   b.style.setProperty("--y", p.y + "%");
+  b.style.setProperty("--mx", p.mx + "%");
+  b.style.setProperty("--my", p.my + "%");
   b.setAttribute("draggable","true");
   b.innerHTML =
     '<span class="slot-num">' + p.n + '</span>' +
