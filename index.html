@@ -731,6 +731,7 @@ dialog::backdrop{background:rgba(10,16,11,.55)}
     <h3>Roster del equipo</h3>
     <span class="sub">Jugadores disponibles para cada partido</span>
     <span style="margin-left:auto"></span>
+    <button class="btn btn-sm btn-ghost" id="teamRosterClear" type="button">Desmarcar todos</button>
     <button class="btn btn-sm" id="teamRosterClose" type="button">Cerrar</button>
   </div>
   <div class="dlg-body">
@@ -857,7 +858,39 @@ if(!Array.isArray(TEAM)){
   }) : TEAM_ROSTER.map(function(n){ return {id:nid(), num:"", name:n}; });
   lsSet(K_TEAM, TEAM);
 }
+// Elimina duplicados del roster permanente (por ID o por nombre).
+(function dedupeTeam(){
+  var seenId = {}, seenName = {}, clean = [];
+  TEAM.forEach(function(tp){
+    var id = tp.id;
+    var name = String(tp.name || "").trim().toLowerCase();
+    if((id && seenId[id]) || (name && seenName[name])) return;
+    if(id) seenId[id] = 1;
+    if(name) seenName[name] = 1;
+    clean.push(tp);
+  });
+  TEAM = clean;
+  lsSet(K_TEAM, TEAM);
+})();
 ensureState();
+
+// Limpia duplicados que puedan existir en partidas creadas con versiones anteriores.
+(function dedupeGameRoster(){
+  var seenId = {}, seenName = {}, clean = [], removed = {};
+  S.roster.forEach(function(pl){
+    var id = pl.id, name = String(pl.name || "").trim().toLowerCase();
+    if((id && seenId[id]) || (name && seenName[name])){ removed[id] = 1; return; }
+    if(id) seenId[id] = 1;
+    if(name) seenName[name] = 1;
+    clean.push(pl);
+  });
+  if(clean.length !== S.roster.length){
+    S.roster = clean;
+    S.order = S.order.filter(function(id){ return !removed[id]; });
+    POS_ORDER.forEach(function(k){ if(removed[S.assign[k]]) S.assign[k] = null; });
+    lsSet(K_CUR, S);
+  }
+})();
 
 /* ============ helpers ============ */
 function $(id){ return document.getElementById(id); }
@@ -1175,10 +1208,13 @@ $("addForm").addEventListener("submit", function(ev){
   var name = $("newName").value.trim();
   if(!name){ $("newName").focus(); return; }
   var num = $("newNum").value.trim().slice(0,2);
+  var exists = TEAM.some(function(x){ return String(x.name||"").trim().toLowerCase() === name.toLowerCase(); });
+  if(exists){ toast("Ese jugador ya existe en el roster del equipo"); return; }
   var pl = {id:nid(), num:num, name:name};
   TEAM.push(pl);
   saveTeam();
-  S.roster.push({id:pl.id, num:pl.num, name:pl.name});
+  // Los jugadores nuevos quedan disponibles en el roster del equipo,
+  // pero NO se agregan automáticamente al partido.
   $("newName").value = ""; $("newNum").value = "";
   $("newNum").focus();
   renderTeamRoster();
@@ -1250,6 +1286,14 @@ function openTeamRoster(){
 $("btnTeamRoster").addEventListener("click", openTeamRoster);
 $("btnTeamRosterInline").addEventListener("click", openTeamRoster);
 $("teamRosterClose").addEventListener("click", function(){ $("teamRoster").close(); });
+$("teamRosterClear").addEventListener("click", function(){
+  if(!S.roster.length) return;
+  if(!confirm("¿Desmarcar a todos los jugadores de este partido?")) return;
+  S.roster = []; S.order = [];
+  POS_ORDER.forEach(function(k){ S.assign[k] = null; });
+  renderAll(); renderTeamRoster();
+  toast("Asistencia vaciada");
+});
 
 
 /* ============ orden al bate ============ */
