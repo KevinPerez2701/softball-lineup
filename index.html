@@ -573,6 +573,13 @@ dialog::backdrop{background:rgba(10,16,11,.55)}
       <input class="inp inp-big" id="fOpp" type="text" placeholder="Rival" autocomplete="off">
     </div>
     <div class="fieldset">
+      <label class="lbl" for="fHome">Home club</label>
+      <select class="inp inp-big" id="fHome">
+        <option value="them">Oponente</option>
+        <option value="us">Tu equipo</option>
+      </select>
+    </div>
+    <div class="fieldset">
       <label class="lbl" for="fDate">Fecha</label>
       <input class="inp" id="fDate" type="date">
     </div>
@@ -812,7 +819,7 @@ function blankState(){
   var a = {};
   POS_ORDER.forEach(function(k){ a[k] = null; });
   return {
-    team:"", opp:"", date:"", start:"", end:"",
+    team:"", opp:"", home:"them", date:"", start:"", end:"",
     roster:[], assign:a, order:[],
     enabledSF:true, enabledDH:false,
     innings:7, us:[0,0,0,0,0,0,0], them:[0,0,0,0,0,0,0]
@@ -845,6 +852,7 @@ function ensureState(){
   if(!Array.isArray(S.them)) S.them = [0,0,0,0,0,0,0];
   if(typeof S.enabledSF !== "boolean") S.enabledSF = true;
   if(typeof S.enabledDH !== "boolean") S.enabledDH = false;
+  if(S.home !== "us" && S.home !== "them") S.home = "them";
   POS_ORDER.forEach(function(k){ if(!(k in S.assign)) S.assign[k] = null; });
 }
 
@@ -1325,10 +1333,13 @@ function renderInnings(){
   thead.appendChild(hr); t.appendChild(thead);
 
   var tbody = el("tbody");
-  [["us", S.team || "Nosotros"], ["them", S.opp || "Ellos"]].forEach(function(row){
-    var key = row[0], label = row[1];
+  var rows = S.home === "us"
+    ? [["them", S.opp || "Ellos", "Visita"], ["us", S.team || "Nosotros", "Casa"]]
+    : [["us", S.team || "Nosotros", "Visita"], ["them", S.opp || "Ellos", "Casa"]];
+  rows.forEach(function(row){
+    var key = row[0], label = row[1], side = row[2];
     var tr = el("tr");
-    tr.appendChild(el("th", null, label));
+    tr.appendChild(el("th", null, side + " · " + label));
     for(var i=0;i<n;i++){
       (function(idx){
         var td = el("td");
@@ -1388,7 +1399,13 @@ bind.forEach(function(b){
 });
 function renderGame(){
   bind.forEach(function(b){ $(b[0]).value = S[b[1]] || ""; });
+  $("fHome").value = S.home === "us" ? "us" : "them";
 }
+$("fHome").addEventListener("change", function(){
+  S.home = $("fHome").value === "us" ? "us" : "them";
+  renderInnings();
+  save();
+});
 
 /* ============ guardar / cargar ============ */
 $("btnNew").addEventListener("click", function(){
