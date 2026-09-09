@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="description" content="Armador de alineaciones de softball: 10 posiciones incluido el short fielder, roster guardado, orden al bate e impresión.">
+<meta name="description" content="Armador de alineaciones de softball: hasta 11 posiciones (short fielder y cuatro jardineros), roster guardado, orden al bate e impresión.">
 <meta name="theme-color" content="#141c16">
 <!-- ART:HEAD:START -->
 <title>Diamante 10</title>
@@ -108,7 +108,6 @@ button,input,select,textarea{font:inherit;color:inherit}
 :where(button,[tabindex],input,select,a):focus-visible{
   outline:3px solid var(--accent);outline-offset:2px;border-radius:6px;
 }
-.sr{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0}
 
 /* ---------- shell ---------- */
 .wrap{max-width:1360px;margin:0 auto;padding:0 18px 56px}
@@ -144,6 +143,9 @@ button,input,select,textarea{font:inherit;color:inherit}
 .btn:active{transform:translateY(1px)}
 .btn-ghost{background:transparent;color:var(--bar-ink);border-color:rgba(255,255,255,.28)}
 .btn-ghost:hover{background:rgba(255,255,255,.12);border-color:rgba(255,255,255,.5)}
+/* el estilo ghost es para la barra oscura; dentro de un diálogo claro no se leía */
+dialog .btn-ghost{color:var(--ink);border-color:var(--line-2)}
+dialog .btn-ghost:hover{background:var(--surface-2);border-color:var(--ink-3)}
 .btn-key{background:var(--accent);color:var(--accent-ink);border-color:transparent}
 .btn-key:hover{background:var(--accent);filter:brightness(1.06)}
 .btn-sm{padding:3px 8px;font-size:12.5px;border-radius:6px}
@@ -340,8 +342,6 @@ ul.list{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;ga
 }
 .posbadge.eh{background:var(--surface-3);color:var(--ink-2)}
 .rowacts{display:flex;gap:3px}
-.grip{cursor:grab;color:var(--ink-3);font-size:13px;letter-spacing:-1px;user-select:none}
-.grip:active{cursor:grabbing}
 .ordnum{
   font-family:var(--cond);font-weight:700;font-size:15px;color:var(--ink-3);
   min-width:17px;text-align:right;font-variant-numeric:tabular-nums;
@@ -386,14 +386,13 @@ dialog::backdrop{background:rgba(10,16,11,.55)}
 .pickitem:hover{border-color:var(--ink-3);background:var(--surface-3)}
 .pickitem .where{font-size:12.5px;color:var(--ink-3)}
 
+/* edición en línea de un jugador */
+.row.editing{grid-template-columns:58px minmax(0,1fr) auto;gap:6px;background:var(--accent-soft)}
+.row.editing .inp{padding:4px 7px;font-size:14px}
+.ask-msg{margin:0;font-size:14px;color:var(--ink-2);line-height:1.5}
+.ask-acts{display:flex;gap:7px;justify-content:flex-end;margin-top:14px;flex-wrap:wrap}
+
 /* ---------- misc ---------- */
-.demo{
-  display:flex;align-items:center;gap:10px;flex-wrap:wrap;
-  margin:14px 0 0;padding:8px 13px;border-radius:9px;
-  background:var(--accent-soft);border:1px solid color-mix(in srgb,var(--accent) 45%,transparent);
-  font-size:13.5px;color:var(--ink);
-}
-.demo strong{font-family:var(--cond);letter-spacing:.09em;text-transform:uppercase;font-size:12.5px}
 .foot{margin-top:26px;font-size:12.5px;color:var(--ink-3);display:flex;gap:14px;flex-wrap:wrap}
 .print-only{display:none}
 .toast{
@@ -469,6 +468,13 @@ dialog::backdrop{background:rgba(10,16,11,.55)}
   .btn-sm{padding:5px 9px}
   .btn-icon{padding:5px 9px;font-size:14px}
   .pickitem{padding:10px 11px}
+  /* encabezado de diálogo: título arriba, subtítulo abajo, botones a la derecha */
+  .dlg-head{flex-wrap:wrap;padding:11px 12px;gap:8px}
+  .dlg-head h3{font-size:17px;flex:0 1 auto}
+  .dlg-head .sub{flex:1 0 100%;order:5;font-size:12.5px}
+  .row.editing{grid-template-columns:62px minmax(0,1fr);row-gap:7px}
+  .row.editing .rowacts{grid-column:1/-1;justify-content:flex-end}
+  .row.editing .inp{font-size:16px;padding:7px}
   .dlg-body{max-height:64vh}
 }
 
@@ -493,7 +499,7 @@ dialog::backdrop{background:rgba(10,16,11,.55)}
   }
   html,body{background:#fff;font-size:12.5px}
   *{-webkit-print-color-adjust:exact;print-color-adjust:exact}
-  .topbar,.field-note,.demo,.foot,.no-print,dialog,.toast{display:none !important}
+  .topbar,.field-note,.foot,.no-print,dialog,.toast{display:none !important}
   input::-webkit-calendar-picker-indicator{display:none}
   .wrap{max-width:none;padding:0}
   .card{border:1px solid #999;box-shadow:none;break-inside:avoid}
@@ -743,6 +749,20 @@ dialog::backdrop{background:rgba(10,16,11,.55)}
   </footer>
 </main>
 
+<dialog id="ask">
+  <div class="dlg-head">
+    <h3 id="askTitle">Confirmar</h3>
+  </div>
+  <div class="dlg-body">
+    <p class="ask-msg" id="askMsg"></p>
+    <input class="inp" id="askInput" type="text" style="margin-top:12px" hidden>
+    <div class="ask-acts">
+      <button class="btn btn-sm" id="askNo" type="button">Cancelar</button>
+      <button class="btn btn-sm btn-key" id="askYes" type="button">Aceptar</button>
+    </div>
+  </div>
+</dialog>
+
 <dialog id="picker">
   <div class="dlg-head">
     <h3 id="pickTitle">Asignar</h3>
@@ -985,15 +1005,84 @@ function isPosEnabled(k){
   if(k === "LCF" || k === "RCF") return S.enabled4F === true;
   return true;
 }
+/* El número sale de la alineación activa, no de un valor fijo por posición:
+   el cuadro es siempre 1-6, el jardín se corre según haya 3 o 4 jardineros,
+   y el SF toma el siguiente al último jardinero (10 con tres, 11 con cuatro). */
+var NUM_INFIELD = {P:1, C:2, "1B":3, "2B":4, "3B":5, SS:6};
+function outfieldOrder(){
+  return S.enabled4F ? ["LF","LCF","RCF","RF"] : ["LF","CF","RF"];
+}
 function displayPosNumber(p){
-  if(S.enabled4F){
-    if(p.k === "LCF") return 8;
-    if(p.k === "RCF") return 9;
-    if(p.k === "RF") return 10;
-  }
+  if(NUM_INFIELD[p.k]) return NUM_INFIELD[p.k];
+  var of = outfieldOrder(), i = of.indexOf(p.k);
+  if(i >= 0) return 7 + i;
+  if(p.k === "SF") return 7 + of.length;
   return p.n;
 }
 function isInOrder(id){ return S.order.indexOf(id) >= 0; }
+/* ============ diálogos propios (sin prompt/confirm del navegador) ============
+   Los nativos abren cuadros del sistema: en el teléfono estorban y algunos
+   navegadores embebidos ignoran prompt() por completo. */
+var askCb = null;
+function closeAsk(){ $("ask").close(); askCb = null; }
+function askConfirm(title, msg, yesLabel, cb){
+  $("askTitle").textContent = title;
+  $("askMsg").textContent = msg;
+  $("askInput").hidden = true;
+  $("askYes").textContent = yesLabel || "Aceptar";
+  $("askYes").className = "btn btn-sm btn-key";
+  askCb = cb;
+  $("ask").showModal();
+  $("askYes").focus();
+}
+function askText(title, msg, value, cb){
+  $("askTitle").textContent = title;
+  $("askMsg").textContent = msg;
+  var i = $("askInput");
+  i.hidden = false;
+  i.value = value || "";
+  $("askYes").textContent = "Guardar";
+  $("askYes").className = "btn btn-sm btn-key";
+  askCb = function(){ cb(i.value); };
+  $("ask").showModal();
+  i.focus(); i.select();
+}
+
+/* Convierte una fila en campos editables ahí mismo. */
+function inlineEdit(li, cur, onSave, onCancel){
+  li.innerHTML = "";
+  li.classList.add("editing");
+  li.removeAttribute("draggable");
+  var inNum = document.createElement("input");
+  inNum.className = "inp"; inNum.type = "text"; inNum.inputMode = "numeric";
+  inNum.maxLength = 2; inNum.value = cur.num || ""; inNum.placeholder = "#";
+  inNum.setAttribute("aria-label", "Número");
+  var inName = document.createElement("input");
+  inName.className = "inp"; inName.type = "text"; inName.value = cur.name || "";
+  inName.setAttribute("aria-label", "Nombre");
+  var acts = el("span", "rowacts");
+  var ok = el("button", "btn btn-sm btn-key", "Guardar");
+  ok.type = "button";
+  var no = el("button", "btn btn-sm", "Cancelar");
+  no.type = "button";
+  acts.appendChild(no); acts.appendChild(ok);
+  li.appendChild(inNum); li.appendChild(inName); li.appendChild(acts);
+  function commit(){
+    var n = inName.value.trim();
+    if(!n){ inName.focus(); toast("El nombre no puede quedar vacío"); return; }
+    onSave(n, inNum.value.trim().slice(0,2));
+  }
+  function keys(ev){
+    if(ev.key === "Enter"){ ev.preventDefault(); commit(); }
+    else if(ev.key === "Escape"){ ev.preventDefault(); onCancel(); }
+  }
+  ok.addEventListener("click", commit);
+  no.addEventListener("click", onCancel);
+  inName.addEventListener("keydown", keys);
+  inNum.addEventListener("keydown", keys);
+  inName.focus(); inName.select();
+}
+
 function save(){ lsSet(K_CUR, S); }
 function saveTeam(){ lsSet(K_TEAM, TEAM); }
 
@@ -1155,9 +1244,7 @@ function setPos(posKey, playerId){
 }
 
 /* ============ picker ============ */
-var pickerPos = null;
 function openPicker(posKey){
-  pickerPos = posKey;
   var p = POS.filter(function(q){ return q.k === posKey; })[0];
   if(posKey === "DH") {
     $("pickTitle").textContent = "BD · Bateador designado";
@@ -1347,14 +1434,12 @@ function renderRoster(){
     var edit = el("button", "btn btn-sm btn-icon", "✎");
     edit.type = "button"; edit.title = "Editar jugador";
     edit.addEventListener("click", function(){
-      var nn = prompt("Nombre del jugador:", pl.name);
-      if(nn === null) return;
-      nn = nn.trim();
-      if(nn) pl.name = nn;
-      var num = prompt("Número (opcional):", pl.num || "");
-      if(num !== null) pl.num = num.trim().slice(0,2);
-      syncTeamPlayer(pl);
-      renderAll();
+      inlineEdit(r.li, pl, function(name, num){
+        pl.name = name; pl.num = num;
+        syncTeamPlayer(pl);
+        renderAll();
+        toast("Jugador actualizado");
+      }, renderAll);
     });
 
     r.acts.appendChild(toggle);
@@ -1429,22 +1514,26 @@ function renderTeamRoster(){
     var ed = el("button", "btn btn-sm btn-icon", "✎");
     ed.type="button"; ed.title="Editar jugador";
     ed.addEventListener("click", function(){
-      var nn = prompt("Nombre del jugador:", tp.name);
-      if(nn === null) return;
-      nn=nn.trim(); if(nn) tp.name=nn;
-      var num=prompt("Número (opcional):", tp.num || "");
-      if(num !== null) tp.num=num.trim().slice(0,2);
-      var ap=player(tp.id); if(ap){ap.name=tp.name;ap.num=tp.num;}
-      saveTeam(); renderTeamRoster(); renderAll();
+      inlineEdit(li, tp, function(name, num){
+        tp.name = name; tp.num = num;
+        var ap = player(tp.id);
+        if(ap){ ap.name = tp.name; ap.num = tp.num; }
+        saveTeam(); renderTeamRoster(); renderAll();
+        toast("Jugador actualizado");
+      }, renderTeamRoster);
     });
     var del = el("button","btn btn-sm btn-icon btn-danger","✕");
     del.type="button"; del.title="Eliminar definitivamente del roster del equipo";
     del.setAttribute("aria-label", del.title);
     del.addEventListener("click",function(){
-      if(!confirm("¿Eliminar a " + tp.name + " del roster del equipo?")) return;
-      TEAM=TEAM.filter(function(x){return x.id!==tp.id;});
-      removePlayerEverywhere(tp.id);
-      saveTeam(); renderTeamRoster(); renderAll();
+      askConfirm("Eliminar del equipo",
+        "Se saca a " + tp.name + " de la plantilla, no solo de este partido.",
+        "Eliminar", function(){
+          TEAM=TEAM.filter(function(x){return x.id!==tp.id;});
+          removePlayerEverywhere(tp.id);
+          saveTeam(); renderTeamRoster(); renderAll();
+          toast(tp.name + " eliminado del equipo");
+        });
     });
     acts.appendChild(ed); acts.appendChild(del); li.appendChild(acts);
     ul.appendChild(li);
@@ -1460,11 +1549,14 @@ $("btnTeamRosterInline").addEventListener("click", openTeamRoster);
 $("teamRosterClose").addEventListener("click", function(){ $("teamRoster").close(); });
 $("teamRosterClear").addEventListener("click", function(){
   if(!S.roster.length) return;
-  if(!confirm("¿Desmarcar a todos los jugadores de este partido?")) return;
-  S.roster = []; S.order = [];
-  POS_ORDER.forEach(function(k){ S.assign[k] = null; });
-  renderAll(); renderTeamRoster();
-  toast("Asistencia vaciada");
+  askConfirm("Vaciar asistencia",
+    "Se desmarca a todos los jugadores de este partido. La plantilla del equipo no se toca.",
+    "Vaciar", function(){
+      S.roster = []; S.order = [];
+      POS_ORDER.forEach(function(k){ S.assign[k] = null; });
+      renderAll(); renderTeamRoster();
+      toast("Asistencia vaciada");
+    });
 });
 
 
@@ -1632,23 +1724,26 @@ $("fHome").addEventListener("change", function(){
 
 /* ============ guardar / cargar ============ */
 $("btnNew").addEventListener("click", function(){
-  if(!confirm("¿Empezar una alineación nueva? Se conserva el roster actual.")) return;
-  var roster = S.roster;
-  S = blankState();
-  S.roster = roster;
-  S.date = new Date().toISOString().slice(0,10);
-  renderAll();
-  toast("Alineación nueva");
+  askConfirm("Alineación nueva",
+    "Se limpia el campo, el orden al bate y el marcador. Los jugadores del partido se conservan.",
+    "Empezar", function(){
+      var roster = S.roster;
+      S = blankState();
+      S.roster = roster;
+      S.date = new Date().toISOString().slice(0,10);
+      renderAll();
+      toast("Alineación nueva");
+    });
 });
 
 $("btnSave").addEventListener("click", function(){
   var def = (S.team || "Equipo") + " vs " + (S.opp || "rival") + (S.date ? " · " + S.date : "");
-  var name = prompt("Nombre para esta alineación:", def);
-  if(name === null) return;
-  var list = lsGet(K_SAVED, []);
-  list.unshift({id:nid(), name:name.trim() || def, at:new Date().toISOString(), state:JSON.parse(JSON.stringify(S))});
-  if(lsSet(K_SAVED, list.slice(0,60))) toast("Alineación guardada");
-  else toast("No se pudo guardar en este navegador");
+  askText("Guardar alineación", "Ponle un nombre para reconocerla después.", def, function(name){
+    var list = lsGet(K_SAVED, []);
+    list.unshift({id:nid(), name:String(name).trim() || def, at:new Date().toISOString(), state:JSON.parse(JSON.stringify(S))});
+    if(lsSet(K_SAVED, list.slice(0,60))) toast("Alineación guardada");
+    else toast("No se pudo guardar en este navegador");
+  });
 });
 
 $("btnLoad").addEventListener("click", function(){
@@ -1720,6 +1815,17 @@ $("btnImport").addEventListener("click", function(){
   }
 });
 
+/* ============ diálogo ask ============ */
+$("askNo").addEventListener("click", closeAsk);
+$("askYes").addEventListener("click", function(){
+  var cb = askCb;
+  closeAsk();
+  if(cb) cb();
+});
+$("askInput").addEventListener("keydown", function(ev){
+  if(ev.key === "Enter"){ ev.preventDefault(); $("askYes").click(); }
+});
+
 /* ============ imprimir ============ */
 $("btnPrint").addEventListener("click", function(){ window.print(); });
 
@@ -1757,13 +1863,18 @@ function renderAll(){
   // Elimina asignaciones de posiciones desactivadas.
   POS_ORDER.forEach(function(k){ if(!isPosEnabled(k)) S.assign[k] = null; });
   // Sin DH, el orden al bate no puede contener más jugadores que las posiciones activas.
-  var maxOrder = S.enabledDH ? Math.min(12, S.roster.length) : assignedIds().length;
-  if(!S.enabledDH){
-    S.order = S.order.filter(function(id){ return assignedIds().indexOf(id) >= 0; });
-  }else if(S.dh){
-    S.order = S.order.filter(function(id){ return assignedIds().indexOf(id) >= 0 || id === S.dh; });
-  }
-  S.order = S.order.filter(function(id){ return !!player(id); }).slice(0, maxOrder);
+  /* Batea exactamente quien juega: los que están en el campo, más el BD si
+     está activo. Sin topes fijos, así nadie se cae del orden en silencio
+     por más gente que llegue. */
+  var allowed = {};
+  assignedIds().forEach(function(id){ allowed[id] = 1; });
+  if(S.enabledDH && S.dh) allowed[S.dh] = 1;
+  var seenOrder = {};
+  S.order = S.order.filter(function(id){
+    if(!allowed[id] || seenOrder[id] || !player(id)) return false;
+    seenOrder[id] = 1;
+    return true;
+  });
   renderGame();
   renderField();
   renderRoster();
@@ -1778,10 +1889,6 @@ function renderAll(){
   save();
 }
 renderAll();
-
-document.addEventListener("keydown", function(ev){
-  if(ev.key === "p" && (ev.metaKey || ev.ctrlKey)) return;
-});
 
 })();
 </script>
