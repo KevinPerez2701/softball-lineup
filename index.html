@@ -1,0 +1,1374 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="Armador de alineaciones de softball: 10 posiciones incluido el short fielder, roster guardado, orden al bate e impresión.">
+<meta name="theme-color" content="#141c16">
+<!-- ART:HEAD:START -->
+<title>Diamante 10</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=Barlow:wght@400;500;600;700&display=swap">
+<style>
+/* ---------- tokens ---------- */
+:root{
+  --bg:#eff2ec;
+  --surface:#ffffff;
+  --surface-2:#e6eae1;
+  --surface-3:#dbe1d5;
+  --ink:#141c16;
+  --ink-2:#4c5a4e;
+  --ink-3:#7b887c;
+  --line:#d2d9cd;
+  --line-2:#b7c1b3;
+  --accent:#c3d600;
+  --accent-ink:#1b2410;
+  --accent-soft:#eef5b4;
+  --bar:#141c16;
+  --bar-ink:#f3f6ee;
+  --grass-a:#4e8a55;
+  --grass-b:#45804c;
+  --dirt:#c28f63;
+  --dirt-2:#ab7a52;
+  --chalk:#ffffff;
+  --foul:#dfe5d9;
+  --bad:#a83a2c;
+  --good:#2c7a4b;
+  --shadow-1:0 1px 2px rgba(20,28,22,.07);
+  --shadow-2:0 2px 4px rgba(20,28,22,.06),0 14px 30px -18px rgba(20,28,22,.35);
+  --r:10px;
+  --sans:"Barlow","Helvetica Neue",Helvetica,Arial,sans-serif;
+  --cond:"Barlow Condensed","Barlow","Arial Narrow",sans-serif;
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --bg:#111611;
+    --surface:#1a211a;
+    --surface-2:#232b22;
+    --surface-3:#2c352b;
+    --ink:#e7ede4;
+    --ink-2:#aab5a8;
+    --ink-3:#7d887c;
+    --line:#2e382d;
+    --line-2:#3f4b3e;
+    --accent:#cbdd22;
+    --accent-ink:#141a06;
+    --accent-soft:#3a4410;
+    --bar:#36452f;
+    --bar-ink:#eef3e6;
+    --grass-a:#2f5636;
+    --grass-b:#2a4e31;
+    --dirt:#7d5c41;
+    --dirt-2:#674b35;
+    --chalk:#dbe5d8;
+    --foul:#171d16;
+    --bad:#d9705f;
+    --good:#5bb383;
+    --shadow-1:0 1px 2px rgba(0,0,0,.4);
+    --shadow-2:0 2px 4px rgba(0,0,0,.3),0 14px 30px -18px rgba(0,0,0,.8);
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#111611;
+  --surface:#1a211a;
+  --surface-2:#232b22;
+  --surface-3:#2c352b;
+  --ink:#e7ede4;
+  --ink-2:#aab5a8;
+  --ink-3:#7d887c;
+  --line:#2e382d;
+  --line-2:#3f4b3e;
+  --accent:#cbdd22;
+  --accent-ink:#141a06;
+  --accent-soft:#3a4410;
+  --bar:#36452f;
+  --bar-ink:#eef3e6;
+  --grass-a:#2f5636;
+  --grass-b:#2a4e31;
+  --dirt:#7d5c41;
+  --dirt-2:#674b35;
+  --chalk:#dbe5d8;
+  --foul:#171d16;
+  --bad:#d9705f;
+  --good:#5bb383;
+  --shadow-1:0 1px 2px rgba(0,0,0,.4);
+  --shadow-2:0 2px 4px rgba(0,0,0,.3),0 14px 30px -18px rgba(0,0,0,.8);
+}
+
+/* ---------- base ---------- */
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{
+  margin:0;background:var(--bg);color:var(--ink);
+  font-family:var(--sans);font-size:15px;line-height:1.45;
+  -webkit-font-smoothing:antialiased;
+}
+button,input,select,textarea{font:inherit;color:inherit}
+:where(button,[tabindex],input,select,a):focus-visible{
+  outline:3px solid var(--accent);outline-offset:2px;border-radius:6px;
+}
+.sr{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0}
+
+/* ---------- shell ---------- */
+.wrap{max-width:1360px;margin:0 auto;padding:0 18px 56px}
+
+.topbar{
+  position:sticky;top:0;z-index:30;background:var(--bar);color:var(--bar-ink);
+  border-bottom:3px solid var(--accent);
+}
+.topbar-in{
+  max-width:1360px;margin:0 auto;padding:9px 18px;
+  display:flex;align-items:center;gap:14px;flex-wrap:wrap;
+}
+.brand{display:flex;align-items:baseline;gap:9px;margin-right:auto}
+.brand b{
+  font-family:var(--cond);font-weight:700;font-size:24px;letter-spacing:.02em;
+  text-transform:uppercase;line-height:1;
+}
+.brand span{
+  font-family:var(--cond);font-weight:600;font-size:12px;letter-spacing:.14em;
+  text-transform:uppercase;color:var(--accent);
+}
+.tools{display:flex;gap:7px;flex-wrap:wrap}
+
+/* ---------- buttons ---------- */
+.btn{
+  display:inline-flex;align-items:center;gap:6px;
+  background:var(--surface);color:var(--ink);border:1px solid var(--line-2);
+  padding:6px 11px;border-radius:8px;cursor:pointer;
+  font-weight:600;font-size:13.5px;line-height:1.2;
+  transition:background .13s,border-color .13s,transform .06s;
+}
+.btn:hover{background:var(--surface-2);border-color:var(--ink-3)}
+.btn:active{transform:translateY(1px)}
+.btn-ghost{background:transparent;color:var(--bar-ink);border-color:rgba(255,255,255,.28)}
+.btn-ghost:hover{background:rgba(255,255,255,.12);border-color:rgba(255,255,255,.5)}
+.btn-key{background:var(--accent);color:var(--accent-ink);border-color:transparent}
+.btn-key:hover{background:var(--accent);filter:brightness(1.06)}
+.btn-sm{padding:3px 8px;font-size:12.5px;border-radius:6px}
+.btn-icon{padding:3px 7px;font-family:var(--cond);font-weight:700;font-size:15px}
+.btn-danger:hover{background:var(--bad);color:#fff;border-color:transparent}
+
+/* ---------- scorecard strip ---------- */
+.card{
+  background:var(--surface);border:1px solid var(--line);border-radius:var(--r);
+  box-shadow:var(--shadow-1);
+}
+.scorecard{
+  margin:18px 0;padding:14px;
+  display:grid;gap:12px;
+  grid-template-columns:minmax(210px,1.6fr) minmax(190px,1.4fr) repeat(3,minmax(96px,.7fr)) auto;
+  align-items:end;
+}
+.fieldset{display:flex;flex-direction:column;gap:5px;min-width:0}
+.lbl{
+  background:var(--bar);color:var(--bar-ink);
+  font-family:var(--cond);font-weight:700;font-size:11.5px;letter-spacing:.13em;
+  text-transform:uppercase;padding:3px 9px;border-radius:4px;align-self:flex-start;
+}
+.inp{
+  width:100%;background:var(--surface-2);border:1px solid var(--line);
+  border-radius:7px;padding:7px 9px;font-size:15px;min-width:0;
+}
+.inp:hover{border-color:var(--line-2)}
+.inp-big{font-family:var(--cond);font-weight:600;font-size:21px;letter-spacing:.01em;padding:4px 9px}
+.score{
+  display:flex;align-items:center;gap:8px;background:var(--bar);color:var(--bar-ink);
+  border-radius:9px;padding:7px 14px;
+}
+.score b{font-family:var(--cond);font-weight:700;font-size:34px;line-height:1;font-variant-numeric:tabular-nums}
+.score i{font-style:normal;opacity:.5;font-size:20px}
+.score .tag{
+  font-family:var(--cond);font-size:11px;letter-spacing:.13em;text-transform:uppercase;
+  color:var(--accent);writing-mode:vertical-rl;transform:rotate(180deg);
+}
+
+/* ---------- work grid ---------- */
+.work{display:grid;grid-template-columns:minmax(0,1.32fr) minmax(320px,.68fr);gap:18px;align-items:start}
+
+/* ---------- field ---------- */
+.field-head{
+  display:flex;align-items:center;gap:10px;flex-wrap:wrap;
+  padding:11px 14px;border-bottom:1px solid var(--line);
+}
+.field-head h2{
+  margin:0;font-family:var(--cond);font-weight:700;font-size:17px;
+  letter-spacing:.09em;text-transform:uppercase;
+}
+.pill{
+  display:inline-flex;align-items:center;gap:5px;
+  font-size:12.5px;font-weight:600;padding:2px 9px;border-radius:999px;
+  background:var(--surface-2);color:var(--ink-2);border:1px solid var(--line);
+}
+.pill.ok{background:var(--accent-soft);border-color:transparent;color:var(--ink)}
+.field-head .spacer{margin-left:auto}
+
+.field-scroll{overflow-x:auto;padding:12px}
+.field-stage{
+  position:relative;width:100%;min-width:520px;aspect-ratio:900/820;
+  container-type:inline-size;
+}
+.field-svg{position:absolute;inset:0;width:100%;height:100%;display:block}
+
+.slot{
+  position:absolute;left:var(--x);top:var(--y);transform:translate(-50%,-50%);
+  width:17.2cqw;
+  display:grid;grid-template-columns:auto minmax(0,1fr);
+  grid-template-areas:"num key" "num name";
+  align-items:center;column-gap:.75cqw;
+  padding:.58cqw .8cqw;border-radius:.9cqw;
+  background:var(--surface);border:.18cqw solid var(--line-2);
+  box-shadow:var(--shadow-2);
+  cursor:pointer;text-align:left;
+  transition:transform .1s,box-shadow .1s,border-color .1s;
+}
+.slot:hover{transform:translate(-50%,-50%) scale(1.045);border-color:var(--ink-3);z-index:6}
+.slot.empty{
+  background:color-mix(in srgb,var(--surface) 82%,transparent);
+  border-style:dashed;border-color:var(--line-2);
+}
+.slot.filled{border-color:var(--ink);box-shadow:var(--shadow-2),inset .28cqw 0 0 var(--accent)}
+.slot.drop{border-color:var(--accent);box-shadow:0 0 0 .35cqw var(--accent-soft),var(--shadow-2)}
+.slot-num{
+  grid-area:num;display:grid;place-items:center;
+  width:2.55cqw;height:2.55cqw;border-radius:.45cqw;
+  background:var(--bar);color:var(--bar-ink);
+  font-family:var(--cond);font-weight:700;font-size:1.62cqw;line-height:1;
+  font-variant-numeric:tabular-nums;
+}
+.slot.filled .slot-num{background:var(--accent);color:var(--accent-ink)}
+.slot-key{
+  grid-area:key;display:flex;align-items:baseline;gap:.55cqw;
+  font-family:var(--cond);font-weight:700;font-size:1.42cqw;
+  letter-spacing:.1em;text-transform:uppercase;color:var(--ink-3);line-height:1.15;
+}
+.slot.filled .slot-key{color:var(--ink-2)}
+.slot-name{
+  grid-area:name;font-weight:600;font-size:1.66cqw;line-height:1.2;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+}
+.slot.empty .slot-name{color:var(--ink-3);font-weight:500;font-style:italic}
+.slot-jersey{
+  font-family:var(--cond);font-weight:600;font-size:1.2cqw;letter-spacing:0;
+  color:var(--ink-3);font-variant-numeric:tabular-nums;
+}
+.field-note{
+  padding:0 14px 12px;font-size:12.5px;color:var(--ink-3);
+  display:flex;gap:14px;flex-wrap:wrap;
+}
+
+/* ---------- innings ---------- */
+.innings{margin-top:18px;padding:12px 14px 14px}
+.innings-head{display:flex;align-items:center;gap:10px;margin-bottom:9px;flex-wrap:wrap}
+.innings-head h2{margin:0;font-family:var(--cond);font-weight:700;font-size:16px;letter-spacing:.09em;text-transform:uppercase}
+.innings-scroll{overflow-x:auto}
+table.inn{border-collapse:separate;border-spacing:3px;width:100%;min-width:440px}
+table.inn th{
+  font-family:var(--cond);font-weight:700;font-size:12.5px;letter-spacing:.08em;
+  text-transform:uppercase;color:var(--ink-2);padding:2px 4px;text-align:center;
+}
+table.inn tbody th{text-align:left;white-space:nowrap;font-size:13.5px;color:var(--ink);padding-right:8px}
+table.inn td{padding:0}
+table.inn input{
+  width:100%;min-width:38px;text-align:center;background:var(--surface-2);
+  border:1px solid var(--line);border-radius:6px;padding:5px 2px;
+  font-family:var(--cond);font-weight:600;font-size:17px;font-variant-numeric:tabular-nums;
+}
+table.inn .tot{
+  background:var(--bar);color:var(--bar-ink);border-radius:6px;
+  font-family:var(--cond);font-weight:700;font-size:19px;text-align:center;padding:5px 8px;
+  font-variant-numeric:tabular-nums;
+}
+
+/* ---------- side rail ---------- */
+.rail{display:flex;flex-direction:column;gap:18px}
+.panel-head{
+  display:flex;align-items:center;gap:9px;flex-wrap:wrap;
+  padding:11px 13px;border-bottom:1px solid var(--line);
+}
+.panel-head h2{margin:0;font-family:var(--cond);font-weight:700;font-size:16px;letter-spacing:.09em;text-transform:uppercase}
+.panel-head .count{
+  font-family:var(--cond);font-weight:700;font-size:13px;color:var(--ink-3);
+  font-variant-numeric:tabular-nums;
+}
+.panel-head .spacer{margin-left:auto}
+.panel-body{padding:11px 13px 13px}
+
+.addrow{display:grid;grid-template-columns:58px minmax(0,1fr) auto;gap:7px;margin-bottom:11px}
+
+ul.list{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:5px}
+.row{
+  display:grid;grid-template-columns:auto minmax(0,1fr) auto auto;
+  align-items:center;gap:9px;
+  background:var(--surface-2);border:1px solid transparent;border-radius:8px;
+  padding:5px 8px;
+}
+.row:hover{border-color:var(--line-2)}
+.row.dragging{opacity:.4}
+.row.benched{background:transparent;border:1px dashed var(--line)}
+.jersey{
+  display:grid;place-items:center;min-width:27px;height:27px;padding:0 4px;
+  border-radius:6px;background:var(--bar);color:var(--bar-ink);
+  font-family:var(--cond);font-weight:700;font-size:15px;line-height:1;
+  font-variant-numeric:tabular-nums;
+}
+.row .nm{font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
+.posbadge{
+  font-family:var(--cond);font-weight:700;font-size:12.5px;letter-spacing:.07em;
+  padding:2px 7px;border-radius:5px;background:var(--accent-soft);color:var(--ink);
+  white-space:nowrap;
+}
+.posbadge.eh{background:var(--surface-3);color:var(--ink-2)}
+.rowacts{display:flex;gap:3px}
+.grip{cursor:grab;color:var(--ink-3);font-size:13px;letter-spacing:-1px;user-select:none}
+.grip:active{cursor:grabbing}
+.ordnum{
+  font-family:var(--cond);font-weight:700;font-size:15px;color:var(--ink-3);
+  min-width:17px;text-align:right;font-variant-numeric:tabular-nums;
+}
+.empty-note{color:var(--ink-3);font-size:13.5px;font-style:italic;padding:6px 2px}
+.chips{display:flex;gap:6px;flex-wrap:wrap}
+
+/* ---------- dialog ---------- */
+dialog{
+  border:1px solid var(--line-2);border-radius:14px;padding:0;
+  background:var(--surface);color:var(--ink);box-shadow:var(--shadow-2);
+  width:min(430px,calc(100vw - 28px));max-height:82vh;
+}
+dialog::backdrop{background:rgba(10,16,11,.55)}
+.dlg-head{
+  display:flex;align-items:center;gap:10px;padding:13px 15px;
+  border-bottom:1px solid var(--line);
+}
+.dlg-head h3{margin:0;font-family:var(--cond);font-weight:700;font-size:19px;letter-spacing:.05em;text-transform:uppercase}
+.dlg-head .sub{font-size:13px;color:var(--ink-3)}
+.dlg-body{padding:12px 15px 15px;overflow:auto;max-height:60vh}
+.pickitem{
+  display:grid;grid-template-columns:auto minmax(0,1fr) auto;align-items:center;gap:10px;
+  width:100%;text-align:left;background:var(--surface-2);border:1px solid transparent;
+  border-radius:8px;padding:7px 9px;cursor:pointer;margin-bottom:5px;
+}
+.pickitem:hover{border-color:var(--ink-3);background:var(--surface-3)}
+.pickitem .where{font-size:12.5px;color:var(--ink-3)}
+
+/* ---------- misc ---------- */
+.demo{
+  display:flex;align-items:center;gap:10px;flex-wrap:wrap;
+  margin:14px 0 0;padding:8px 13px;border-radius:9px;
+  background:var(--accent-soft);border:1px solid color-mix(in srgb,var(--accent) 45%,transparent);
+  font-size:13.5px;color:var(--ink);
+}
+.demo strong{font-family:var(--cond);letter-spacing:.09em;text-transform:uppercase;font-size:12.5px}
+.foot{margin-top:26px;font-size:12.5px;color:var(--ink-3);display:flex;gap:14px;flex-wrap:wrap}
+.print-only{display:none}
+.toast{
+  position:fixed;left:50%;bottom:22px;transform:translateX(-50%);z-index:80;
+  background:var(--bar);color:var(--bar-ink);padding:9px 16px;border-radius:999px;
+  font-weight:600;font-size:13.5px;box-shadow:var(--shadow-2);
+  opacity:0;pointer-events:none;transition:opacity .2s,transform .2s;
+}
+.toast.on{opacity:1;transform:translateX(-50%) translateY(-4px)}
+
+@media (max-width:1080px){
+  .work{grid-template-columns:minmax(0,1fr)}
+  .scorecard{grid-template-columns:repeat(2,minmax(150px,1fr));}
+  .scorecard .sc-score{grid-column:1/-1}
+  .score{justify-content:center}
+}
+@media (max-width:560px){
+  .wrap{padding:0 11px 44px}
+  .topbar-in{padding:8px 11px}
+  .scorecard{grid-template-columns:minmax(0,1fr)}
+}
+@media (prefers-reduced-motion:reduce){
+  *{transition:none !important;animation:none !important}
+}
+
+/* ---------- print ---------- */
+@media print{
+  @page{size:letter portrait;margin:9mm}
+  :root{
+    --bg:#fff;--surface:#fff;--surface-2:#fff;--surface-3:#eee;
+    --ink:#000;--ink-2:#333;--ink-3:#666;--line:#bbb;--line-2:#888;
+    --bar:#111;--bar-ink:#fff;--accent:#c3d600;--accent-soft:#f2f7cd;
+    --shadow-1:none;--shadow-2:none;
+  }
+  html,body{background:#fff;font-size:12.5px}
+  *{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  .topbar,.field-note,.demo,.foot,.no-print,dialog,.toast{display:none !important}
+  input::-webkit-calendar-picker-indicator{display:none}
+  .wrap{max-width:none;padding:0}
+  .card{border:1px solid #999;box-shadow:none;break-inside:avoid}
+
+  .scorecard{
+    margin:0 0 6px;padding:6px 8px;gap:6px 10px;
+    grid-template-columns:1.5fr 1.5fr .8fr .7fr .7fr auto;
+  }
+  .lbl{font-size:8.5px;padding:1px 5px;letter-spacing:.1em}
+  .inp{border:none;background:#fff;padding:0;font-size:12px;border-bottom:1px solid #ccc;border-radius:0}
+  .inp-big{font-size:15px}
+  .scorecard .sc-score{grid-column:auto}
+  .score{padding:3px 9px;gap:5px}
+  .score b{font-size:21px}
+  .score i{font-size:13px}
+  .score .tag{font-size:8px}
+
+  .work{grid-template-columns:1.22fr .78fr;gap:7px;margin-top:0 !important}
+  .field-scroll{overflow:visible;padding:3px}
+  .field-stage{min-width:0;width:100%}
+  .field-head{padding:4px 8px;border-bottom:1px solid #ccc}
+  .field-head h2{font-size:11.5px}
+  .field-head .pill{font-size:9px;padding:0 6px;border-color:#999}
+  .slot{box-shadow:none;border-width:.18cqw;background:#fff}
+  .slot.filled{box-shadow:inset .3cqw 0 0 #111}
+  .slot.filled .slot-num{background:#111;color:#fff}
+  .slot.empty{background:#fff}
+
+  .rail{gap:7px}
+  .panel-head{padding:4px 8px;border-bottom:1px solid #ccc}
+  .panel-head h2{font-size:11.5px}
+  .panel-body{padding:4px 8px 7px}
+  ul.list{gap:0}
+  .row{padding:2px 3px;gap:6px;background:#fff;border:0;border-bottom:1px solid #ddd;border-radius:0}
+  .row:last-child{border-bottom:0}
+  .row .nm{font-size:11.5px}
+  .jersey{min-width:19px;height:17px;font-size:11px;border-radius:3px}
+  .ordnum{font-size:12px;min-width:13px}
+  .posbadge{font-size:10px;padding:0 5px}
+  .row.benched{border:0;border-bottom:1px solid #eee}
+
+  .innings{margin-top:7px;padding:5px 8px 7px}
+  .innings-head{margin-bottom:5px}
+  .innings-head h2{font-size:11.5px}
+  .innings-head .pill{font-size:9px;padding:0 6px;border-color:#999}
+  table.inn{min-width:0;border-spacing:2px}
+  table.inn th{font-size:10px}
+  table.inn tbody th{font-size:11px}
+  table.inn input{border:1px solid #bbb;font-size:12px;padding:1px;min-width:0}
+  table.inn .tot{font-size:14px;padding:2px 6px}
+
+  .print-only{display:block}
+  .print-notes{margin-top:7px}
+  .notes-lines{display:flex;flex-direction:column;gap:15px;padding-top:8px}
+  .notes-lines span{border-bottom:1px solid #ccc}
+  .print-sig{display:flex;gap:22px;margin-top:10px;font-size:9.5px;color:#555}
+  .print-sig span{flex:1;border-top:1px solid #999;padding-top:2px}
+}
+</style>
+<!-- ART:HEAD:END -->
+</head>
+<body>
+<!-- ART:BODY:START -->
+
+<header class="topbar no-print">
+  <div class="topbar-in">
+    <div class="brand">
+      <b>Diamante 10</b>
+      <span>Softball · Lineups</span>
+    </div>
+    <div class="tools">
+      <button class="btn btn-ghost btn-sm" id="btnNew" type="button">Nuevo</button>
+      <button class="btn btn-ghost btn-sm" id="btnSave" type="button">Guardar</button>
+      <button class="btn btn-ghost btn-sm" id="btnLoad" type="button">Guardados</button>
+      <button class="btn btn-ghost btn-sm" id="btnBackup" type="button">Respaldo</button>
+      <button class="btn btn-key btn-sm" id="btnPrint" type="button">Imprimir / PDF</button>
+    </div>
+  </div>
+</header>
+
+<main class="wrap">
+
+  <section class="card scorecard" aria-label="Datos del juego">
+    <div class="fieldset">
+      <label class="lbl" for="fTeam">Tu equipo</label>
+      <input class="inp inp-big" id="fTeam" type="text" placeholder="Nombre del equipo" autocomplete="off">
+    </div>
+    <div class="fieldset">
+      <label class="lbl" for="fOpp">Oponente</label>
+      <input class="inp inp-big" id="fOpp" type="text" placeholder="Rival" autocomplete="off">
+    </div>
+    <div class="fieldset">
+      <label class="lbl" for="fDate">Fecha</label>
+      <input class="inp" id="fDate" type="date">
+    </div>
+    <div class="fieldset">
+      <label class="lbl" for="fStart">Inicio</label>
+      <input class="inp" id="fStart" type="time">
+    </div>
+    <div class="fieldset">
+      <label class="lbl" for="fEnd">Fin</label>
+      <input class="inp" id="fEnd" type="time">
+    </div>
+    <div class="fieldset sc-score">
+      <span class="lbl">Marcador</span>
+      <div class="score">
+        <span class="tag">Final</span>
+        <b id="scUs">0</b><i>–</i><b id="scThem">0</b>
+      </div>
+    </div>
+  </section>
+
+  <div class="demo no-print" id="demoBanner">
+    <strong>Ejemplo cargado</strong>
+    <span>Roster y alineación de muestra para que veas cómo funciona.</span>
+    <button class="btn btn-sm" id="btnClearDemo" type="button">Empezar en blanco</button>
+  </div>
+
+  <div class="work" style="margin-top:18px">
+
+    <div>
+      <section class="card" aria-label="Diamante y posiciones">
+        <div class="field-head">
+          <h2>Defensiva</h2>
+          <span class="pill" id="posCount">0 / 10</span>
+          <span class="spacer"></span>
+          <button class="btn btn-sm no-print" id="btnAutoField" type="button">Autoasignar</button>
+          <button class="btn btn-sm no-print" id="btnClearField" type="button">Vaciar campo</button>
+        </div>
+
+        <div class="field-scroll">
+          <div class="field-stage" id="stage">
+            <svg class="field-svg" viewBox="0 0 900 820" preserveAspectRatio="xMidYMid meet" aria-hidden="true" focusable="false">
+              <defs>
+                <clipPath id="fairclip">
+                  <path d="M450 690 L54 294 A560 560 0 0 1 846 294 Z"></path>
+                </clipPath>
+              </defs>
+              <rect x="0" y="0" width="900" height="820" rx="14" fill="var(--foul)"></rect>
+              <path d="M450 690 L36 280 A578 578 0 0 1 864 280 Z" fill="var(--dirt-2)"></path>
+              <path d="M450 690 L54 294 A560 560 0 0 1 846 294 Z" fill="var(--grass-a)"></path>
+              <g clip-path="url(#fairclip)" fill="var(--grass-b)">
+                <rect x="0" y="120" width="900" height="58"></rect>
+                <rect x="0" y="236" width="900" height="58"></rect>
+                <rect x="0" y="352" width="900" height="58"></rect>
+                <rect x="0" y="468" width="900" height="58"></rect>
+                <rect x="0" y="584" width="900" height="58"></rect>
+              </g>
+              <path d="M166.6 406.6 A300 300 0 0 1 733.4 406.6 L450 690 Z" fill="var(--dirt)"></path>
+              <path d="M450 644 L570 530 L450 416 L330 530 Z" fill="var(--grass-a)"></path>
+              <circle cx="450" cy="690" r="88" fill="var(--dirt)"></circle>
+              <circle cx="450" cy="505" r="54" fill="var(--dirt)"></circle>
+              <circle cx="450" cy="505" r="54" fill="none" stroke="var(--chalk)" stroke-width="3" opacity=".8"></circle>
+              <path d="M450 690 L54 294 M450 690 L846 294" stroke="var(--chalk)" stroke-width="4" opacity=".92" fill="none"></path>
+              <path d="M450 690 L610 530 L450 370 L290 530 Z" fill="none" stroke="var(--chalk)" stroke-width="2.5" opacity=".5"></path>
+              <g fill="none" stroke="var(--chalk)" stroke-width="2.5" opacity=".62">
+                <rect x="372" y="652" width="46" height="70"></rect>
+                <rect x="482" y="652" width="46" height="70"></rect>
+              </g>
+              <g fill="var(--chalk)">
+                <rect x="-11" y="-11" width="22" height="22" transform="translate(610 530) rotate(45)"></rect>
+                <rect x="-11" y="-11" width="22" height="22" transform="translate(450 370) rotate(45)"></rect>
+                <rect x="-11" y="-11" width="22" height="22" transform="translate(290 530) rotate(45)"></rect>
+                <path d="M435 672 h30 v13 l-15 14 l-15 -14 Z"></path>
+              </g>
+              <path d="M362 778 A125 125 0 0 0 538 778" fill="none" stroke="var(--chalk)" stroke-width="3" opacity=".45"></path>
+            </svg>
+            <!-- slots injected here -->
+          </div>
+        </div>
+
+        <p class="field-note no-print">
+          <span>Toca una posición para asignar jugador.</span>
+          <span>Arrastra desde el roster o entre posiciones para intercambiar.</span>
+        </p>
+      </section>
+
+      <section class="card innings" aria-label="Carreras por inning">
+        <div class="innings-head">
+          <h2>Carreras por inning</h2>
+          <span class="pill">Softball · 7 innings</span>
+          <span class="spacer" style="margin-left:auto"></span>
+          <button class="btn btn-sm no-print" id="btnAddInn" type="button">+ Inning extra</button>
+          <button class="btn btn-sm no-print" id="btnDelInn" type="button">− Quitar</button>
+        </div>
+        <div class="innings-scroll">
+          <table class="inn" id="innTable"></table>
+        </div>
+      </section>
+    </div>
+
+    <aside class="rail">
+
+      <section class="card no-print" aria-label="Roster">
+        <div class="panel-head">
+          <h2>Roster</h2>
+          <span class="count" id="rosterCount">0</span>
+          <span class="spacer"></span>
+          <button class="btn btn-sm" id="btnSortRoster" type="button">Ordenar A–Z</button>
+        </div>
+        <div class="panel-body">
+          <form class="addrow" id="addForm" autocomplete="off">
+            <input class="inp" id="newNum" type="text" inputmode="numeric" maxlength="2" placeholder="#" aria-label="Número">
+            <input class="inp" id="newName" type="text" placeholder="Nombre del jugador" aria-label="Nombre">
+            <button class="btn btn-key" type="submit">Agregar</button>
+          </form>
+          <ul class="list" id="rosterList"></ul>
+        </div>
+      </section>
+
+      <section class="card" aria-label="Orden al bate">
+        <div class="panel-head">
+          <h2>Orden al bate</h2>
+          <span class="count" id="orderCount">0</span>
+          <span class="spacer"></span>
+          <button class="btn btn-sm no-print" id="btnFillOrder" type="button">Llenar</button>
+          <button class="btn btn-sm no-print" id="btnClearOrder" type="button">Vaciar</button>
+        </div>
+        <div class="panel-body">
+          <ul class="list" id="orderList"></ul>
+        </div>
+      </section>
+
+      <section class="card" aria-label="Banca">
+        <div class="panel-head">
+          <h2>Banca</h2>
+          <span class="count" id="benchCount">0</span>
+        </div>
+        <div class="panel-body">
+          <ul class="list" id="benchList"></ul>
+        </div>
+      </section>
+
+    </aside>
+  </div>
+
+  <section class="card print-only print-notes">
+    <div class="panel-head"><h2>Notas</h2></div>
+    <div class="panel-body notes-lines">
+      <span></span><span></span><span></span><span></span><span></span>
+    </div>
+  </section>
+
+  <div class="print-only print-sig">
+    <span>Firma del manager</span>
+    <span>Firma del anotador</span>
+    <span>Observaciones</span>
+  </div>
+
+  <footer class="foot no-print">
+    <span>Todo se guarda en este navegador. Nada sale de tu equipo.</span>
+    <span>Posiciones 1–10 · el 10 es el short fielder (SF).</span>
+  </footer>
+</main>
+
+<dialog id="picker">
+  <div class="dlg-head">
+    <h3 id="pickTitle">Asignar</h3>
+    <span class="sub" id="pickSub"></span>
+    <span style="margin-left:auto"></span>
+    <button class="btn btn-sm" id="pickClose" type="button">Cerrar</button>
+  </div>
+  <div class="dlg-body" id="pickBody"></div>
+</dialog>
+
+<dialog id="saved">
+  <div class="dlg-head">
+    <h3>Alineaciones guardadas</h3>
+    <span style="margin-left:auto"></span>
+    <button class="btn btn-sm" id="savedClose" type="button">Cerrar</button>
+  </div>
+  <div class="dlg-body" id="savedBody"></div>
+</dialog>
+
+<dialog id="backup">
+  <div class="dlg-head">
+    <h3>Respaldo</h3>
+    <span style="margin-left:auto"></span>
+    <button class="btn btn-sm" id="backupClose" type="button">Cerrar</button>
+  </div>
+  <div class="dlg-body">
+    <p style="margin:0 0 10px;font-size:13.5px;color:var(--ink-2)">
+      Copia este texto para respaldar tu roster y alineaciones, o pega uno anterior y pulsa Importar.
+    </p>
+    <textarea id="backupText" class="inp" rows="8" style="font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px"></textarea>
+    <div class="chips" style="margin-top:10px">
+      <button class="btn btn-sm" id="btnCopyBackup" type="button">Copiar</button>
+      <button class="btn btn-sm btn-key" id="btnImport" type="button">Importar</button>
+    </div>
+  </div>
+</dialog>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script>
+(function(){
+"use strict";
+
+/* ============ posiciones ============ */
+var POS = [
+  {k:"P",  n:1,  es:"Lanzador",          x:50,   y:63.0},
+  {k:"C",  n:2,  es:"Receptor",          x:50,   y:92.4},
+  {k:"1B", n:3,  es:"Primera base",      x:72.0, y:61.0},
+  {k:"2B", n:4,  es:"Segunda base",      x:61.8, y:50.0},
+  {k:"3B", n:5,  es:"Tercera base",      x:28.0, y:61.0},
+  {k:"SS", n:6,  es:"Campocorto",        x:38.2, y:50.0},
+  {k:"LF", n:7,  es:"Jardín izquierdo",  x:20.0, y:30.0},
+  {k:"CF", n:8,  es:"Jardín central",    x:50,   y:22.7},
+  {k:"RF", n:9,  es:"Jardín derecho",    x:80.0, y:30.0},
+  {k:"SF", n:10, es:"Short fielder",     x:50,   y:40.2}
+];
+var POS_ORDER = POS.map(function(p){return p.k;});
+
+/* ============ almacenamiento ============ */
+var K_CUR = "diamante10.current.v1";
+var K_SAVED = "diamante10.saved.v1";
+
+function lsGet(k, fb){
+  try{ var v = localStorage.getItem(k); return v ? JSON.parse(v) : fb; }
+  catch(e){ return fb; }
+}
+function lsSet(k, v){
+  try{ localStorage.setItem(k, JSON.stringify(v)); return true; }
+  catch(e){ return false; }
+}
+
+/* ============ estado ============ */
+var uid = 0;
+function nid(){ uid++; return "p" + Date.now().toString(36) + uid.toString(36); }
+
+function blankState(){
+  var a = {};
+  POS_ORDER.forEach(function(k){ a[k] = null; });
+  return {
+    team:"", opp:"", date:"", start:"", end:"",
+    roster:[], assign:a, order:[],
+    innings:7, us:[0,0,0,0,0,0,0], them:[0,0,0,0,0,0,0],
+    demo:false
+  };
+}
+
+function demoState(){
+  var names = [
+    [7,"Luis Herrera"],[12,"José Rondón"],[3,"Carlos Mendoza"],[21,"Rafael Pérez"],
+    [9,"Ángel Suárez"],[14,"Daniel Colmenárez"],[5,"Jesús Alvarado"],[33,"Miguel Torrealba"],
+    [8,"Andrés Gil"],[27,"Víctor Camacaro"],[2,"Eduardo Sequera"],[18,"Ramón Yépez"]
+  ];
+  var s = blankState();
+  s.team = "Turpiales SC";
+  s.opp = "Semeruco BBC";
+  s.date = new Date().toISOString().slice(0,10);
+  s.start = "17:30";
+  s.roster = names.map(function(r){ return {id:nid(), num:String(r[0]), name:r[1]}; });
+  POS_ORDER.forEach(function(k,i){ s.assign[k] = s.roster[i].id; });
+  s.order = s.roster.slice(0,11).map(function(p){ return p.id; });
+  s.us   = [1,0,3,0,2,1,0];
+  s.them = [0,2,0,1,0,0,1];
+  s.demo = true;
+  return s;
+}
+
+var S = lsGet(K_CUR, null);
+if(!S || !S.assign || !Array.isArray(S.roster)) S = demoState();
+if(!Array.isArray(S.us)) S.us = [0,0,0,0,0,0,0];
+if(!Array.isArray(S.them)) S.them = [0,0,0,0,0,0,0];
+
+/* ============ helpers ============ */
+function $(id){ return document.getElementById(id); }
+function el(tag, cls, txt){
+  var e = document.createElement(tag);
+  if(cls) e.className = cls;
+  if(txt != null) e.textContent = txt;
+  return e;
+}
+function player(id){
+  for(var i=0;i<S.roster.length;i++) if(S.roster[i].id === id) return S.roster[i];
+  return null;
+}
+function shortName(n){
+  n = (n || "").trim();
+  if(n.length <= 14) return n;
+  var parts = n.split(/\s+/);
+  if(parts.length < 2) return n;
+  var ini = parts[0].charAt(0).toUpperCase() + ". ";
+  var s = ini + parts.slice(1).join(" ");
+  if(s.length > 15) s = ini + parts[parts.length - 1];
+  return s;
+}
+function posOf(id){
+  for(var i=0;i<POS_ORDER.length;i++) if(S.assign[POS_ORDER[i]] === id) return POS_ORDER[i];
+  return null;
+}
+function assignedIds(){
+  return POS_ORDER.map(function(k){ return S.assign[k]; }).filter(Boolean);
+}
+function save(){ lsSet(K_CUR, S); }
+
+var toastT;
+function toast(msg){
+  var t = $("toast");
+  t.textContent = msg;
+  t.classList.add("on");
+  clearTimeout(toastT);
+  toastT = setTimeout(function(){ t.classList.remove("on"); }, 2100);
+}
+
+/* ============ campo ============ */
+var stage = $("stage");
+POS.forEach(function(p){
+  var b = el("button", "slot empty");
+  b.type = "button";
+  b.dataset.pos = p.k;
+  b.style.setProperty("--x", p.x + "%");
+  b.style.setProperty("--y", p.y + "%");
+  b.setAttribute("draggable","true");
+  b.innerHTML =
+    '<span class="slot-num">' + p.n + '</span>' +
+    '<span class="slot-key"></span>' +
+    '<span class="slot-name"></span>';
+  stage.appendChild(b);
+});
+
+function renderField(){
+  var filled = 0;
+  POS.forEach(function(p){
+    var b = stage.querySelector('.slot[data-pos="' + p.k + '"]');
+    var pl = player(S.assign[p.k]);
+    var key = b.querySelector(".slot-key");
+    var nm = b.querySelector(".slot-name");
+    key.innerHTML = "";
+    key.appendChild(document.createTextNode(p.k));
+    if(pl){
+      filled++;
+      b.className = "slot filled";
+      if(pl.num) key.appendChild(el("span", "slot-jersey", "#" + pl.num));
+      nm.textContent = shortName(pl.name);
+      b.setAttribute("aria-label", p.es + " (" + p.k + "): " + pl.name);
+      b.title = p.es + " · " + pl.name + (pl.num ? " · #" + pl.num : "");
+    }else{
+      b.className = "slot empty";
+      nm.textContent = p.es;
+      b.setAttribute("aria-label", p.es + " (" + p.k + "): sin asignar");
+      b.title = p.es + " · sin asignar";
+    }
+  });
+  var pc = $("posCount");
+  pc.textContent = filled + " / 10";
+  pc.className = filled === 10 ? "pill ok" : "pill";
+}
+
+/* clic para asignar */
+stage.addEventListener("click", function(ev){
+  var b = ev.target.closest(".slot");
+  if(b) openPicker(b.dataset.pos);
+});
+
+/* arrastrar entre posiciones */
+stage.addEventListener("dragstart", function(ev){
+  var b = ev.target.closest(".slot");
+  if(!b) return;
+  var id = S.assign[b.dataset.pos];
+  if(!id){ ev.preventDefault(); return; }
+  ev.dataTransfer.setData("text/plain", "slot:" + b.dataset.pos);
+  ev.dataTransfer.effectAllowed = "move";
+});
+stage.addEventListener("dragover", function(ev){
+  var b = ev.target.closest(".slot");
+  if(!b) return;
+  ev.preventDefault();
+  ev.dataTransfer.dropEffect = "move";
+  b.classList.add("drop");
+});
+stage.addEventListener("dragleave", function(ev){
+  var b = ev.target.closest(".slot");
+  if(b) b.classList.remove("drop");
+});
+stage.addEventListener("drop", function(ev){
+  var b = ev.target.closest(".slot");
+  if(!b) return;
+  ev.preventDefault();
+  b.classList.remove("drop");
+  var data = ev.dataTransfer.getData("text/plain") || "";
+  var target = b.dataset.pos;
+  if(data.indexOf("slot:") === 0){
+    var from = data.slice(5);
+    if(from === target) return;
+    var tmp = S.assign[target];
+    S.assign[target] = S.assign[from];
+    S.assign[from] = tmp;
+  }else if(data.indexOf("pl:") === 0){
+    setPos(target, data.slice(3));
+  }else return;
+  renderAll();
+});
+
+function setPos(posKey, playerId){
+  var prev = posOf(playerId);
+  if(prev) S.assign[prev] = null;
+  S.assign[posKey] = playerId;
+}
+
+/* ============ picker ============ */
+var pickerPos = null;
+function openPicker(posKey){
+  pickerPos = posKey;
+  var p = POS.filter(function(q){ return q.k === posKey; })[0];
+  $("pickTitle").textContent = p.k + " · " + p.n;
+  $("pickSub").textContent = p.es;
+  var body = $("pickBody");
+  body.innerHTML = "";
+
+  if(S.assign[posKey]){
+    var cur = player(S.assign[posKey]);
+    var rm = el("button", "btn btn-danger", "Quitar a " + (cur ? cur.name : "jugador"));
+    rm.type = "button";
+    rm.style.width = "100%";
+    rm.style.marginBottom = "10px";
+    rm.style.justifyContent = "center";
+    rm.addEventListener("click", function(){
+      S.assign[posKey] = null;
+      renderAll(); $("picker").close();
+    });
+    body.appendChild(rm);
+  }
+
+  if(!S.roster.length){
+    body.appendChild(el("p", "empty-note", "Aún no hay jugadores. Agrégalos en el panel Roster."));
+  }
+
+  var sorted = S.roster.slice().sort(function(a,b){
+    var pa = posOf(a.id) ? 1 : 0, pb = posOf(b.id) ? 1 : 0;
+    if(pa !== pb) return pa - pb;
+    return a.name.localeCompare(b.name, "es");
+  });
+
+  sorted.forEach(function(pl){
+    var here = posOf(pl.id);
+    var it = el("button", "pickitem");
+    it.type = "button";
+    var j = el("span", "jersey", pl.num || "–");
+    var nm = el("span", null, pl.name);
+    nm.style.fontWeight = "600";
+    nm.style.overflow = "hidden";
+    nm.style.textOverflow = "ellipsis";
+    nm.style.whiteSpace = "nowrap";
+    var w = el("span", "where", here ? (here === posKey ? "aquí" : "en " + here) : "banca");
+    it.appendChild(j); it.appendChild(nm); it.appendChild(w);
+    it.addEventListener("click", function(){
+      setPos(posKey, pl.id);
+      renderAll(); $("picker").close();
+    });
+    body.appendChild(it);
+  });
+
+  $("picker").showModal();
+}
+$("pickClose").addEventListener("click", function(){ $("picker").close(); });
+
+/* ============ roster ============ */
+function rowFor(pl, opts){
+  opts = opts || {};
+  var li = el("li", "row" + (opts.bench ? " benched" : ""));
+  li.dataset.id = pl.id;
+
+  if(opts.ordinal != null){
+    li.appendChild(el("span", "ordnum", opts.ordinal));
+  }else{
+    li.appendChild(el("span", "jersey", pl.num || "–"));
+  }
+
+  var nm = el("span", "nm", pl.name);
+  li.appendChild(nm);
+
+  var pk = posOf(pl.id);
+  if(opts.ordinal != null){
+    var b = el("span", "posbadge" + (pk ? "" : " eh"), pk || "EH");
+    b.title = pk ? "Posición defensiva" : "Bateador designado / extra hitter";
+    li.appendChild(b);
+  }else if(pk){
+    li.appendChild(el("span", "posbadge", pk));
+  }else{
+    li.appendChild(el("span", "posbadge eh", "—"));
+  }
+
+  var acts = el("span", "rowacts no-print");
+  li.appendChild(acts);
+  return {li:li, acts:acts};
+}
+
+function renderRoster(){
+  var ul = $("rosterList");
+  ul.innerHTML = "";
+  $("rosterCount").textContent = S.roster.length;
+  if(!S.roster.length){
+    ul.appendChild(el("li", "empty-note", "Agrega jugadores arriba para empezar."));
+    return;
+  }
+  S.roster.forEach(function(pl){
+    var r = rowFor(pl, {});
+    r.li.setAttribute("draggable", "true");
+    r.li.addEventListener("dragstart", function(ev){
+      ev.dataTransfer.setData("text/plain", "pl:" + pl.id);
+      ev.dataTransfer.effectAllowed = "copyMove";
+      r.li.classList.add("dragging");
+    });
+    r.li.addEventListener("dragend", function(){ r.li.classList.remove("dragging"); });
+
+    var inOrder = S.order.indexOf(pl.id) >= 0;
+    var bOrd = el("button", "btn btn-sm btn-icon", inOrder ? "−" : "+");
+    bOrd.type = "button";
+    bOrd.title = inOrder ? "Quitar del orden al bate" : "Agregar al orden al bate";
+    bOrd.addEventListener("click", function(){
+      if(inOrder) S.order = S.order.filter(function(x){ return x !== pl.id; });
+      else S.order.push(pl.id);
+      renderAll();
+    });
+
+    var bEd = el("button", "btn btn-sm btn-icon", "✎");
+    bEd.type = "button"; bEd.title = "Editar";
+    bEd.addEventListener("click", function(){
+      var nn = prompt("Nombre del jugador:", pl.name);
+      if(nn === null) return;
+      nn = nn.trim();
+      if(nn) pl.name = nn;
+      var num = prompt("Número (opcional):", pl.num || "");
+      if(num !== null) pl.num = num.trim().slice(0,2);
+      renderAll();
+    });
+
+    var bDel = el("button", "btn btn-sm btn-icon btn-danger", "✕");
+    bDel.type = "button"; bDel.title = "Eliminar del roster";
+    bDel.addEventListener("click", function(){
+      if(!confirm("¿Eliminar a " + pl.name + " del roster?")) return;
+      S.roster = S.roster.filter(function(x){ return x.id !== pl.id; });
+      S.order = S.order.filter(function(x){ return x !== pl.id; });
+      POS_ORDER.forEach(function(k){ if(S.assign[k] === pl.id) S.assign[k] = null; });
+      renderAll();
+    });
+
+    r.acts.appendChild(bOrd); r.acts.appendChild(bEd); r.acts.appendChild(bDel);
+    ul.appendChild(r.li);
+  });
+}
+
+$("addForm").addEventListener("submit", function(ev){
+  ev.preventDefault();
+  var name = $("newName").value.trim();
+  if(!name){ $("newName").focus(); return; }
+  var num = $("newNum").value.trim().slice(0,2);
+  S.roster.push({id:nid(), num:num, name:name});
+  $("newName").value = ""; $("newNum").value = "";
+  $("newNum").focus();
+  S.demo = false;
+  renderAll();
+});
+
+$("btnSortRoster").addEventListener("click", function(){
+  S.roster.sort(function(a,b){ return a.name.localeCompare(b.name, "es"); });
+  renderAll();
+});
+
+/* ============ orden al bate ============ */
+var dragOrderId = null;
+function renderOrder(){
+  var ul = $("orderList");
+  ul.innerHTML = "";
+  S.order = S.order.filter(function(id){ return !!player(id); });
+  $("orderCount").textContent = S.order.length;
+  if(!S.order.length){
+    ul.appendChild(el("li", "empty-note", 'Pulsa "Llenar" para traer a los del campo.'));
+    return;
+  }
+  S.order.forEach(function(id, i){
+    var pl = player(id);
+    var r = rowFor(pl, {ordinal:(i+1)});
+    r.li.setAttribute("draggable", "true");
+    r.li.addEventListener("dragstart", function(ev){
+      dragOrderId = id;
+      ev.dataTransfer.setData("text/plain", "pl:" + id);
+      ev.dataTransfer.effectAllowed = "move";
+      r.li.classList.add("dragging");
+    });
+    r.li.addEventListener("dragend", function(){ dragOrderId = null; r.li.classList.remove("dragging"); });
+    r.li.addEventListener("dragover", function(ev){ ev.preventDefault(); });
+    r.li.addEventListener("drop", function(ev){
+      ev.preventDefault(); ev.stopPropagation();
+      if(!dragOrderId || dragOrderId === id) return;
+      var from = S.order.indexOf(dragOrderId);
+      var to = S.order.indexOf(id);
+      if(from < 0 || to < 0) return;
+      S.order.splice(from, 1);
+      S.order.splice(to, 0, dragOrderId);
+      renderAll();
+    });
+
+    var up = el("button", "btn btn-sm btn-icon", "▲");
+    up.type = "button"; up.title = "Subir"; up.disabled = (i === 0);
+    up.addEventListener("click", function(){
+      S.order.splice(i-1, 0, S.order.splice(i,1)[0]); renderAll();
+    });
+    var dn = el("button", "btn btn-sm btn-icon", "▼");
+    dn.type = "button"; dn.title = "Bajar"; dn.disabled = (i === S.order.length-1);
+    dn.addEventListener("click", function(){
+      S.order.splice(i+1, 0, S.order.splice(i,1)[0]); renderAll();
+    });
+    var rm = el("button", "btn btn-sm btn-icon btn-danger", "✕");
+    rm.type = "button"; rm.title = "Quitar del orden";
+    rm.addEventListener("click", function(){
+      S.order = S.order.filter(function(x){ return x !== id; }); renderAll();
+    });
+    r.acts.appendChild(up); r.acts.appendChild(dn); r.acts.appendChild(rm);
+    ul.appendChild(r.li);
+  });
+}
+
+$("btnFillOrder").addEventListener("click", function(){
+  var have = {};
+  S.order.forEach(function(id){ have[id] = 1; });
+  POS_ORDER.forEach(function(k){
+    var id = S.assign[k];
+    if(id && !have[id]){ S.order.push(id); have[id] = 1; }
+  });
+  renderAll();
+  toast("Orden completado con los jugadores del campo");
+});
+$("btnClearOrder").addEventListener("click", function(){
+  S.order = []; renderAll();
+});
+
+/* ============ banca ============ */
+function renderBench(){
+  var ul = $("benchList");
+  ul.innerHTML = "";
+  var onField = {};
+  assignedIds().forEach(function(id){ onField[id] = 1; });
+  var bench = S.roster.filter(function(p){ return !onField[p.id]; });
+  $("benchCount").textContent = bench.length;
+  if(!bench.length){
+    ul.appendChild(el("li", "empty-note", "Nadie en banca."));
+    return;
+  }
+  bench.forEach(function(pl){
+    var r = rowFor(pl, {bench:true});
+    r.li.setAttribute("draggable", "true");
+    r.li.addEventListener("dragstart", function(ev){
+      ev.dataTransfer.setData("text/plain", "pl:" + pl.id);
+      ev.dataTransfer.effectAllowed = "copyMove";
+    });
+    ul.appendChild(r.li);
+  });
+}
+
+/* ============ campo: auto / vaciar ============ */
+$("btnAutoField").addEventListener("click", function(){
+  var used = {};
+  POS_ORDER.forEach(function(k){ if(S.assign[k]) used[S.assign[k]] = 1; });
+  var free = S.roster.filter(function(p){ return !used[p.id]; });
+  var fi = 0;
+  POS_ORDER.forEach(function(k){
+    if(!S.assign[k] && fi < free.length){ S.assign[k] = free[fi].id; fi++; }
+  });
+  renderAll();
+  toast("Posiciones vacías completadas");
+});
+$("btnClearField").addEventListener("click", function(){
+  POS_ORDER.forEach(function(k){ S.assign[k] = null; });
+  renderAll();
+});
+
+/* ============ innings ============ */
+function renderInnings(){
+  var n = S.innings;
+  while(S.us.length < n) S.us.push(0);
+  while(S.them.length < n) S.them.push(0);
+  S.us = S.us.slice(0, n);
+  S.them = S.them.slice(0, n);
+
+  var t = $("innTable");
+  t.innerHTML = "";
+  var thead = el("thead"), hr = el("tr");
+  hr.appendChild(el("th"));
+  for(var i=0;i<n;i++) hr.appendChild(el("th", null, String(i+1)));
+  hr.appendChild(el("th", null, "T"));
+  thead.appendChild(hr); t.appendChild(thead);
+
+  var tbody = el("tbody");
+  [["us", S.team || "Nosotros"], ["them", S.opp || "Ellos"]].forEach(function(row){
+    var key = row[0], label = row[1];
+    var tr = el("tr");
+    tr.appendChild(el("th", null, label));
+    for(var i=0;i<n;i++){
+      (function(idx){
+        var td = el("td");
+        var inp = document.createElement("input");
+        inp.type = "text";
+        inp.inputMode = "numeric";
+        inp.maxLength = 2;
+        inp.value = S[key][idx] || 0;
+        inp.setAttribute("aria-label", label + " inning " + (idx+1));
+        inp.addEventListener("input", function(){
+          var v = parseInt(inp.value.replace(/[^0-9]/g, ""), 10);
+          S[key][idx] = isNaN(v) ? 0 : v;
+          updateScore(); save();
+        });
+        inp.addEventListener("blur", function(){ inp.value = S[key][idx] || 0; });
+        td.appendChild(inp);
+        tr.appendChild(td);
+      })(i);
+    }
+    var tot = el("td");
+    tot.className = "tot";
+    tot.id = "tot-" + key;
+    tot.textContent = sum(S[key]);
+    tr.appendChild(tot);
+    tbody.appendChild(tr);
+  });
+  t.appendChild(tbody);
+  updateScore();
+}
+function sum(a){ return a.reduce(function(x,y){ return x + (parseInt(y,10) || 0); }, 0); }
+function updateScore(){
+  var u = sum(S.us), th = sum(S.them);
+  $("scUs").textContent = u;
+  $("scThem").textContent = th;
+  var tu = $("tot-us"), tt = $("tot-them");
+  if(tu) tu.textContent = u;
+  if(tt) tt.textContent = th;
+}
+$("btnAddInn").addEventListener("click", function(){
+  if(S.innings >= 12){ toast("Máximo 12 innings"); return; }
+  S.innings++; renderInnings(); save();
+});
+$("btnDelInn").addEventListener("click", function(){
+  if(S.innings <= 3) return;
+  S.innings--; renderInnings(); save();
+});
+
+/* ============ datos del juego ============ */
+var bind = [["fTeam","team"],["fOpp","opp"],["fDate","date"],["fStart","start"],["fEnd","end"]];
+bind.forEach(function(b){
+  var e = $(b[0]);
+  e.addEventListener("input", function(){
+    S[b[1]] = e.value;
+    S.demo = false;
+    if(b[1] === "team" || b[1] === "opp") renderInnings();
+    $("demoBanner").style.display = "none";
+    save();
+  });
+});
+function renderGame(){
+  bind.forEach(function(b){ $(b[0]).value = S[b[1]] || ""; });
+  $("demoBanner").style.display = S.demo ? "" : "none";
+}
+
+/* ============ guardar / cargar ============ */
+$("btnNew").addEventListener("click", function(){
+  if(!confirm("¿Empezar una alineación nueva? Se conserva el roster actual.")) return;
+  var roster = S.roster;
+  S = blankState();
+  S.roster = roster;
+  S.date = new Date().toISOString().slice(0,10);
+  renderAll();
+  toast("Alineación nueva");
+});
+
+$("btnClearDemo").addEventListener("click", function(){
+  S = blankState();
+  S.date = new Date().toISOString().slice(0,10);
+  renderAll();
+  toast("Listo, todo en blanco");
+});
+
+$("btnSave").addEventListener("click", function(){
+  var def = (S.team || "Equipo") + " vs " + (S.opp || "rival") + (S.date ? " · " + S.date : "");
+  var name = prompt("Nombre para esta alineación:", def);
+  if(name === null) return;
+  var list = lsGet(K_SAVED, []);
+  list.unshift({id:nid(), name:name.trim() || def, at:new Date().toISOString(), state:JSON.parse(JSON.stringify(S))});
+  if(lsSet(K_SAVED, list.slice(0,60))) toast("Alineación guardada");
+  else toast("No se pudo guardar en este navegador");
+});
+
+$("btnLoad").addEventListener("click", function(){
+  var list = lsGet(K_SAVED, []);
+  var body = $("savedBody");
+  body.innerHTML = "";
+  if(!list.length){
+    body.appendChild(el("p", "empty-note", 'No hay alineaciones guardadas todavía. Usa "Guardar".'));
+  }
+  list.forEach(function(item){
+    var it = el("div", "pickitem");
+    it.style.cursor = "default";
+    var info = el("span");
+    info.style.minWidth = "0";
+    var t = el("div", null, item.name);
+    t.style.fontWeight = "600";
+    t.style.whiteSpace = "nowrap";
+    t.style.overflow = "hidden";
+    t.style.textOverflow = "ellipsis";
+    var d = el("div", "where", new Date(item.at).toLocaleString("es-VE"));
+    info.appendChild(t); info.appendChild(d);
+    var spacer = el("span");
+    var acts = el("span", "rowacts");
+    var bl = el("button", "btn btn-sm", "Abrir");
+    bl.type = "button";
+    bl.addEventListener("click", function(){
+      S = item.state;
+      if(!Array.isArray(S.us)) S.us = [0,0,0,0,0,0,0];
+      if(!Array.isArray(S.them)) S.them = [0,0,0,0,0,0,0];
+      S.demo = false;
+      renderAll(); $("saved").close(); toast("Alineación cargada");
+    });
+    var bd = el("button", "btn btn-sm btn-danger", "✕");
+    bd.type = "button";
+    bd.addEventListener("click", function(){
+      var l2 = lsGet(K_SAVED, []).filter(function(x){ return x.id !== item.id; });
+      lsSet(K_SAVED, l2);
+      it.remove();
+    });
+    acts.appendChild(bl); acts.appendChild(bd);
+    it.appendChild(info); it.appendChild(spacer); it.appendChild(acts);
+    body.appendChild(it);
+  });
+  $("saved").showModal();
+});
+$("savedClose").addEventListener("click", function(){ $("saved").close(); });
+
+/* ============ respaldo ============ */
+$("btnBackup").addEventListener("click", function(){
+  $("backupText").value = JSON.stringify({current:S, saved:lsGet(K_SAVED, [])});
+  $("backup").showModal();
+});
+$("backupClose").addEventListener("click", function(){ $("backup").close(); });
+$("btnCopyBackup").addEventListener("click", function(){
+  var ta = $("backupText");
+  ta.select();
+  try{ document.execCommand("copy"); toast("Copiado"); }
+  catch(e){ toast("Selecciona y copia manualmente"); }
+});
+$("btnImport").addEventListener("click", function(){
+  try{
+    var data = JSON.parse($("backupText").value);
+    if(data.current) S = data.current;
+    if(Array.isArray(data.saved)) lsSet(K_SAVED, data.saved);
+    S.demo = false;
+    renderAll(); $("backup").close(); toast("Respaldo importado");
+  }catch(e){
+    toast("Ese texto no es un respaldo válido");
+  }
+});
+
+/* ============ imprimir ============ */
+$("btnPrint").addEventListener("click", function(){ window.print(); });
+
+/* ============ render ============ */
+function renderAll(){
+  renderGame();
+  renderField();
+  renderRoster();
+  renderOrder();
+  renderBench();
+  renderInnings();
+  save();
+}
+renderAll();
+
+document.addEventListener("keydown", function(ev){
+  if(ev.key === "p" && (ev.metaKey || ev.ctrlKey)) return;
+});
+
+})();
+</script>
+<!-- ART:BODY:END -->
+</body>
+</html>
