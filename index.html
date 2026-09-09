@@ -207,13 +207,16 @@ button,input,select,textarea{font:inherit;color:inherit}
 .field-head .spacer{margin-left:auto}
 .field-options{display:flex;align-items:center;gap:7px;flex-wrap:wrap}
 .dh-slot{
-  left:82%;top:78%;width:19cqw;
+  /* El DH usa las mismas coordenadas del sistema de slots del diamante. */
+  --x:50%;
+  --y:79%;
+  width:19cqw;
   z-index:5;
 }
 .dh-slot .slot-key{color:var(--accent)}
 @media (max-width:700px){
   .field-options{width:100%;}
-  .dh-slot{left:82%;top:78%;width:28.5cqw}
+  .dh-slot{--x:50%;--y:79%;width:28.5cqw}
 }
 
 .field-scroll{overflow-x:auto;padding:12px}
