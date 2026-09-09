@@ -205,6 +205,16 @@ button,input,select,textarea{font:inherit;color:inherit}
 }
 .pill.ok{background:var(--accent-soft);border-color:transparent;color:var(--ink)}
 .field-head .spacer{margin-left:auto}
+.field-options{display:flex;align-items:center;gap:7px;flex-wrap:wrap}
+.dh-slot{
+  left:82%;top:78%;width:19cqw;
+  z-index:5;
+}
+.dh-slot .slot-key{color:var(--accent)}
+@media (max-width:700px){
+  .field-options{width:100%;}
+  .dh-slot{left:82%;top:78%;width:28.5cqw}
+}
 
 .field-scroll{overflow-x:auto;padding:12px}
 .field-stage{
@@ -307,7 +317,7 @@ ul.list{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;ga
   padding:5px 8px;
 }
 .row:hover{border-color:var(--line-2)}
-.row.dragging{opacity:.4}
+.row.dragging{opacity:.4}.row.drop-target{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent-soft) inset}.rowacts .btn:disabled{opacity:.35;cursor:default}
 .row.benched{background:transparent;border:1px dashed var(--line)}
 .jersey{
   display:grid;place-items:center;min-width:27px;height:27px;padding:0 4px;
@@ -587,7 +597,7 @@ dialog::backdrop{background:rgba(10,16,11,.55)}
     </div>
     <div class="fieldset sc-score">
       <span class="lbl">Marcador</span>
-      <div class="score">
+      <div class="score" aria-label="Marcador final: visitante - casa">
         <span class="tag">Final</span>
         <b id="scUs">0</b><i>–</i><b id="scThem">0</b>
       </div>
@@ -602,6 +612,16 @@ dialog::backdrop{background:rgba(10,16,11,.55)}
           <h2>Defensiva</h2>
           <span class="pill" id="posCount">0 / 10</span>
           <span class="spacer"></span>
+          <div class="field-options no-print" aria-label="Opciones del partido">
+            <label class="toggle" title="Activar o desactivar Short Fielder">
+              <input id="toggleSF" type="checkbox" checked>
+              <span>SF</span>
+            </label>
+            <label class="toggle" title="Activar o desactivar Bateador Designado">
+              <input id="toggleDH" type="checkbox">
+              <span>DH</span>
+            </label>
+          </div>
           <button class="btn btn-sm no-print" id="btnAutoField" type="button">Autoasignar</button>
           <button class="btn btn-sm no-print" id="btnClearField" type="button">Vaciar campo</button>
         </div>
@@ -712,7 +732,7 @@ dialog::backdrop{background:rgba(10,16,11,.55)}
 
   <footer class="foot no-print">
     <span>Todo se guarda en este navegador. Nada sale de tu equipo.</span>
-    <span>Posiciones 1–10 · SF y DH se pueden activar o desactivar según el partido.</span>
+    <span>Posiciones · SF y DH se pueden activar o desactivar según el partido.</span>
   </footer>
 </main>
 
@@ -794,7 +814,7 @@ var POS = [
 var POS_ORDER = POS.map(function(p){return p.k;});
 
 /* ============ almacenamiento ============ */
-var K_CUR = "diamante10.current.v5";
+var K_CUR = "diamante10.current.v6";
 var K_SAVED = "diamante10.saved.v1";
 var K_TEAM = "diamante10.teamRoster.v1";
 
@@ -816,7 +836,7 @@ function blankState(){
   POS_ORDER.forEach(function(k){ a[k] = null; });
   return {
     team:"", opp:"", home:"them", date:"", start:"", end:"",
-    roster:[], assign:a, order:[],
+    roster:[], assign:a, order:[], dh:null,
     enabledSF:true, enabledDH:false,
     innings:7, us:[0,0,0,0,0,0,0], them:[0,0,0,0,0,0,0]
   };
@@ -869,6 +889,8 @@ function ensureState(){
   if(!Array.isArray(S.them)) S.them = [0,0,0,0,0,0,0];
   if(typeof S.enabledSF !== "boolean") S.enabledSF = true;
   if(typeof S.enabledDH !== "boolean") S.enabledDH = false;
+  if(!Object.prototype.hasOwnProperty.call(S, "dh")) S.dh = null;
+  if(S.dh && !S.roster.some(function(pl){ return pl.id === S.dh; })) S.dh = null;
   if(S.home !== "us" && S.home !== "them") S.home = "them";
   POS_ORDER.forEach(function(k){ if(!(k in S.assign)) S.assign[k] = null; });
 }
@@ -940,6 +962,7 @@ function shortName(n){
   return ini + (parts.length >= 4 ? parts[2] : parts[1]);
 }
 function posOf(id){
+  if(S.dh === id && S.enabledDH) return "DH";
   for(var i=0;i<POS_ORDER.length;i++) if(S.assign[POS_ORDER[i]] === id) return POS_ORDER[i];
   return null;
 }
@@ -983,6 +1006,30 @@ POS.forEach(function(p){
 
 function renderField(){
   var filled = 0, enabledCount = 0;
+  var dhb = stage.querySelector('.dh-slot');
+  if(!dhb){
+    dhb = el("button", "slot dh-slot empty");
+    dhb.type = "button";
+    dhb.dataset.pos = "DH";
+    dhb.setAttribute("draggable","true");
+    dhb.innerHTML = '<span class="slot-num">DH</span><span class="slot-key">DH</span><span class="slot-name">Bateador designado</span>';
+    stage.appendChild(dhb);
+  }
+  dhb.style.display = S.enabledDH ? "" : "none";
+  var dhpl = S.enabledDH ? player(S.dh) : null;
+  if(dhpl){
+    dhb.className = "slot dh-slot filled";
+    dhb.querySelector(".slot-key").textContent = "DH";
+    dhb.querySelector(".slot-name").textContent = shortName(dhpl.name);
+    dhb.setAttribute("aria-label", "Bateador designado: " + dhpl.name);
+    dhb.title = "Bateador designado · " + dhpl.name;
+  }else{
+    dhb.className = "slot dh-slot empty";
+    dhb.querySelector(".slot-key").textContent = "DH";
+    dhb.querySelector(".slot-name").textContent = "Bateador designado";
+    dhb.setAttribute("aria-label", "Bateador designado: sin asignar");
+    dhb.title = "Bateador designado · sin asignar";
+  }
   POS.forEach(function(p){
     var b = stage.querySelector('.slot[data-pos="' + p.k + '"]');
     var enabled = isPosEnabled(p.k);
@@ -1016,6 +1063,7 @@ function renderField(){
 /* clic para asignar */
 stage.addEventListener("click", function(ev){
   var b = ev.target.closest(".slot");
+  if(b && b.dataset.pos === "DH" && !S.enabledDH) return;
   if(b) openPicker(b.dataset.pos);
 });
 
@@ -1023,7 +1071,7 @@ stage.addEventListener("click", function(ev){
 stage.addEventListener("dragstart", function(ev){
   var b = ev.target.closest(".slot");
   if(!b) return;
-  var id = S.assign[b.dataset.pos];
+  var id = b.dataset.pos === "DH" ? S.dh : S.assign[b.dataset.pos];
   if(!id){ ev.preventDefault(); return; }
   ev.dataTransfer.setData("text/plain", "slot:" + b.dataset.pos);
   ev.dataTransfer.effectAllowed = "move";
@@ -1049,9 +1097,19 @@ stage.addEventListener("drop", function(ev){
   if(data.indexOf("slot:") === 0){
     var from = data.slice(5);
     if(from === target) return;
-    var tmp = S.assign[target];
-    S.assign[target] = S.assign[from];
-    S.assign[from] = tmp;
+    var fromId = from === "DH" ? S.dh : S.assign[from];
+    var targetId = target === "DH" ? S.dh : S.assign[target];
+    if(target === "DH") {
+      S.dh = fromId || null;
+      if(from === "DH") S.dh = targetId || null;
+      else S.assign[from] = targetId || null;
+    } else if(from === "DH") {
+      S.assign[target] = fromId || null;
+      S.dh = targetId || null;
+    } else {
+      S.assign[target] = fromId || null;
+      S.assign[from] = targetId || null;
+    }
   }else if(data.indexOf("pl:") === 0){
     setPos(target, data.slice(3));
   }else return;
@@ -1060,8 +1118,18 @@ stage.addEventListener("drop", function(ev){
 
 function setPos(posKey, playerId){
   var prev = posOf(playerId);
-  if(prev) S.assign[prev] = null;
-  S.assign[posKey] = playerId;
+  if(prev === "DH") S.dh = null;
+  else if(prev) S.assign[prev] = null;
+  if(posKey === "DH") {
+    if(!S.enabledDH) return;
+    if(S.dh && S.dh !== playerId) {
+      S.order = S.order.filter(function(id){ return id !== S.dh; });
+    }
+    S.dh = playerId;
+  } else {
+    if(S.dh === playerId) S.dh = null;
+    S.assign[posKey] = playerId;
+  }
 }
 
 /* ============ picker ============ */
@@ -1069,20 +1137,27 @@ var pickerPos = null;
 function openPicker(posKey){
   pickerPos = posKey;
   var p = POS.filter(function(q){ return q.k === posKey; })[0];
-  $("pickTitle").textContent = p.k + " · " + p.n;
-  $("pickSub").textContent = p.es;
+  if(posKey === "DH") {
+    $("pickTitle").textContent = "DH · Bateador designado";
+    $("pickSub").textContent = "No ocupa una posición defensiva";
+  } else {
+    $("pickTitle").textContent = p.k + " · " + p.n;
+    $("pickSub").textContent = p.es;
+  }
   var body = $("pickBody");
   body.innerHTML = "";
 
-  if(S.assign[posKey]){
-    var cur = player(S.assign[posKey]);
+  var currentAssigned = posKey === "DH" ? S.dh : S.assign[posKey];
+  if(currentAssigned){
+    var cur = player(currentAssigned);
     var rm = el("button", "btn btn-danger", "Quitar a " + (cur ? cur.name : "jugador"));
     rm.type = "button";
     rm.style.width = "100%";
     rm.style.marginBottom = "10px";
     rm.style.justifyContent = "center";
     rm.addEventListener("click", function(){
-      S.assign[posKey] = null;
+      if(posKey === "DH") S.dh = null;
+      else S.assign[posKey] = null;
       renderAll(); $("picker").close();
     });
     body.appendChild(rm);
@@ -1140,7 +1215,7 @@ function rowFor(pl, opts){
 
   var pk = posOf(pl.id);
   if(opts.lineup || opts.ordinal != null){
-    var b = el("span", "posbadge" + (pk ? "" : " eh"), pk || (S.enabledDH ? "DH" : "—"));
+    var b = el("span", "posbadge" + (pk ? "" : " eh"), pk || "—");
     b.title = pk ? "Posición defensiva" : "Bateador designado";
     li.appendChild(b);
   }else if(pk){
@@ -1163,29 +1238,52 @@ function renderRoster(){
     return;
   }
 
-  S.roster.forEach(function(pl){
+  /* Primero mostramos los jugadores que ya están en el orden al bate,
+     respetando exactamente el orden de S.order. Después mostramos los
+     asistentes que todavía no están en el orden. Así el arrastre se ve
+     reflejado inmediatamente en pantalla. */
+  var byId = {};
+  S.roster.forEach(function(p){ byId[p.id] = p; });
+  var ids = [];
+  S.order.forEach(function(id){ if(byId[id] && ids.indexOf(id) < 0) ids.push(id); });
+  S.roster.forEach(function(p){ if(ids.indexOf(p.id) < 0) ids.push(p.id); });
+
+  ids.forEach(function(id){
+    var pl = byId[id];
     var r = rowFor(pl, {lineup:true});
     r.li.setAttribute("draggable", "true");
     r.li.addEventListener("dragstart", function(ev){
       dragOrderId = pl.id;
       ev.dataTransfer.setData("text/plain", "pl:" + pl.id);
-      ev.dataTransfer.effectAllowed = "copyMove";
+      ev.dataTransfer.effectAllowed = "move";
       r.li.classList.add("dragging");
     });
     r.li.addEventListener("dragend", function(){ dragOrderId = null; r.li.classList.remove("dragging"); });
 
-    r.li.addEventListener("dragover", function(ev){ ev.preventDefault(); });
+    r.li.addEventListener("dragover", function(ev){
+      ev.preventDefault();
+      ev.dataTransfer.dropEffect = "move";
+      r.li.classList.add("drop-target");
+    });
+    r.li.addEventListener("dragleave", function(){ r.li.classList.remove("drop-target"); });
     r.li.addEventListener("drop", function(ev){
       ev.preventDefault(); ev.stopPropagation();
+      r.li.classList.remove("drop-target");
       if(!dragOrderId || dragOrderId === pl.id) return;
+
       var from = S.order.indexOf(dragOrderId);
       var to = S.order.indexOf(pl.id);
-      if(from < 0) return;
-      if(to < 0){
-        S.order.push(dragOrderId);
+
+      /* Si el jugador arrastrado todavía no estaba en el orden,
+         lo insertamos justo donde se soltó. */
+      if(from < 0){
+        if(to < 0) S.order.push(dragOrderId);
+        else S.order.splice(to, 0, dragOrderId);
       }else{
         S.order.splice(from, 1);
-        S.order.splice(to, 0, dragOrderId);
+        to = S.order.indexOf(pl.id);
+        if(to < 0) S.order.push(dragOrderId);
+        else S.order.splice(to, 0, dragOrderId);
       }
       renderAll();
     });
@@ -1200,6 +1298,29 @@ function renderRoster(){
       else S.order.push(pl.id);
       renderAll();
     });
+
+    /* Controles explícitos para subir/bajar un jugador.
+       Funcionan incluso si el usuario no quiere usar arrastrar. */
+    if(ord >= 0){
+      var up = el("button", "btn btn-sm btn-icon", "↑");
+      up.type = "button"; up.title = "Subir en el orden al bate";
+      up.disabled = ord === 0;
+      up.addEventListener("click", function(ev){
+        ev.stopPropagation();
+        var i = S.order.indexOf(pl.id);
+        if(i > 0){ var t = S.order[i-1]; S.order[i-1] = S.order[i]; S.order[i] = t; renderAll(); }
+      });
+      var down = el("button", "btn btn-sm btn-icon", "↓");
+      down.type = "button"; down.title = "Bajar en el orden al bate";
+      down.disabled = ord === S.order.length - 1;
+      down.addEventListener("click", function(ev){
+        ev.stopPropagation();
+        var i = S.order.indexOf(pl.id);
+        if(i >= 0 && i < S.order.length - 1){ var t = S.order[i+1]; S.order[i+1] = S.order[i]; S.order[i] = t; renderAll(); }
+      });
+      r.acts.appendChild(up);
+      r.acts.appendChild(down);
+    }
 
     var edit = el("button", "btn btn-sm btn-icon", "✎");
     edit.type = "button"; edit.title = "Editar jugador";
@@ -1248,6 +1369,7 @@ function removePlayerEverywhere(id){
   S.roster = S.roster.filter(function(x){ return x.id !== id; });
   S.order = S.order.filter(function(x){ return x !== id; });
   POS_ORDER.forEach(function(k){ if(S.assign[k] === id) S.assign[k] = null; });
+  if(S.dh === id) S.dh = null;
 }
 
 function renderTeamRoster(){
@@ -1333,12 +1455,8 @@ $("btnFillOrder").addEventListener("click", function(){
   assignedIds().forEach(function(id){
     if(!have[id]){ S.order.push(id); have[id] = 1; }
   });
-  if(S.enabledDH){
-    S.roster.forEach(function(pl){
-      if(!have[pl.id] && S.order.length < 10){
-        S.order.push(pl.id); have[pl.id] = 1;
-      }
-    });
+  if(S.enabledDH && S.dh && !have[S.dh]){
+    S.order.push(S.dh); have[S.dh] = 1;
   }
   renderAll();
   toast("Orden completado");
@@ -1353,6 +1471,7 @@ function renderBench(){
   ul.innerHTML = "";
   var onField = {};
   assignedIds().forEach(function(id){ onField[id] = 1; });
+  if(S.enabledDH && S.dh) onField[S.dh] = 1;
   var bench = S.roster.filter(function(p){ return !onField[p.id]; });
   $("benchCount").textContent = bench.length;
   if(!bench.length){
@@ -1443,8 +1562,19 @@ function renderInnings(){
 function sum(a){ return a.reduce(function(x,y){ return x + (parseInt(y,10) || 0); }, 0); }
 function updateScore(){
   var u = sum(S.us), th = sum(S.them);
-  $("scUs").textContent = u;
-  $("scThem").textContent = th;
+
+  /* El marcador final se muestra siempre como VISITA - CASA,
+     independientemente de cuál equipo sea el nuestro.
+     Si el oponente es Home y nuestro equipo es visitante: u - th.
+     Si nuestro equipo es Home y el oponente es visitante: th - u. */
+  var visitante = S.home === "us" ? th : u;
+  var casa = S.home === "us" ? u : th;
+
+  $("scUs").textContent = visitante;
+  $("scThem").textContent = casa;
+  $("scUs").setAttribute("aria-label", "Carreras del visitante: " + visitante);
+  $("scThem").setAttribute("aria-label", "Carreras del equipo local: " + casa);
+
   var tu = $("tot-us"), tt = $("tot-them");
   if(tu) tu.textContent = u;
   if(tt) tt.textContent = th;
@@ -1571,8 +1701,8 @@ $("btnImport").addEventListener("click", function(){
 /* ============ imprimir ============ */
 $("btnPrint").addEventListener("click", function(){ window.print(); });
 
-$("toggleSS").addEventListener("change", function(){
-  S.enabledSF = $("toggleSS").checked;
+$("toggleSF").addEventListener("change", function(){
+  S.enabledSF = $("toggleSF").checked;
   if(!S.enabledSF) S.assign.SF = null;
   renderAll();
   toast(S.enabledSF ? "Short fielder activado" : "Short fielder desactivado");
@@ -1580,6 +1710,7 @@ $("toggleSS").addEventListener("change", function(){
 $("toggleDH").addEventListener("change", function(){
   S.enabledDH = $("toggleDH").checked;
   if(!S.enabledDH){
+    if(S.dh){ S.order = S.order.filter(function(id){ return id !== S.dh; }); S.dh = null; }
     S.order = S.order.filter(function(id){ return !!posOf(id); });
   }
   renderAll();
@@ -1592,9 +1723,11 @@ function renderAll(){
   // Elimina asignaciones de posiciones desactivadas.
   POS_ORDER.forEach(function(k){ if(!isPosEnabled(k)) S.assign[k] = null; });
   // Sin DH, el orden al bate no puede contener más jugadores que las posiciones activas.
-  var maxOrder = S.enabledDH ? Math.min(10, S.roster.length) : assignedIds().length;
+  var maxOrder = S.enabledDH ? Math.min(11, S.roster.length) : assignedIds().length;
   if(!S.enabledDH){
     S.order = S.order.filter(function(id){ return assignedIds().indexOf(id) >= 0; });
+  }else if(S.dh){
+    S.order = S.order.filter(function(id){ return assignedIds().indexOf(id) >= 0 || id === S.dh; });
   }
   S.order = S.order.filter(function(id){ return !!player(id); }).slice(0, maxOrder);
   renderGame();
@@ -1602,8 +1735,8 @@ function renderAll(){
   renderRoster();
   renderBench();
   renderInnings();
-  $("toggleSS").checked = S.enabledSF !== false;
-  $("toggleSS").parentElement.classList.toggle("off", S.enabledSF === false);
+  $("toggleSF").checked = S.enabledSF !== false;
+  $("toggleSF").parentElement.classList.toggle("off", S.enabledSF === false);
   $("toggleDH").checked = S.enabledDH === true;
   $("toggleDH").parentElement.classList.toggle("off", S.enabledDH !== true);
   save();
