@@ -578,6 +578,7 @@ dialog::backdrop{background:rgba(10,16,11,.55)}
       <button class="btn btn-ghost btn-sm" id="btnBackup" type="button">Respaldo</button>
       <button class="btn btn-ghost btn-sm" id="btnTeamRoster" type="button">Roster</button>
       <button class="btn btn-ghost btn-sm" id="btnCopyImg" type="button">Copiar imagen</button>
+      <button class="btn btn-ghost btn-sm" id="btnTicket" type="button" title="Generar la imagen para el rollo térmico de 55 mm">Térmica</button>
       <button class="btn btn-key btn-sm" id="btnPrint" type="button">Imprimir / PDF</button>
     </div>
   </div>
@@ -1865,7 +1866,7 @@ function anchoTexto(t, size, fam, peso){
   midoCtx.font = (peso || "bold") + " " + size + "px " + fam;
   return midoCtx.measureText(String(t)).width;
 }
-function textoAjustado(t, x, y, maxW, size, fam, color, peso, anchor){
+function textoAjustado(t, x, y, maxW, size, fam, color, peso, anchor, extraAttrs){
   var min = Math.max(11, Math.round(size * 0.62));
   while(size > min && anchoTexto(t, size, fam, peso) > maxW) size -= 1;
   var extra = "";
@@ -1874,7 +1875,7 @@ function textoAjustado(t, x, y, maxW, size, fam, color, peso, anchor){
   }
   return '<text x="' + x + '" y="' + y + '"' + (anchor ? ' text-anchor="' + anchor + '"' : "") +
          ' font-family="' + fam + '" font-size="' + size + '" font-weight="' + (peso || "bold") +
-         '" fill="' + color + '"' + extra + '>' + esc(t) + '</text>';
+         '" fill="' + color + '"' + extra + (extraAttrs || "") + '>' + esc(t) + '</text>';
 }
 
 function buildLineupSvg(){
@@ -1979,10 +1980,10 @@ function lineupPngBlob(){
   });
 }
 
-function descargarPng(blob){
+function descargarPng(blob, nombre){
   var a = document.createElement("a");
   a.href = URL.createObjectURL(blob);
-  a.download = "lineup" + (S.date ? "-" + S.date : "") + ".png";
+  a.download = nombre || ("lineup" + (S.date ? "-" + S.date : "") + ".png");
   document.body.appendChild(a);
   a.click();
   setTimeout(function(){ URL.revokeObjectURL(a.href); a.remove(); }, 1000);
@@ -2001,6 +2002,173 @@ $("btnCopyImg").addEventListener("click", function(){
   }else{
     pending.then(descargarPng).catch(function(){ toast("No se pudo generar la imagen"); });
   }
+});
+
+/* ============ ticket térmico ============
+   La impresora se maneja desde el teléfono con su app, y esa app imprime
+   IMÁGENES: no hay diálogo de impresión que valga. Así que generamos un PNG
+   ya medido para el rollo — 384 px de ancho, que son los 48 mm imprimibles de
+   un rollo de 55 mm a 203 dpi — en blanco y negro puro, sin grises, que es lo
+   único que la cabeza térmica sabe marcar. */
+var TK_W = 384;
+
+function buildTicketSvg(){
+  var F = "Arial Narrow, Arial, Helvetica, sans-serif";
+  var FB = "Arial, Helvetica, sans-serif";
+  var o = [], y = 0;
+  function linea(gruesa){
+    y += gruesa ? 10 : 7;
+    o.push('<rect x="0" y="' + y + '" width="' + TK_W + '" height="' + (gruesa ? 3 : 1) + '" fill="#000"/>');
+    y += (gruesa ? 3 : 1) + (gruesa ? 10 : 7);
+  }
+
+  /* --- encabezado --- */
+  y += 34;
+  o.push(textoAjustado((S.team || "Nuestro equipo").toUpperCase(), TK_W/2, y, TK_W-8, 32, FB, "#000", "bold", "middle"));
+  y += 26;
+  o.push(textoAjustado("vs " + (S.opp || "Rival"), TK_W/2, y, TK_W-8, 22, FB, "#000", "bold", "middle"));
+  var meta = [];
+  if(S.date) meta.push(S.date.split("-").reverse().join("/"));
+  meta.push(S.enabled4F ? "4 jardineros" : "3 jardineros");
+  if(S.enabledSF) meta.push("SF");
+  if(S.enabledDH) meta.push("BD");
+  y += 20;
+  o.push(textoAjustado(meta.join("  ·  "), TK_W/2, y, TK_W-8, 15, FB, "#000", "normal", "middle"));
+  y += 6;
+  linea(true);
+
+  /* --- diamante ---
+     Se dibuja con la MISMA geometría del campo de la app (viewBox 900x820),
+     escalada al ancho del rollo. Así las coordenadas mx/my de cada posición
+     caen donde deben; a mano no coincidían. */
+  var K = TK_W / 900, FH = Math.round(820 * K), top = y;
+  o.push('<g transform="translate(0,' + top + ')">');
+  o.push('<g transform="scale(' + K.toFixed(4) + ')" fill="none" stroke="#000" stroke-width="7" stroke-linejoin="round">');
+  o.push('<path d="M450 690 L54 294 M450 690 L846 294"/>');
+  o.push('<path d="M54 294 A560 560 0 0 1 846 294"/>');
+  o.push('<path d="M450 690 L610 530 L450 370 L290 530 Z" stroke-width="5"/>');
+  o.push('</g>');
+  o.push('<path d="M' + (435*K).toFixed(1) + ' ' + (672*K).toFixed(1) + ' h' + (30*K).toFixed(1) +
+         ' v' + (13*K).toFixed(1) + ' l' + (-15*K).toFixed(1) + ' ' + (14*K).toFixed(1) +
+         ' l' + (-15*K).toFixed(1) + ' ' + (-14*K).toFixed(1) + ' Z" fill="#000"/>');
+
+  function marca(mx, my, num, nombre, arriba){
+    var cx = mx/100*TK_W, cy = my/100*FH, g = [];
+    g.push('<circle cx="' + cx.toFixed(0) + '" cy="' + cy.toFixed(0) + '" r="14" fill="#000"/>');
+    g.push('<text x="' + cx.toFixed(0) + '" y="' + (cy+6).toFixed(0) +
+           '" text-anchor="middle" font-family="' + FB + '" font-size="17" font-weight="bold" fill="#fff">' + esc(num) + '</text>');
+    if(nombre){
+      /* Contorno blanco alrededor de las letras en vez de un recuadro sólido:
+         tapa la línea justo detrás del texto y deja ver el resto del cuadro. */
+      g.push(textoAjustado(nombre, cx, cy + (arriba ? -28 : 34), 112, 18, F, "#000", "bold", "middle",
+                           ' stroke="#fff" stroke-width="5" stroke-linejoin="round" paint-order="stroke fill"'));
+    }
+    return g.join("");
+  }
+  POS.forEach(function(pp){
+    if(!isPosEnabled(pp.k)) return;
+    var pl = player(S.assign[pp.k]);
+    o.push(marca(pp.mx, pp.my, displayPosNumber(pp), pl ? shortName(pl.name) : "", false));
+  });
+  if(S.enabledDH || S.dh){
+    var d = player(S.dh);
+    o.push(marca(15, 86, "BD", d ? shortName(d.name) : "", false));
+  }
+  o.push('</g>');
+  y = top + FH;
+  linea(true);
+
+  /* --- orden al bate --- */
+  o.push('<rect x="0" y="' + y + '" width="' + TK_W + '" height="30" fill="#000"/>');
+  o.push('<text x="' + (TK_W/2) + '" y="' + (y+21) + '" text-anchor="middle" font-family="' + FB +
+         '" font-size="18" font-weight="bold" fill="#fff" letter-spacing="2">ORDEN AL BATE</text>');
+  y += 30 + 24;
+  S.order.forEach(function(id, i){
+    var pl = player(id);
+    if(!pl) return;
+    o.push('<text x="30" y="' + y + '" text-anchor="end" font-family="' + FB + '" font-size="21" font-weight="bold" fill="#000">' + (i+1) + '</text>');
+    o.push(textoAjustado(pl.name, 38, y, 268, 21, F, "#000", "bold"));
+    o.push('<text x="' + TK_W + '" y="' + y + '" text-anchor="end" font-family="' + FB + '" font-size="18" font-weight="bold" fill="#000">' + esc(posOf(id) || "-") + '</text>');
+    y += 8;
+    o.push('<rect x="0" y="' + y + '" width="' + TK_W + '" height="1" fill="#000" opacity="0.45"/>');
+    y += 22;
+  });
+  if(!S.order.length){
+    o.push('<text x="0" y="' + y + '" font-family="' + F + '" font-size="17" fill="#000">Sin orden al bate.</text>');
+    y += 24;
+  }
+
+  /* --- banca --- */
+  var banca = S.roster.filter(function(pl){ return !inLineup(pl.id); }).map(function(pl){ return pl.name; });
+  if(banca.length){
+    y += 6;
+    o.push('<text x="0" y="' + y + '" font-family="' + FB + '" font-size="15" font-weight="bold" fill="#000">BANCA</text>');
+    y += 20;
+    /* se parte en líneas a mano: el SVG no ajusta texto solo */
+    var linea2 = "", lineas = [];
+    banca.forEach(function(n){
+      var prueba = linea2 ? linea2 + ", " + n : n;
+      if(anchoTexto(prueba, 16, F, "normal") > TK_W - 4 && linea2){ lineas.push(linea2); linea2 = n; }
+      else linea2 = prueba;
+    });
+    if(linea2) lineas.push(linea2);
+    lineas.forEach(function(l){
+      o.push('<text x="0" y="' + y + '" font-family="' + F + '" font-size="16" fill="#000">' + esc(l) + '</text>');
+      y += 20;
+    });
+  }
+  y += 16;
+  o.push(textoAjustado("Diamante 10", TK_W/2, y, TK_W, 13, FB, "#000", "normal", "middle"));
+  y += 30;
+
+  return '<svg xmlns="http://www.w3.org/2000/svg" width="' + TK_W + '" height="' + y +
+         '" viewBox="0 0 ' + TK_W + ' ' + y + '"><rect width="' + TK_W + '" height="' + y +
+         '" fill="#fff"/>' + o.join("") + '</svg>';
+}
+
+/* Rasteriza y binariza: la térmica solo marca o no marca, así que un gris a
+   medias sale sucio. Mejor decidirlo aquí que dejárselo a la impresora. */
+function ticketPngBlob(){
+  return new Promise(function(resolve, reject){
+    var svg = buildTicketSvg();
+    var url = URL.createObjectURL(new Blob([svg], {type:"image/svg+xml;charset=utf-8"}));
+    var img = new Image();
+    img.onload = function(){
+      var c = document.createElement("canvas");
+      c.width = TK_W; c.height = img.height || 1200;
+      var ctx = c.getContext("2d");
+      ctx.fillStyle = "#fff";
+      ctx.fillRect(0, 0, c.width, c.height);
+      ctx.drawImage(img, 0, 0);
+      URL.revokeObjectURL(url);
+      var d = ctx.getImageData(0, 0, c.width, c.height), px = d.data;
+      for(var i = 0; i < px.length; i += 4){
+        var v = (px[i]*0.299 + px[i+1]*0.587 + px[i+2]*0.114) < 150 ? 0 : 255;
+        px[i] = px[i+1] = px[i+2] = v; px[i+3] = 255;
+      }
+      ctx.putImageData(d, 0, 0);
+      c.toBlob(function(bl){ bl ? resolve(bl) : reject(new Error("sin blob")); }, "image/png");
+    };
+    img.onerror = function(){ URL.revokeObjectURL(url); reject(new Error("svg")); };
+    img.src = url;
+  });
+}
+
+$("btnTicket").addEventListener("click", function(){
+  if(!S.order.length && !assignedIds().length){ toast("Primero arma la alineación"); return; }
+  ticketPngBlob().then(function(blob){
+    var nombre = "lineup-termica" + (S.date ? "-" + S.date : "") + ".png";
+    var file = new File([blob], nombre, {type:"image/png"});
+    /* En el teléfono lo mejor es compartir: sale el menú del sistema y eliges
+       la app de la impresora directamente. Si no, se descarga. */
+    if(navigator.canShare && navigator.canShare({files:[file]})){
+      navigator.share({files:[file], title:"Lineup"})
+        .then(function(){ toast("Elige la app de la impresora"); })
+        .catch(function(){ descargarPng(blob, nombre); });
+    }else{
+      descargarPng(blob, nombre);
+    }
+  }).catch(function(){ toast("No se pudo generar el ticket"); });
 });
 
 /* ============ imprimir ============ */
