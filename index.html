@@ -577,6 +577,7 @@ dialog::backdrop{background:rgba(10,16,11,.55)}
       <button class="btn btn-ghost btn-sm" id="btnLoad" type="button">Guardados</button>
       <button class="btn btn-ghost btn-sm" id="btnBackup" type="button">Respaldo</button>
       <button class="btn btn-ghost btn-sm" id="btnTeamRoster" type="button">Roster</button>
+      <button class="btn btn-ghost btn-sm" id="btnCopyImg" type="button">Copiar imagen</button>
       <button class="btn btn-key btn-sm" id="btnPrint" type="button">Imprimir / PDF</button>
     </div>
   </div>
@@ -712,7 +713,7 @@ dialog::backdrop{background:rgba(10,16,11,.55)}
           <button class="btn btn-sm no-print" id="btnClearOrder" type="button">Vaciar orden</button>
         </div>
         <div class="panel-body">
-          <p class="panel-hint no-print">Usa <b>+</b> para agregar jugadores <b>uno por uno</b> al orden al bate. Arrastra un jugador al campo para asignarle posición y arrastra las filas para cambiar el orden.</p>
+          <p class="panel-hint no-print">Pulsa <b>Agregar</b> para meter a cada jugador en el orden al bate, y arrastra las filas (o usa ↑ ↓) para ordenarlas. El orden al bate es independiente de la defensa: puede batear alguien sin posición en el campo. Arrastra un jugador al diamante para asignarle posición.</p>
           <ul class="list" id="rosterList"></ul>
         </div>
       </section>
@@ -1020,6 +1021,12 @@ function displayPosNumber(p){
   return p.n;
 }
 function isInOrder(id){ return S.order.indexOf(id) >= 0; }
+/* Un jugador está en la alineación si tiene posición en el campo, es el BD,
+   o está en el orden al bate. El resto está en la banca. Las dos listas se
+   arman con esta misma regla, así nadie puede salir en ambas. */
+function inLineup(id){
+  return !!posOf(id) || isInOrder(id);
+}
 /* ============ diálogos propios (sin prompt/confirm del navegador) ============
    Los nativos abren cuadros del sistema: en el teléfono estorban y algunos
    navegadores embebidos ignoran prompt() por completo. */
@@ -1124,7 +1131,7 @@ function renderField(){
     dhb.innerHTML = '<span class="slot-num">BD</span><span class="slot-key">BD</span><span class="slot-name">Bateador designado</span>';
     stage.appendChild(dhb);
   }
-  dhb.style.display = S.enabledDH ? "" : "none";
+  dhb.style.display = (S.enabledDH || S.dh) ? "" : "none";
   var dhpl = S.enabledDH ? player(S.dh) : null;
   if(dhpl){
     dhb.className = "slot dh-slot filled";
@@ -1341,21 +1348,23 @@ function rowFor(pl, opts){
 function renderRoster(){
   var ul = $("rosterList");
   ul.innerHTML = "";
-  $("rosterCount").textContent = S.roster.length;
-  if(!S.roster.length){
-    ul.appendChild(el("li", "empty-note", "Selecciona jugadores desde Roster."));
-    return;
-  }
 
-  /* Primero mostramos los jugadores que ya están en el orden al bate,
-     respetando exactamente el orden de S.order. Después mostramos los
-     asistentes que todavía no están en el orden. Así el arrastre se ve
-     reflejado inmediatamente en pantalla. */
+  /* Primero los que ya están en el orden al bate, respetando S.order. Después
+     los que tienen posición pero todavía no batean. Los de banca NO salen
+     aquí: viven en su propio panel. */
   var byId = {};
   S.roster.forEach(function(p){ byId[p.id] = p; });
   var ids = [];
   S.order.forEach(function(id){ if(byId[id] && ids.indexOf(id) < 0) ids.push(id); });
-  S.roster.forEach(function(p){ if(ids.indexOf(p.id) < 0) ids.push(p.id); });
+  S.roster.forEach(function(p){ if(ids.indexOf(p.id) < 0 && inLineup(p.id)) ids.push(p.id); });
+
+  $("rosterCount").textContent = ids.length;
+  if(!ids.length){
+    ul.appendChild(el("li", "empty-note",
+      S.roster.length ? "Nadie en la alineación todavía. Usa Agregar en la banca o arrastra al campo."
+                      : "Selecciona jugadores desde Roster."));
+    return;
+  }
 
   ids.forEach(function(id){
     var pl = byId[id];
@@ -1564,16 +1573,18 @@ $("teamRosterClear").addEventListener("click", function(){
 var dragOrderId = null;
 
 $("btnFillOrder").addEventListener("click", function(){
-  var have = {};
+  var have = {}, added = 0;
   S.order.forEach(function(id){ have[id] = 1; });
-  assignedIds().forEach(function(id){
-    if(!have[id]){ S.order.push(id); have[id] = 1; }
-  });
-  if(S.enabledDH && S.dh && !have[S.dh]){
-    S.order.push(S.dh); have[S.dh] = 1;
-  }
+  function push(id){ if(!have[id]){ S.order.push(id); have[id] = 1; added++; } }
+  /* Primero los del campo en orden de posición, luego el BD, y al final el
+     resto de los que vinieron: en recreativo batea todo el que llegó, así que
+     esto tiene que vaciar la banca, no solo copiar la defensa. */
+  assignedIds().forEach(push);
+  if(S.enabledDH && S.dh) push(S.dh);
+  S.roster.forEach(function(pl){ push(pl.id); });
   renderAll();
-  toast("Orden completado");
+  toast(added ? "Orden completado con " + added + (added === 1 ? " jugador" : " jugadores")
+              : "Ya estaban todos en el orden");
 });
 $("btnClearOrder").addEventListener("click", function(){
   S.order = []; renderAll();
@@ -1583,10 +1594,7 @@ $("btnClearOrder").addEventListener("click", function(){
 function renderBench(){
   var ul = $("benchList");
   ul.innerHTML = "";
-  var onField = {};
-  assignedIds().forEach(function(id){ onField[id] = 1; });
-  if(S.enabledDH && S.dh) onField[S.dh] = 1;
-  var bench = S.roster.filter(function(p){ return !onField[p.id]; });
+  var bench = S.roster.filter(function(p){ return !inLineup(p.id); });
   $("benchCount").textContent = bench.length;
   if(!bench.length){
     ul.appendChild(el("li", "empty-note", "Nadie en banca."));
@@ -1599,6 +1607,18 @@ function renderBench(){
       ev.dataTransfer.setData("text/plain", "pl:" + pl.id);
       ev.dataTransfer.effectAllowed = "copyMove";
     });
+    /* Sin este botón, salir de la banca dependería de arrastrar, que en el
+       teléfono es incómodo. */
+    var add = el("button", "btn btn-sm btn-add-order", "Agregar");
+    add.type = "button";
+    add.title = "Pasar al orden al bate";
+    add.setAttribute("aria-label", add.title);
+    add.addEventListener("click", function(){
+      if(S.order.indexOf(pl.id) < 0) S.order.push(pl.id);
+      renderAll();
+      toast(pl.name + " pasa al orden al bate");
+    });
+    r.acts.appendChild(add);
     ul.appendChild(r.li);
   });
 }
@@ -1826,6 +1846,142 @@ $("askInput").addEventListener("keydown", function(ev){
   if(ev.key === "Enter"){ ev.preventDefault(); $("askYes").click(); }
 });
 
+/* ============ copiar imagen ============
+   Arma un PNG con el diamante y el orden al bate y lo deja en el portapapeles.
+   Todo se dibuja como SVG a mano en vez de usar una librería, así funciona
+   sin conexión y no depende de ningún CDN. */
+function esc(t){
+  return String(t == null ? "" : t)
+    .replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
+}
+var IMG_W = 1240, IMG_H = 812, FIELD_K = 0.84;
+
+function buildLineupSvg(){
+  var cs = getComputedStyle(document.documentElement);
+  function v(n){ return (cs.getPropertyValue(n) || "").trim() || "#888"; }
+  var FONT = "Arial, Helvetica, sans-serif";
+
+  /* el campo ya existe como SVG: lo clonamos y resolvemos las variables CSS,
+     que en un SVG suelto no se resuelven solas */
+  var field = stage.querySelector(".field-svg");
+  var inner = field.innerHTML.replace(/var\((--[a-z0-9-]+)\)/gi, function(_, n){ return v(n); });
+
+  var bg = v("--surface"), ink = v("--ink"), ink2 = v("--ink-2"), ink3 = v("--ink-3");
+  var line = v("--line"), bar = v("--bar"), barInk = v("--bar-ink");
+  var acc = v("--accent"), accInk = v("--accent-ink"), accSoft = v("--accent-soft"), surf2 = v("--surface-2");
+
+  var o = [];
+  o.push('<svg xmlns="http://www.w3.org/2000/svg" width="' + IMG_W + '" height="' + IMG_H + '" viewBox="0 0 ' + IMG_W + ' ' + IMG_H + '">');
+  o.push('<rect width="' + IMG_W + '" height="' + IMG_H + '" fill="' + bg + '"/>');
+
+  /* cabecera */
+  var titulo = (S.team || "Nuestro equipo") + "  vs  " + (S.opp || "Rival");
+  o.push('<rect x="0" y="0" width="' + IMG_W + '" height="62" fill="' + bar + '"/>');
+  o.push('<text x="24" y="40" font-family="' + FONT + '" font-size="26" font-weight="bold" fill="' + barInk + '">' + esc(titulo) + '</text>');
+  var sub = [];
+  if(S.date) sub.push(S.date.split("-").reverse().join("/"));
+  sub.push(S.enabled4F ? "4 jardineros" : "3 jardineros");
+  if(S.enabledSF) sub.push("SF");
+  if(S.enabledDH) sub.push("BD");
+  o.push('<text x="' + (IMG_W - 24) + '" y="40" text-anchor="end" font-family="' + FONT + '" font-size="16" fill="' + acc + '">' + esc(sub.join("  ·  ")) + '</text>');
+
+  /* campo */
+  o.push('<g transform="translate(14,76) scale(' + FIELD_K + ')">');
+  o.push('<svg width="900" height="820" viewBox="0 0 900 820">' + inner + '</svg>');
+
+  function card(cx, cy, num, key, nombre, puesto){
+    var w = 186, h = 62, x = cx - w/2, y = cy - h/2;
+    var g = [];
+    g.push('<rect x="' + x + '" y="' + y + '" width="' + w + '" height="' + h + '" rx="10" fill="' + bg +
+           '" stroke="' + (puesto ? ink : ink3) + '" stroke-width="' + (puesto ? 3 : 2) + '"/>');
+    g.push('<rect x="' + (x+10) + '" y="' + (y+13) + '" width="36" height="36" rx="7" fill="' + (puesto ? acc : bar) + '"/>');
+    g.push('<text x="' + (x+28) + '" y="' + (y+38) + '" text-anchor="middle" font-family="' + FONT +
+           '" font-size="21" font-weight="bold" fill="' + (puesto ? accInk : barInk) + '">' + esc(num) + '</text>');
+    g.push('<text x="' + (x+54) + '" y="' + (y+26) + '" font-family="' + FONT + '" font-size="15" font-weight="bold" fill="' + ink2 + '">' + esc(key) + '</text>');
+    g.push('<text x="' + (x+54) + '" y="' + (y+48) + '" font-family="' + FONT + '" font-size="21" font-weight="bold" fill="' + (puesto ? ink : ink3) + '">' + esc(nombre) + '</text>');
+    return g.join("");
+  }
+
+  POS.forEach(function(pp){
+    if(!isPosEnabled(pp.k)) return;
+    var pl = player(S.assign[pp.k]);
+    o.push(card(pp.x/100*900, pp.y/100*820, displayPosNumber(pp), pp.k,
+                pl ? shortName(pl.name) : "—", !!pl));
+  });
+  if(S.enabledDH || S.dh){
+    var dpl = player(S.dh);
+    o.push(card(0.15*900, 0.90*820, "BD", "BD", dpl ? shortName(dpl.name) : "—", !!dpl));
+  }
+  o.push('</g>');
+
+  /* orden al bate */
+  var X = 14 + 900*FIELD_K + 22, colW = IMG_W - X - 18;
+  o.push('<rect x="' + X + '" y="76" width="' + colW + '" height="34" rx="8" fill="' + bar + '"/>');
+  o.push('<text x="' + (X+14) + '" y="99" font-family="' + FONT + '" font-size="17" font-weight="bold" fill="' + barInk + '">ORDEN AL BATE</text>');
+  var y = 122, fila = 40;
+  S.order.forEach(function(id, i){
+    var pl = player(id);
+    if(!pl) return;
+    var pk = posOf(id) || "—";
+    o.push('<rect x="' + X + '" y="' + y + '" width="' + colW + '" height="' + (fila-6) + '" rx="7" fill="' + (i%2 ? surf2 : bg) + '" stroke="' + line + '"/>');
+    o.push('<text x="' + (X+16) + '" y="' + (y+24) + '" font-family="' + FONT + '" font-size="18" font-weight="bold" fill="' + ink3 + '">' + (i+1) + '</text>');
+    o.push('<text x="' + (X+46) + '" y="' + (y+24) + '" font-family="' + FONT + '" font-size="19" font-weight="bold" fill="' + ink + '">' + esc(pl.name) + '</text>');
+    o.push('<rect x="' + (X+colW-62) + '" y="' + (y+6) + '" width="50" height="22" rx="5" fill="' + accSoft + '"/>');
+    o.push('<text x="' + (X+colW-37) + '" y="' + (y+22) + '" text-anchor="middle" font-family="' + FONT + '" font-size="14" font-weight="bold" fill="' + ink + '">' + esc(pk) + '</text>');
+    y += fila;
+  });
+  var banca = S.roster.filter(function(pl){ return !inLineup(pl.id); });
+  if(banca.length && y < IMG_H - 70){
+    y += 8;
+    o.push('<text x="' + (X+4) + '" y="' + (y+16) + '" font-family="' + FONT + '" font-size="14" font-weight="bold" fill="' + ink3 + '">BANCA: ' +
+           esc(banca.map(function(pl){ return pl.name; }).join(", ")) + '</text>');
+  }
+  o.push('</svg>');
+  return o.join("");
+}
+
+function lineupPngBlob(){
+  return new Promise(function(resolve, reject){
+    var url = URL.createObjectURL(new Blob([buildLineupSvg()], {type:"image/svg+xml;charset=utf-8"}));
+    var img = new Image();
+    img.onload = function(){
+      var k = 2, c = document.createElement("canvas");
+      c.width = IMG_W*k; c.height = IMG_H*k;
+      var ctx = c.getContext("2d");
+      ctx.scale(k, k);
+      ctx.drawImage(img, 0, 0);
+      URL.revokeObjectURL(url);
+      c.toBlob(function(bl){ bl ? resolve(bl) : reject(new Error("sin blob")); }, "image/png");
+    };
+    img.onerror = function(){ URL.revokeObjectURL(url); reject(new Error("svg")); };
+    img.src = url;
+  });
+}
+
+function descargarPng(blob){
+  var a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = "lineup" + (S.date ? "-" + S.date : "") + ".png";
+  document.body.appendChild(a);
+  a.click();
+  setTimeout(function(){ URL.revokeObjectURL(a.href); a.remove(); }, 1000);
+  toast("Imagen descargada");
+}
+
+$("btnCopyImg").addEventListener("click", function(){
+  if(!S.roster.length){ toast("Primero marca quiénes vinieron"); return; }
+  /* El ClipboardItem recibe la promesa, no el blob ya resuelto: así el copiado
+     sigue dentro del gesto del usuario y Safari no lo rechaza. */
+  var pending = lineupPngBlob();
+  if(navigator.clipboard && window.ClipboardItem){
+    navigator.clipboard.write([new ClipboardItem({"image/png": pending})])
+      .then(function(){ toast("Imagen copiada — pégala donde quieras"); })
+      .catch(function(){ pending.then(descargarPng).catch(function(){ toast("No se pudo generar la imagen"); }); });
+  }else{
+    pending.then(descargarPng).catch(function(){ toast("No se pudo generar la imagen"); });
+  }
+});
+
 /* ============ imprimir ============ */
 $("btnPrint").addEventListener("click", function(){ window.print(); });
 
@@ -1849,10 +2005,9 @@ $("toggle4F").addEventListener("change", function(){
 });
 $("toggleDH").addEventListener("change", function(){
   S.enabledDH = $("toggleDH").checked;
-  if(!S.enabledDH){
-    if(S.dh){ S.order = S.order.filter(function(id){ return id !== S.dh; }); S.dh = null; }
-    S.order = S.order.filter(function(id){ return !!posOf(id); });
-  }
+  /* Apagar el BD solo quita la designación: quien estaba bateando sigue
+     en el orden. Antes se vaciaba a todo el que no tuviera posición. */
+  if(!S.enabledDH) S.dh = null;
   renderAll();
   toast(S.enabledDH ? "Bateador designado (BD) activado" : "Bateador designado (BD) desactivado");
 });
@@ -1863,15 +2018,12 @@ function renderAll(){
   // Elimina asignaciones de posiciones desactivadas.
   POS_ORDER.forEach(function(k){ if(!isPosEnabled(k)) S.assign[k] = null; });
   // Sin DH, el orden al bate no puede contener más jugadores que las posiciones activas.
-  /* Batea exactamente quien juega: los que están en el campo, más el BD si
-     está activo. Sin topes fijos, así nadie se cae del orden en silencio
-     por más gente que llegue. */
-  var allowed = {};
-  assignedIds().forEach(function(id){ allowed[id] = 1; });
-  if(S.enabledDH && S.dh) allowed[S.dh] = 1;
+  /* El orden al bate es independiente de la defensa: batea cualquiera que
+     esté en el partido, tenga o no posición en el campo. Aquí solo se sacan
+     los que ya no están en el partido y los repetidos. */
   var seenOrder = {};
   S.order = S.order.filter(function(id){
-    if(!allowed[id] || seenOrder[id] || !player(id)) return false;
+    if(seenOrder[id] || !player(id)) return false;
     seenOrder[id] = 1;
     return true;
   });
