@@ -1856,6 +1856,27 @@ function esc(t){
 }
 var IMG_W = 1240, IMG_H = 812, FIELD_K = 0.84;
 
+/* El texto de un SVG no se ajusta ni se recorta solo: si el nombre es largo
+   se sale del recuadro. Lo medimos con un canvas y bajamos el tamaño hasta
+   que quepa; si aun así no entra, se comprime con textLength. */
+var midoCtx = null;
+function anchoTexto(t, size, fam, peso){
+  if(!midoCtx) midoCtx = document.createElement("canvas").getContext("2d");
+  midoCtx.font = (peso || "bold") + " " + size + "px " + fam;
+  return midoCtx.measureText(String(t)).width;
+}
+function textoAjustado(t, x, y, maxW, size, fam, color, peso, anchor){
+  var min = Math.max(11, Math.round(size * 0.62));
+  while(size > min && anchoTexto(t, size, fam, peso) > maxW) size -= 1;
+  var extra = "";
+  if(anchoTexto(t, size, fam, peso) > maxW){
+    extra = ' textLength="' + Math.round(maxW) + '" lengthAdjust="spacingAndGlyphs"';
+  }
+  return '<text x="' + x + '" y="' + y + '"' + (anchor ? ' text-anchor="' + anchor + '"' : "") +
+         ' font-family="' + fam + '" font-size="' + size + '" font-weight="' + (peso || "bold") +
+         '" fill="' + color + '"' + extra + '>' + esc(t) + '</text>';
+}
+
 function buildLineupSvg(){
   var cs = getComputedStyle(document.documentElement);
   function v(n){ return (cs.getPropertyValue(n) || "").trim() || "#888"; }
@@ -1877,7 +1898,7 @@ function buildLineupSvg(){
   /* cabecera */
   var titulo = (S.team || "Nuestro equipo") + "  vs  " + (S.opp || "Rival");
   o.push('<rect x="0" y="0" width="' + IMG_W + '" height="62" fill="' + bar + '"/>');
-  o.push('<text x="24" y="40" font-family="' + FONT + '" font-size="26" font-weight="bold" fill="' + barInk + '">' + esc(titulo) + '</text>');
+  o.push(textoAjustado(titulo, 24, 40, IMG_W - 320, 26, FONT, barInk, "bold"));
   var sub = [];
   if(S.date) sub.push(S.date.split("-").reverse().join("/"));
   sub.push(S.enabled4F ? "4 jardineros" : "3 jardineros");
@@ -1890,15 +1911,15 @@ function buildLineupSvg(){
   o.push('<svg width="900" height="820" viewBox="0 0 900 820">' + inner + '</svg>');
 
   function card(cx, cy, num, key, nombre, puesto){
-    var w = 186, h = 62, x = cx - w/2, y = cy - h/2;
+    var w = 196, h = 62, x = cx - w/2, y = cy - h/2;
+    var tx = x + 54, maxW = w - 54 - 12;
     var g = [];
     g.push('<rect x="' + x + '" y="' + y + '" width="' + w + '" height="' + h + '" rx="10" fill="' + bg +
            '" stroke="' + (puesto ? ink : ink3) + '" stroke-width="' + (puesto ? 3 : 2) + '"/>');
     g.push('<rect x="' + (x+10) + '" y="' + (y+13) + '" width="36" height="36" rx="7" fill="' + (puesto ? acc : bar) + '"/>');
-    g.push('<text x="' + (x+28) + '" y="' + (y+38) + '" text-anchor="middle" font-family="' + FONT +
-           '" font-size="21" font-weight="bold" fill="' + (puesto ? accInk : barInk) + '">' + esc(num) + '</text>');
-    g.push('<text x="' + (x+54) + '" y="' + (y+26) + '" font-family="' + FONT + '" font-size="15" font-weight="bold" fill="' + ink2 + '">' + esc(key) + '</text>');
-    g.push('<text x="' + (x+54) + '" y="' + (y+48) + '" font-family="' + FONT + '" font-size="21" font-weight="bold" fill="' + (puesto ? ink : ink3) + '">' + esc(nombre) + '</text>');
+    g.push(textoAjustado(num, x+28, y+38, 32, 21, FONT, puesto ? accInk : barInk, "bold", "middle"));
+    g.push(textoAjustado(key, tx, y+26, maxW, 15, FONT, ink2, "bold"));
+    g.push(textoAjustado(nombre, tx, y+48, maxW, 21, FONT, puesto ? ink : ink3, "bold"));
     return g.join("");
   }
 
@@ -1925,7 +1946,7 @@ function buildLineupSvg(){
     var pk = posOf(id) || "—";
     o.push('<rect x="' + X + '" y="' + y + '" width="' + colW + '" height="' + (fila-6) + '" rx="7" fill="' + (i%2 ? surf2 : bg) + '" stroke="' + line + '"/>');
     o.push('<text x="' + (X+16) + '" y="' + (y+24) + '" font-family="' + FONT + '" font-size="18" font-weight="bold" fill="' + ink3 + '">' + (i+1) + '</text>');
-    o.push('<text x="' + (X+46) + '" y="' + (y+24) + '" font-family="' + FONT + '" font-size="19" font-weight="bold" fill="' + ink + '">' + esc(pl.name) + '</text>');
+    o.push(textoAjustado(pl.name, X+46, y+24, colW - 46 - 74, 19, FONT, ink, "bold"));
     o.push('<rect x="' + (X+colW-62) + '" y="' + (y+6) + '" width="50" height="22" rx="5" fill="' + accSoft + '"/>');
     o.push('<text x="' + (X+colW-37) + '" y="' + (y+22) + '" text-anchor="middle" font-family="' + FONT + '" font-size="14" font-weight="bold" fill="' + ink + '">' + esc(pk) + '</text>');
     y += fila;
