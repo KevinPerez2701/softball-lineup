@@ -16,7 +16,9 @@ Hecho para llevarlo al dugout: se arma en el navegador, se guarda en el navegado
 
 ## Uso
 
-No hay que instalar nada. Abre la página y listo.
+No hay que instalar nada. Abre la página y listo: arranca en blanco, y lo primero es cargar a tus jugadores en **Roster del equipo** (quedan guardados para cada partido).
+
+En el teléfono la app se usa por pestañas, abajo: **Juego** (marcador y carreras), **Campo** (diamante) y **Orden** (orden al bate y banca). Arriba, **Compartir** agrupa imagen, térmica e impresión, y el menú **☰** el resto (guardar, abrir, respaldo, roster).
 Todo se guarda en el `localStorage` del navegador: los datos no salen de tu equipo, pero tampoco se sincronizan entre dispositivos — para eso está el botón **Respaldo** (copiar el texto y pegarlo en el otro navegador).
 
 ### Instalar como app

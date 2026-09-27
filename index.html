@@ -158,6 +158,7 @@ input,textarea{caret-color:var(--accent-text)}
 .tools{display:flex;gap:7px;flex-wrap:wrap;align-items:center}
 .tgroup{display:flex;gap:7px;flex-wrap:wrap}
 .tgroup + .tgroup{padding-left:14px;border-left:1px solid rgba(255,255,255,.18)}
+.mtools,.tabbar{display:none}
 
 /* ---------- buttons ---------- */
 .btn{
@@ -403,6 +404,32 @@ ul.list{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;ga
 .toggle input{margin:0;accent-color:var(--accent);cursor:pointer}
 .toggle.off{opacity:.55}
 .panel-hint{margin:0 0 9px;color:var(--ink-3);font-size:12.5px}
+.hint{margin:0 0 10px;font-size:12.5px;color:var(--ink-3)}
+.hint summary{
+  cursor:pointer;font-weight:600;color:var(--ink-2);width:max-content;max-width:100%;
+  list-style:none;display:flex;align-items:center;gap:6px;padding:2px 0;
+}
+.hint summary::-webkit-details-marker{display:none}
+.hint summary::before{
+  content:"";width:7px;height:7px;border:solid currentColor;border-width:0 2px 2px 0;
+  transform:rotate(-45deg);transition:transform .15s;margin-right:2px;
+}
+.hint[open] summary::before{transform:rotate(45deg)}
+.hint p{margin:6px 0 0;line-height:1.5}
+/* hoja de acciones (menús del teléfono) */
+.sheet-list{display:flex;flex-direction:column;gap:6px}
+.sheet-item{
+  display:grid;grid-template-columns:auto minmax(0,1fr);align-items:center;gap:2px 12px;
+  width:100%;text-align:left;cursor:pointer;
+  background:var(--surface-2);border:1px solid transparent;border-radius:10px;padding:12px 14px;
+}
+.sheet-item:hover{border-color:var(--line-2)}
+.sheet-item:active{background:var(--surface-3)}
+.sheet-item .ico{grid-row:1/3;width:20px;height:20px;color:var(--ink-2)}
+.sheet-item b{font-weight:600;font-size:15px}
+.sheet-item small{color:var(--ink-3);font-size:12.5px}
+.sheet-item.key{background:var(--accent);color:var(--accent-ink)}
+.sheet-item.key .ico,.sheet-item.key small{color:var(--accent-ink)}
 .row.lineup-row{grid-template-columns:28px minmax(0,1fr) auto auto}
 .row.inactive{opacity:.55}
 .row .check{width:18px;height:18px;accent-color:var(--accent);cursor:pointer}
@@ -456,27 +483,75 @@ dialog::backdrop{background:rgba(10,16,11,.55)}
 }
 /* ---- teléfono: diamante reubicado y controles más grandes ---- */
 @media (max-width:680px){
-  .wrap{padding:0 10px 40px}
+  /* El teléfono es una app de tres pantallas: Juego, Campo y Orden, con la
+     barra de pestañas abajo, al alcance del pulgar. Las acciones de archivo y
+     de compartir viven en dos menús de la cabecera. */
+  .wrap{padding:0 10px calc(84px + env(safe-area-inset-bottom))}
+  .topbar-in{padding:8px max(12px,env(safe-area-inset-right)) 8px max(12px,env(safe-area-inset-left));gap:8px;flex-wrap:nowrap}
+  .brand{margin-right:auto;flex:0 1 auto;min-width:0}
+  .brand b{font-size:21px}
+  .brand span{display:none}
+  .tools{display:none}
+  .mtools{display:flex;gap:8px;align-items:center}
+  .mtools .btn{min-height:38px}
+  .mtools .btn-key{padding:6px 12px;font-size:14px}
+  .mtools .btn-icon{min-width:40px}
 
-  /* en el teléfono la barra no se pega arriba: con todas las acciones a la
-     vista ocupa dos filas, y fija se comería media pantalla del diamante */
-  .topbar{position:relative}
-  .topbar-in{padding:8px max(10px,env(safe-area-inset-right)) 10px max(10px,env(safe-area-inset-left));gap:8px}
-  .brand{margin-right:auto;flex:0 0 auto}
-  .brand b{font-size:20px}
-  .tools{flex:1 0 100%;flex-direction:column;align-items:stretch;gap:6px}
-  .tgroup{flex-wrap:nowrap;gap:6px}
-  .tgroup + .tgroup{padding-left:0;border-left:0}
-  .tgroup .btn{flex:1 1 auto;justify-content:center;padding:8px 4px;font-size:13px;min-width:0}
+  .work{margin-top:12px !important}
+  .innings{margin-top:0}
+  body[data-tab="juego"] .work{margin-top:12px !important}
+
+  .tabbar{
+    display:grid;grid-template-columns:repeat(3,1fr);
+    position:fixed;left:0;right:0;bottom:0;z-index:40;
+    background:var(--bar);color:var(--bar-ink);
+    border-top:1px solid rgba(255,255,255,.08);
+    padding:6px max(8px,env(safe-area-inset-right)) calc(6px + env(safe-area-inset-bottom)) max(8px,env(safe-area-inset-left));
+    --focus:var(--accent);
+  }
+  .tab{
+    position:relative;display:flex;flex-direction:column;align-items:center;gap:3px;
+    background:none;border:0;color:inherit;opacity:.62;cursor:pointer;
+    padding:6px 4px 5px;border-radius:12px;min-height:54px;
+    font-family:var(--cond);font-weight:700;font-size:13px;letter-spacing:.08em;text-transform:uppercase;
+    transition:opacity .15s,background .15s;
+  }
+  .tab .ico{width:22px;height:22px}
+  .tab[aria-current="page"]{opacity:1;background:rgba(255,255,255,.08)}
+  .tab[aria-current="page"] .ico{color:var(--accent)}
+  .tab-badge{
+    position:absolute;top:3px;left:calc(50% + 12px);
+    font-family:var(--cond);font-weight:700;font-size:11px;letter-spacing:.02em;line-height:1;
+    background:rgba(255,255,255,.16);color:var(--bar-ink);padding:3px 5px;border-radius:999px;
+    font-variant-numeric:tabular-nums;
+  }
+  .tab-badge.ok{background:var(--accent);color:var(--accent-ink)}
+  .toast{bottom:calc(84px + env(safe-area-inset-bottom))}
+
+  /* diálogos como hojas que suben desde abajo */
+  dialog,#teamRoster{
+    width:100%;max-width:100%;margin:auto 0 0;
+    border-radius:20px 20px 0 0;border-bottom:0;
+    max-height:90vh;padding-bottom:env(safe-area-inset-bottom);
+  }
+  dialog[open]{animation:sheet-up .26s cubic-bezier(.16,1,.3,1)}
+  dialog .dlg-head{position:relative;padding-top:20px}
+  dialog .dlg-head::before{
+    content:"";position:absolute;top:7px;left:50%;transform:translateX(-50%);
+    width:38px;height:4px;border-radius:4px;background:var(--line-2);
+  }
+  .dlg-body{max-height:calc(90vh - 90px)}
 
   .scorecard{margin:12px 0;padding:11px;gap:9px;grid-template-columns:repeat(2,minmax(0,1fr))}
   .scorecard .fieldset:nth-child(1),
   .scorecard .fieldset:nth-child(2){grid-column:1/-1}
-  .scorecard .sc-score{grid-column:auto}
-  .score b{font-size:29px}
+  .scorecard .sc-score{grid-column:1/-1;order:-1}
+  .score{justify-content:center;gap:18px;padding:12px 14px}
+  .score b{font-size:46px}
+  .score small{font-size:11px}
+  .score i{font-size:26px;margin-top:9px}
   .inp{font-size:16px;padding:8px 9px}
   .inp-big{font-size:20px;padding:6px 9px}
-  .score{justify-content:center;padding:8px 14px}
 
   .work{gap:14px}
   .field-head{padding:9px 11px;gap:7px}
@@ -520,8 +595,22 @@ dialog::backdrop{background:rgba(10,16,11,.55)}
   .row.editing{grid-template-columns:62px minmax(0,1fr);row-gap:7px}
   .row.editing .rowacts{grid-column:1/-1;justify-content:flex-end}
   .row.editing .inp{font-size:16px;padding:7px}
-  .dlg-body{max-height:64vh}
+  /* acciones de cada tarjeta: una fila pareja debajo del título */
+  .panel-head .spacer,.field-head .spacer{flex-basis:100%;height:0;margin:0}
+  .panel-head > .btn,.field-head > .btn{flex:1 1 0;justify-content:center;min-width:0;white-space:nowrap}
+  .row.lineup-row{grid-template-columns:22px minmax(0,1fr) auto auto;gap:6px;padding:6px 6px 6px 8px}
+  .rowacts{gap:4px}
+  .btn .t-opt{display:none}
+  .posbadge{padding:2px 6px}
 }
+/* solo en pantalla: al imprimir desde el teléfono sale la hoja completa */
+@media screen and (max-width:680px){
+  body[data-tab="juego"] [data-view]:not([data-view="juego"]),
+  body[data-tab="campo"] [data-view]:not([data-view="campo"]),
+  body[data-tab="orden"] [data-view]:not([data-view="orden"]){display:none}
+  body:not([data-tab="juego"]) .foot{display:none}
+}
+@keyframes sheet-up{from{transform:translateY(40px);opacity:.4}to{transform:none;opacity:1}}
 
 @media (max-width:420px){
   .brand b{font-size:18px}
@@ -637,12 +726,16 @@ dialog::backdrop{background:rgba(10,16,11,.55)}
         <button class="btn btn-key btn-sm" id="btnPrint" type="button">Imprimir / PDF</button>
       </div>
     </div>
+    <div class="mtools">
+      <button class="btn btn-key btn-sm" id="btnShareMenu" type="button" aria-haspopup="dialog"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 15V3M7.5 7.5L12 3l4.5 4.5"/><path d="M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-7"/></svg>Compartir</button>
+      <button class="btn btn-ghost btn-sm btn-icon" id="btnMoreMenu" type="button" aria-haspopup="dialog" aria-label="Más opciones" title="Más opciones"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button>
+    </div>
   </div>
 </header>
 
 <main class="wrap">
 
-  <section class="card scorecard" aria-label="Datos del juego">
+  <section class="card scorecard" aria-label="Datos del juego" data-view="juego">
     <div class="fieldset">
       <label class="lbl" for="fTeam">Tu equipo</label>
       <input class="inp inp-big" id="fTeam" type="text" placeholder="Nombre del equipo" autocomplete="off">
@@ -676,7 +769,7 @@ dialog::backdrop{background:rgba(10,16,11,.55)}
   <div class="work" style="margin-top:18px">
 
     <div>
-      <section class="card" aria-label="Diamante y posiciones">
+      <section class="card" aria-label="Diamante y posiciones" data-view="campo">
         <div class="field-head">
           <h2>Defensiva</h2>
           <span class="pill" id="posCount">0 / 10</span>
@@ -746,7 +839,7 @@ dialog::backdrop{background:rgba(10,16,11,.55)}
         </p>
       </section>
 
-      <section class="card innings" aria-label="Carreras por inning">
+      <section class="card innings" aria-label="Carreras por inning" data-view="juego">
         <div class="innings-head">
           <h2>Carreras por inning</h2>
           <span class="pill">Softball · 7 innings</span>
@@ -762,7 +855,7 @@ dialog::backdrop{background:rgba(10,16,11,.55)}
 
     <aside class="rail">
 
-      <section class="card no-print" aria-label="Roster de alineación">
+      <section class="card no-print" aria-label="Roster de alineación" data-view="orden">
         <div class="panel-head">
           <h2>Roster</h2>
           <span class="count" id="rosterCount">0</span>
@@ -772,12 +865,15 @@ dialog::backdrop{background:rgba(10,16,11,.55)}
           <button class="btn btn-sm no-print" id="btnClearOrder" type="button">Vaciar orden</button>
         </div>
         <div class="panel-body">
-          <p class="panel-hint no-print">Pulsa <b>Agregar</b> para meter a cada jugador en el orden al bate, y arrastra las filas (o usa ↑ ↓) para ordenarlas. El orden al bate es independiente de la defensa: puede batear alguien sin posición en el campo. Arrastra un jugador al diamante para asignarle posición.</p>
+          <details class="hint no-print">
+            <summary>Cómo armar el orden</summary>
+            <p>Pulsa <b>Agregar</b> para meter a cada jugador en el orden al bate, y arrastra las filas (o usa ↑ ↓) para ordenarlas. El orden al bate es independiente de la defensa: puede batear alguien sin posición en el campo. Arrastra un jugador al diamante para asignarle posición.</p>
+          </details>
           <ul class="list" id="rosterList"></ul>
         </div>
       </section>
 
-      <section class="card" aria-label="Banca">
+      <section class="card" aria-label="Banca" data-view="orden">
         <div class="panel-head">
           <h2>Banca</h2>
           <span class="count" id="benchCount">0</span>
@@ -808,6 +904,30 @@ dialog::backdrop{background:rgba(10,16,11,.55)}
     <span>Posiciones · SF y 4F pueden activarse simultáneamente. BD se activa o desactiva según el partido.</span>
   </footer>
 </main>
+
+<nav class="tabbar no-print" aria-label="Secciones">
+  <button type="button" class="tab" data-tab="juego">
+    <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2.5"/><path d="M12 5v14M7 10v4M16 10h2v4h-2"/></svg>
+    <span>Juego</span><b class="tab-badge" id="tabScore">0–0</b>
+  </button>
+  <button type="button" class="tab" data-tab="campo">
+    <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l9 9-9 9-9-9z"/><path d="M12 8.5l3.5 3.5-3.5 3.5L8.5 12z"/></svg>
+    <span>Campo</span><b class="tab-badge" id="tabField">0/10</b>
+  </button>
+  <button type="button" class="tab" data-tab="orden">
+    <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 6h11M9 12h11M9 18h11"/><path d="M4 5v3M3.5 12.5h1.5L3.5 15H5M3.5 17h1.5v2H3.5"/></svg>
+    <span>Orden</span><b class="tab-badge" id="tabOrder">0</b>
+  </button>
+</nav>
+
+<dialog id="sheet" class="sheet">
+  <div class="dlg-head">
+    <h3 id="sheetTitle">Opciones</h3>
+    <span style="margin-left:auto"></span>
+    <button class="btn btn-sm" id="sheetClose" type="button">Cerrar</button>
+  </div>
+  <div class="dlg-body sheet-list" id="sheetBody"></div>
+</dialog>
 
 <dialog id="ask">
   <div class="dlg-head">
@@ -847,7 +967,7 @@ dialog::backdrop{background:rgba(10,16,11,.55)}
       <input class="inp" id="newName" type="text" placeholder="Nombre del jugador" aria-label="Nombre">
       <button class="btn btn-key" type="submit">Agregar</button>
     </form>
-    <p class="panel-hint">Marca los jugadores que asistieron a este partido. Después, en el Roster de la derecha, pulsa <b>Agregar</b> en cada jugador que quieras poner <b>uno por uno</b> en el orden al bate. El botón ✕ elimina al jugador definitivamente del roster del equipo.</p>
+    <p class="panel-hint">Marca los jugadores que asistieron a este partido. Después, en el Roster (pestaña <b>Orden</b> en el teléfono), pulsa <b>Agregar</b> en cada jugador que quieras poner <b>uno por uno</b> en el orden al bate. El botón ✕ elimina al jugador definitivamente del roster del equipo.</p>
     <ul class="list" id="teamRosterList"></ul>
   </div>
 </dialog>
@@ -931,23 +1051,6 @@ function blankState(){
   };
 }
 
-var TEAM_ROSTER = [
-  "Jose Ochoa", "Ismael Mendoza", "Simon Melendez", "Cachin",
-  "Henry Matheus", "Franklin Quevedo", "Elias", "Luis Adames",
-  "Angelo Crespo", "Jesus", "Miguel Granado", "Kevin Perez"
-];
-
-function seedState(){
-  var s = blankState();
-  s.date = new Date().toISOString().slice(0,10);
-  s.roster = TEAM_ROSTER.map(function(n){ return {id:nid(), num:"", name:n}; });
-  POS_ORDER.forEach(function(k, i){
-    if(s.roster[i]) s.assign[k] = s.roster[i].id;
-  });
-  s.order = s.roster.map(function(p){ return p.id; });
-  return s;
-}
-
 var S = lsGet(K_CUR, null);
 var TEAM = lsGet(K_TEAM, null);
 
@@ -985,9 +1088,8 @@ function ensureState(){
   POS_ORDER.forEach(function(k){ if(!(k in S.assign)) S.assign[k] = null; });
 }
 
-if(!Array.isArray(TEAM)){
-  TEAM = TEAM_ROSTER.map(function(n){ return {id:nid(), num:"", name:n}; });
-}
+/* La app arranca en blanco: cada quien carga su propio equipo. */
+if(!Array.isArray(TEAM)) TEAM = [];
 normalizeTeam();
 ensureState();
 
@@ -1023,13 +1125,27 @@ var ICONS = {
   up:'<path d="M12 19V5M5.5 11.5L12 5l6.5 6.5"/>',
   down:'<path d="M12 5v14M5.5 12.5L12 19l6.5-6.5"/>',
   edit:'<path d="M4 20h4L19 9l-4-4L4 16z"/><path d="M13.5 6.5l4 4"/>',
-  x:'<path d="M6.5 6.5l11 11M17.5 6.5l-11 11"/>'
+  x:'<path d="M6.5 6.5l11 11M17.5 6.5l-11 11"/>',
+  minus:'<circle cx="12" cy="12" r="8.5"/><path d="M8.5 12h7"/>',
+  plus:'<circle cx="12" cy="12" r="8.5"/><path d="M8.5 12h7M12 8.5v7"/>',
+  image:'<rect x="3.5" y="4.5" width="17" height="15" rx="2.5"/><circle cx="9" cy="10" r="1.8"/><path d="M20.5 16l-5-5-8.5 8.5"/>',
+  receipt:'<path d="M6 3h12v18l-3-2-3 2-3-2-3 2z"/><path d="M9 8h6M9 12h6"/>',
+  printer:'<path d="M7 9V3.5h10V9"/><rect x="3.5" y="9" width="17" height="8" rx="2"/><path d="M7 14h10v6.5H7z"/>',
+  download:'<path d="M12 3v12M7.5 10.5L12 15l4.5-4.5"/><path d="M4.5 19.5h15"/>',
+  users:'<circle cx="9" cy="8.5" r="3.5"/><path d="M2.5 20c.6-3.6 3.2-5.5 6.5-5.5s5.9 1.9 6.5 5.5"/><path d="M16 5.2a3.5 3.5 0 0 1 0 6.6M18 14.8c2 .8 3.2 2.5 3.5 5.2"/>',
+  file:'<path d="M14 3H6.5A1.5 1.5 0 0 0 5 4.5v15A1.5 1.5 0 0 0 6.5 21h11a1.5 1.5 0 0 0 1.5-1.5V8z"/><path d="M14 3v5h5M12 11v6M9 14h6"/>',
+  save:'<path d="M5 3.5h11l3.5 3.5v12a1.5 1.5 0 0 1-1.5 1.5H5A1.5 1.5 0 0 1 3.5 19V5A1.5 1.5 0 0 1 5 3.5z"/><path d="M8 3.5v5h7v-5M7.5 20.5v-6h9v6"/>',
+  folder:'<path d="M3.5 6.5A1.5 1.5 0 0 1 5 5h4.5l2 2.5H19a1.5 1.5 0 0 1 1.5 1.5v9.5A1.5 1.5 0 0 1 19 20H5a1.5 1.5 0 0 1-1.5-1.5z"/>',
+  shield:'<path d="M12 3l7.5 3v5.5c0 4.6-3.2 8.2-7.5 9.5-4.3-1.3-7.5-4.9-7.5-9.5V6z"/><path d="M9 12l2 2 4-4"/>'
 };
+function svgIcon(name){
+  return '<svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" ' +
+    'stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + ICONS[name] + '</svg>';
+}
 function iconBtn(cls, name, label){
   var b = el("button", cls);
   b.type = "button";
-  b.innerHTML = '<svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" ' +
-    'stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + ICONS[name] + '</svg>';
+  b.innerHTML = svgIcon(name);
   b.title = label;
   b.setAttribute("aria-label", label);
   return b;
@@ -1252,6 +1368,9 @@ function renderField(){
   var pc = $("posCount");
   pc.textContent = filled + " / " + enabledCount;
   pc.className = filled === enabledCount ? "pill ok" : "pill";
+  var tf = $("tabField");
+  tf.textContent = filled + "/" + enabledCount;
+  tf.className = "tab-badge" + (filled === enabledCount ? " ok" : "");
 }
 
 /* clic para asignar */
@@ -1435,12 +1554,21 @@ function renderRoster(){
   S.roster.forEach(function(p){ if(ids.indexOf(p.id) < 0 && inLineup(p.id)) ids.push(p.id); });
 
   $("rosterCount").textContent = ids.length;
+  $("tabOrder").textContent = S.order.length;
+  /* sin nada que hacer, el botón no invita a tocarlo */
+  $("btnFillOrder").disabled = !S.roster.length;
+  $("btnClearOrder").disabled = !S.order.length;
+  $("btnAutoField").disabled = !S.roster.length;
+  $("btnClearField").disabled = !assignedIds().length;
   if(!S.roster.length){
     /* Primer paso de cada partido: sin asistencia no hay nada que armar, así
        que el panel vacío lleva directo a marcarla. */
     var cta = el("li", "empty-cta");
-    cta.appendChild(el("p", null, "Todavía no has marcado quién vino a este partido."));
-    var go = el("button", "btn btn-key", "Marcar asistencia");
+    var blank = !TEAM.length;
+    cta.appendChild(el("p", null, blank
+      ? "Tu equipo está vacío. Agrega a tus jugadores una vez y quedan guardados para cada partido."
+      : "Todavía no has marcado quién vino a este partido."));
+    var go = el("button", "btn btn-key", blank ? "Agregar jugadores" : "Marcar asistencia");
     go.type = "button";
     go.addEventListener("click", openTeamRoster);
     cta.appendChild(go);
@@ -1493,9 +1621,10 @@ function renderRoster(){
     });
 
     var ord = S.order.indexOf(pl.id);
-    var toggle = el("button", "btn btn-sm" + (ord >= 0 ? " btn-remove-order" : " btn-add-order"), ord >= 0 ? "Quitar" : "Agregar");
+    var toggle = el("button", "btn btn-sm" + (ord >= 0 ? " btn-remove-order" : " btn-add-order"));
     toggle.type = "button";
-    toggle.title = ord >= 0 ? "Quitar del orden al bate" : "Agregar uno por uno al orden al bate";
+    toggle.innerHTML = svgIcon(ord >= 0 ? "minus" : "plus") + '<span class="t-opt">' + (ord >= 0 ? "Quitar" : "Agregar") + '</span>';
+    toggle.title = (ord >= 0 ? "Quitar del orden al bate a " : "Agregar al orden al bate a ") + pl.name;
     toggle.setAttribute("aria-label", toggle.title);
     toggle.addEventListener("click", function(){
       if(S.order.indexOf(pl.id) >= 0) S.order = S.order.filter(function(x){ return x !== pl.id; });
@@ -1793,6 +1922,8 @@ function updateScore(){
   $("scThem").textContent = casa;
   $("scUs").setAttribute("aria-label", "Carreras del visitante: " + visitante);
   $("scThem").setAttribute("aria-label", "Carreras del equipo local: " + casa);
+
+  $("tabScore").textContent = visitante + "–" + casa;
 
   var tu = $("tot-us"), tt = $("tot-them");
   if(tu) tu.textContent = u;
@@ -2319,6 +2450,75 @@ function renderAll(){
   $("toggleDH").parentElement.classList.toggle("off", S.enabledDH !== true);
   save();
 }
+/* ============ teléfono: pestañas y menús ============ */
+var K_TAB = "diamante10.tab.v1";
+function setTab(t){
+  document.body.dataset.tab = t;
+  document.querySelectorAll(".tab").forEach(function(b){
+    if(b.dataset.tab === t) b.setAttribute("aria-current", "page");
+    else b.removeAttribute("aria-current");
+  });
+  try{ localStorage.setItem(K_TAB, t); }catch(e){}
+}
+document.querySelectorAll(".tab").forEach(function(b){
+  b.addEventListener("click", function(){
+    setTab(b.dataset.tab);
+    window.scrollTo(0, 0);
+  });
+});
+(function(){
+  var t = null;
+  try{ t = localStorage.getItem(K_TAB); }catch(e){}
+  /* sin jugadores no hay campo que armar: se abre donde se cargan */
+  if(!S.roster.length) t = "orden";
+  setTab(/^(juego|campo|orden)$/.test(t) ? t : "campo");
+})();
+
+/* Los menús solo reenvían el toque al botón de escritorio correspondiente:
+   una sola implementación por acción. */
+var SHEETS = {
+  share: {title:"Compartir", items:[
+    ["btnCopyImg", "image", "Copiar imagen", "Diamante y orden al bate, para WhatsApp"],
+    ["btnTicket", "receipt", "Imagen para térmica", "Rollo de 55 mm, en blanco y negro"],
+    ["btnPrint", "printer", "Imprimir / PDF", "Hoja carta para el anotador", true]
+  ]},
+  more: {title:"Opciones", items:[
+    ["btnInstall", "download", "Instalar la app", "Ábrela desde tu pantalla de inicio, sin señal", true],
+    ["btnTeamRoster", "users", "Roster del equipo", "Jugadores y asistencia al partido"],
+    ["btnNew", "file", "Alineación nueva", "Limpia campo, orden y marcador"],
+    ["btnSave", "save", "Guardar alineación", "Para reabrirla después"],
+    ["btnLoad", "folder", "Alineaciones guardadas", "Abrir o borrar"],
+    ["btnBackup", "shield", "Respaldo", "Pasar tus datos a otro dispositivo"]
+  ]}
+};
+function openSheet(key){
+  var cfg = SHEETS[key], body = $("sheetBody");
+  $("sheetTitle").textContent = cfg.title;
+  body.innerHTML = "";
+  cfg.items.forEach(function(it){
+    if($(it[0]).hidden) return;
+    var b = el("button", "sheet-item" + (it[4] ? " key" : ""));
+    b.type = "button";
+    b.innerHTML = svgIcon(it[1]);
+    b.appendChild(el("b", null, it[2]));
+    b.appendChild(el("small", null, it[3]));
+    b.addEventListener("click", function(){
+      $("sheet").close();
+      $(it[0]).click();
+    });
+    body.appendChild(b);
+  });
+  $("sheet").showModal();
+}
+$("btnShareMenu").addEventListener("click", function(){ openSheet("share"); });
+$("btnMoreMenu").addEventListener("click", function(){ openSheet("more"); });
+$("sheetClose").addEventListener("click", function(){ $("sheet").close(); });
+
+/* Tocar el fondo oscuro cierra cualquier hoja o diálogo, como en una app. */
+document.querySelectorAll("dialog").forEach(function(d){
+  d.addEventListener("click", function(ev){ if(ev.target === d) d.close(); });
+});
+
 renderAll();
 
 /* ============ app instalable ============
