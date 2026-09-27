@@ -128,6 +128,7 @@ body{
   -webkit-font-smoothing:antialiased;
 }
 button,input,select,textarea{font:inherit;color:inherit}
+button,input,select,textarea,label{touch-action:manipulation}
 button{-webkit-tap-highlight-color:transparent}
 input,textarea{caret-color:var(--accent-text)}
 :where(button,[tabindex],input,select,textarea,a):focus-visible{
@@ -174,7 +175,7 @@ input,textarea{caret-color:var(--accent-text)}
 }
 .btn:hover{background:var(--surface-2);border-color:var(--ink-3)}
 .btn:active{transform:translateY(1px)}
-.btn:disabled{opacity:.35;cursor:default;transform:none}
+.btn:disabled{opacity:.4;cursor:not-allowed;transform:none}
 .btn-ghost{background:transparent;color:var(--bar-ink);border-color:rgba(255,255,255,.28)}
 .btn-ghost:hover{background:rgba(255,255,255,.12);border-color:rgba(255,255,255,.5)}
 /* el estilo ghost es para la barra oscura; dentro de un diálogo claro no se leía */
@@ -369,7 +370,7 @@ ul.list{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;ga
   padding:5px 8px;
 }
 .row:hover{border-color:var(--line-2)}
-.row.dragging{opacity:.4}.row.drop-target{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent-soft) inset}.rowacts .btn:disabled{opacity:.35;cursor:default}
+.row.dragging{opacity:.4}.row.drop-target{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent-soft) inset}.rowacts .btn:disabled{opacity:.4}
 .row.benched{background:transparent;border:1px dashed var(--line)}
 .jersey{
   display:grid;place-items:center;min-width:27px;height:27px;padding:0 4px;
@@ -412,6 +413,16 @@ ul.list{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;ga
 .toggle input{margin:0;accent-color:var(--accent);cursor:pointer}
 .toggle.off{opacity:.55}
 .panel-hint{margin:0 0 9px;color:var(--ink-3);font-size:12.5px}
+.row-more{display:none}
+.sheet-sep{height:1px;background:var(--line);margin:6px 2px}
+.sheet-item.danger{background:transparent;border-color:var(--line)}
+.sheet-item.danger b,.sheet-item.danger .ico{color:var(--bad)}
+.toast{display:flex;align-items:center;gap:14px;width:max-content}
+.toast button{
+  background:none;border:0;color:var(--accent);font:inherit;font-weight:700;cursor:pointer;
+  padding:6px 4px;min-height:36px;pointer-events:auto;text-transform:uppercase;letter-spacing:.04em;
+}
+.toast.on{pointer-events:auto}
 .hint{margin:0 0 10px;font-size:12.5px;color:var(--ink-3)}
 .hint summary{
   cursor:pointer;font-weight:600;color:var(--ink-2);width:max-content;max-width:100%;
@@ -666,6 +677,11 @@ body.locked .gate{
   .row.lineup-row{grid-template-columns:22px minmax(0,1fr) auto auto;gap:6px;padding:6px 6px 6px 8px}
   .rowacts{gap:4px}
   .btn .t-opt{display:none}
+  .row.lineup-row .btn-remove-order,.row.lineup-row .btn-add-order,.row.lineup-row .row-edit{display:none}
+  .row-more{display:inline-flex}
+  html{scroll-padding-top:72px;scroll-padding-bottom:calc(96px + env(safe-area-inset-bottom))}
+  .mtools .btn{min-height:44px}
+  .mtools .btn-icon{min-width:44px}
   .posbadge{padding:2px 6px}
 }
 /* solo en pantalla: al imprimir desde el teléfono sale la hoja completa */
@@ -683,11 +699,16 @@ body.locked .gate{
   .slot-name{font-size:3.15cqw}
   .slot-num{width:4.8cqw;height:4.8cqw;font-size:3.1cqw}
 }
-/* dedos, no cursor: ningún control por debajo de ~36 px */
+/* dedos, no cursor: 44 px por control y 8 px entre controles vecinos */
 @media (pointer:coarse){
-  .btn-sm,.toggle{min-height:36px}
-  .btn-icon{min-width:36px;justify-content:center}
-  .row .check{width:22px;height:22px}
+  .btn-sm,.toggle{min-height:44px}
+  .btn-icon{min-width:44px;justify-content:center}
+  .rowacts{gap:8px}
+  .row .check{width:24px;height:24px}
+  .inp{min-height:44px}
+  table.inn input{min-height:44px}
+  .btn:active,.tab:active,.sheet-item:active,.pickitem:active{filter:brightness(.94)}
+  .slot:active{transform:translate(-50%,-50%) scale(.97)}
 }
 @media (prefers-reduced-motion:reduce){
   *{transition:none !important;animation:none !important}
@@ -788,10 +809,10 @@ body.locked .gate{
     <form class="gate-card gate-when-login" id="loginForm" novalidate>
       <h1>Entrar</h1>
       <label class="lbl" for="lgEmail">Correo</label>
-      <input class="inp" id="lgEmail" type="email" autocomplete="username" inputmode="email" autocapitalize="off" spellcheck="false" required>
+      <input class="inp" id="lgEmail" type="email" autocomplete="username" inputmode="email" autocapitalize="off" spellcheck="false" required aria-describedby="lgMsg">
       <label class="lbl" for="lgPass">Contraseña</label>
       <div class="pass-wrap">
-        <input class="inp" id="lgPass" type="password" autocomplete="current-password" required>
+        <input class="inp" id="lgPass" type="password" autocomplete="current-password" required aria-describedby="lgMsg">
         <button class="btn btn-sm" id="lgShow" type="button" aria-pressed="false">Ver</button>
       </div>
       <p class="gate-msg" id="lgMsg" role="alert" hidden></p>
@@ -1327,7 +1348,8 @@ var ICONS = {
   save:'<path d="M5 3.5h11l3.5 3.5v12a1.5 1.5 0 0 1-1.5 1.5H5A1.5 1.5 0 0 1 3.5 19V5A1.5 1.5 0 0 1 5 3.5z"/><path d="M8 3.5v5h7v-5M7.5 20.5v-6h9v6"/>',
   folder:'<path d="M3.5 6.5A1.5 1.5 0 0 1 5 5h4.5l2 2.5H19a1.5 1.5 0 0 1 1.5 1.5v9.5A1.5 1.5 0 0 1 19 20H5a1.5 1.5 0 0 1-1.5-1.5z"/>',
   shield:'<path d="M12 3l7.5 3v5.5c0 4.6-3.2 8.2-7.5 9.5-4.3-1.3-7.5-4.9-7.5-9.5V6z"/><path d="M9 12l2 2 4-4"/>',
-  logout:'<path d="M14 4.5h4A1.5 1.5 0 0 1 19.5 6v12a1.5 1.5 0 0 1-1.5 1.5h-4"/><path d="M10 16.5L5.5 12 10 7.5M5.5 12H15"/>'
+  logout:'<path d="M14 4.5h4A1.5 1.5 0 0 1 19.5 6v12a1.5 1.5 0 0 1-1.5 1.5h-4"/><path d="M10 16.5L5.5 12 10 7.5M5.5 12H15"/>',
+  dots:'<circle cx="5.5" cy="12" r="1.2"/><circle cx="12" cy="12" r="1.2"/><circle cx="18.5" cy="12" r="1.2"/>'
 };
 function svgIcon(name){
   return '<svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" ' +
@@ -1478,12 +1500,22 @@ function save(){ lsSet(K_CUR, S); }
 function saveTeam(){ lsSet(K_TEAM, TEAM); }
 
 var toastT;
-function toast(msg){
+/* 3 a 5 s según el largo, para que dé tiempo de leerlo; con "undo" lleva un
+   botón Deshacer y dura un poco más. */
+function toast(msg, undo){
   var t = $("toast");
-  t.textContent = msg;
+  t.textContent = "";
+  t.appendChild(el("span", null, msg));
+  if(undo){
+    var b = el("button", null, "Deshacer");
+    b.type = "button";
+    b.addEventListener("click", function(){ t.classList.remove("on"); undo(); });
+    t.appendChild(b);
+  }
   t.classList.add("on");
   clearTimeout(toastT);
-  toastT = setTimeout(function(){ t.classList.remove("on"); }, 2100);
+  toastT = setTimeout(function(){ t.classList.remove("on"); },
+    undo ? 6000 : Math.min(5000, Math.max(3000, msg.length * 60)));
 }
 
 /* ============ campo ============ */
@@ -1563,6 +1595,7 @@ function renderField(){
   var tf = $("tabField");
   tf.textContent = filled + "/" + enabledCount;
   tf.className = "tab-badge" + (filled === enabledCount ? " ok" : "");
+  tf.parentNode.setAttribute("aria-label", "Campo: " + filled + " de " + enabledCount + " posiciones cubiertas");
 }
 
 /* clic para asignar */
@@ -1747,6 +1780,7 @@ function renderRoster(){
 
   $("rosterCount").textContent = ids.length;
   $("tabOrder").textContent = S.order.length;
+  $("tabOrder").parentNode.setAttribute("aria-label", "Orden: " + S.order.length + (S.order.length === 1 ? " bateador" : " bateadores"));
   /* sin nada que hacer, el botón no invita a tocarlo */
   $("btnFillOrder").disabled = !S.roster.length;
   $("btnClearOrder").disabled = !S.order.length;
@@ -1845,18 +1879,35 @@ function renderRoster(){
       r.acts.appendChild(down);
     }
 
-    var edit = iconBtn("btn btn-sm btn-icon", "edit", "Editar a " + pl.name);
-    edit.addEventListener("click", function(){
+    var edit = iconBtn("btn btn-sm btn-icon row-edit", "edit", "Editar a " + pl.name);
+    function startEdit(){
       inlineEdit(r.li, pl, function(name, num){
         pl.name = name; pl.num = num;
         syncTeamPlayer(pl);
         renderAll();
         toast("Jugador actualizado");
       }, renderAll);
+    }
+    edit.addEventListener("click", startEdit);
+
+    /* En el teléfono, Quitar y Editar van en un menú: así ↑ ↓ tienen 44 px
+       y el nombre cabe entero. */
+    var more = iconBtn("btn btn-sm btn-icon row-more", "dots", "Más acciones para " + pl.name);
+    more.setAttribute("aria-haspopup", "dialog");
+    more.addEventListener("click", function(){
+      var inOrder = S.order.indexOf(pl.id) >= 0;
+      openActions(pl.name, [
+        {icon:"edit", label:"Editar jugador", sub:"Nombre y número", fn:startEdit},
+        {icon: inOrder ? "minus" : "plus",
+         label: inOrder ? "Quitar del orden al bate" : "Agregar al orden al bate",
+         sub: inOrder ? "Pasa a la banca si no tiene posición" : "Batea al final del orden",
+         fn: function(){ toggle.click(); }}
+      ]);
     });
 
     r.acts.appendChild(toggle);
     r.acts.appendChild(edit);
+    r.acts.appendChild(more);
     ul.appendChild(r.li);
   });
 }
@@ -1989,7 +2040,9 @@ $("btnFillOrder").addEventListener("click", function(){
               : "Ya estaban todos en el orden");
 });
 $("btnClearOrder").addEventListener("click", function(){
+  var before = S.order.slice();
   S.order = []; renderAll();
+  toast("Orden al bate vaciado", function(){ S.order = before; renderAll(); });
 });
 
 /* ============ banca ============ */
@@ -2038,8 +2091,10 @@ $("btnAutoField").addEventListener("click", function(){
   toast("Posiciones vacías completadas");
 });
 $("btnClearField").addEventListener("click", function(){
+  var before = JSON.parse(JSON.stringify(S.assign)), dh = S.dh;
   POS_ORDER.forEach(function(k){ S.assign[k] = null; });
   renderAll();
+  toast("Campo vaciado", function(){ S.assign = before; S.dh = dh; renderAll(); });
 });
 
 /* ============ innings ============ */
@@ -2116,6 +2171,7 @@ function updateScore(){
   $("scThem").setAttribute("aria-label", "Carreras del equipo local: " + casa);
 
   $("tabScore").textContent = visitante + "–" + casa;
+  $("tabScore").parentNode.setAttribute("aria-label", "Juego: visita " + visitante + ", casa " + casa);
 
   var tu = $("tot-us"), tt = $("tot-them");
   if(tu) tu.textContent = u;
@@ -2682,27 +2738,40 @@ var SHEETS = {
     ["btnSave", "save", "Guardar alineación", "Para reabrirla después"],
     ["btnLoad", "folder", "Alineaciones guardadas", "Abrir o borrar"],
     ["btnBackup", "shield", "Respaldo", "Exportar o importar tus datos como texto"],
-    ["btnLogout", "logout", "Cerrar sesión", cloud.email]
+    "sep",
+    ["btnLogout", "logout", "Cerrar sesión", cloud.email, false, true]
   ]}
 };
-function openSheet(key){
-  var cfg = SHEETS[key], body = $("sheetBody");
-  $("sheetTitle").textContent = cfg.title;
+/* Hoja de acciones genérica: cada item es {icon, label, sub, fn, key, danger}
+   o "sep" para una línea divisoria. */
+function openActions(title, items){
+  var body = $("sheetBody");
+  $("sheetTitle").textContent = title;
   body.innerHTML = "";
-  cfg.items.forEach(function(it){
-    if($(it[0]).hidden) return;
-    var b = el("button", "sheet-item" + (it[4] ? " key" : ""));
+  items.forEach(function(it){
+    if(it === "sep"){ body.appendChild(el("div", "sheet-sep")); return; }
+    var b = el("button", "sheet-item" + (it.key ? " key" : "") + (it.danger ? " danger" : ""));
     b.type = "button";
-    b.innerHTML = svgIcon(it[1]);
-    b.appendChild(el("b", null, it[2]));
-    b.appendChild(el("small", null, it[3]));
+    b.innerHTML = svgIcon(it.icon);
+    b.appendChild(el("b", null, it.label));
+    b.appendChild(el("small", null, it.sub));
     b.addEventListener("click", function(){
       $("sheet").close();
-      $(it[0]).click();
+      it.fn();
     });
     body.appendChild(b);
   });
   $("sheet").showModal();
+}
+function openSheet(key){
+  var cfg = SHEETS[key];
+  openActions(cfg.title, cfg.items.filter(function(it){
+    return it === "sep" || !$(it[0]).hidden;
+  }).map(function(it){
+    if(it === "sep") return it;
+    return {icon:it[1], label:it[2], sub:it[3], key:it[4], danger:it[5],
+            fn:function(){ $(it[0]).click(); }};
+  }));
 }
 $("btnShareMenu").addEventListener("click", function(){ openSheet("share"); });
 $("btnMoreMenu").addEventListener("click", function(){ openSheet("more"); });
