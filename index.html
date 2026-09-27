@@ -2086,9 +2086,12 @@ function buildTicketSvg(){
   S.order.forEach(function(id, i){
     var pl = player(id);
     if(!pl) return;
+    /* La columna de posición se alinea a la derecha pero con margen: pegada
+       al borde la cabeza térmica recorta el último trazo. */
+    var XPOS = TK_W - 14;
     o.push('<text x="30" y="' + y + '" text-anchor="end" font-family="' + FB + '" font-size="21" font-weight="bold" fill="#000">' + (i+1) + '</text>');
-    o.push(textoAjustado(pl.name, 38, y, 268, 21, F, "#000", "bold"));
-    o.push('<text x="' + TK_W + '" y="' + y + '" text-anchor="end" font-family="' + FB + '" font-size="18" font-weight="bold" fill="#000">' + esc(posOf(id) || "-") + '</text>');
+    o.push(textoAjustado(pl.name, 38, y, XPOS - 38 - 42, 21, F, "#000", "bold"));
+    o.push('<text x="' + XPOS + '" y="' + y + '" text-anchor="end" font-family="' + FB + '" font-size="18" font-weight="bold" fill="#000">' + esc(posOf(id) || "-") + '</text>');
     y += 8;
     o.push('<rect x="0" y="' + y + '" width="' + TK_W + '" height="1" fill="#000" opacity="0.45"/>');
     y += 22;
