@@ -1,8 +1,9 @@
 /* Diamante 10 — service worker.
-   En el dugout la señal va y viene: la app se sirve siempre desde la caché
-   (abre al instante y sin conexión) y, en paralelo, se pide la versión nueva
-   para la próxima vez. Sube VERSION cuando cambie la lista de archivos. */
-var VERSION = "v2";
+   En el dugout la señal va y viene. La página se pide a la red primero (con
+   señal siempre se ve la última versión) y, si no responde en unos segundos,
+   se abre desde la caché. El resto de archivos sale de la caché al instante
+   y se actualiza por detrás. Sube VERSION cuando cambie la lista de archivos. */
+var VERSION = "v3";
 var SHELL = "diamante10-shell-" + VERSION;
 var CDN = "diamante10-cdn";
 var ASSETS = [
@@ -34,6 +35,21 @@ self.addEventListener("activate", function(ev){
   );
 });
 
+/* Red primero, con límite de tiempo; si falla o tarda, lo guardado. */
+function networkFirst(req, cacheName, key, ms){
+  return caches.open(cacheName).then(function(cache){
+    var net = fetch(req).then(function(res){
+      if(res && res.ok) cache.put(key, res.clone());
+      return res;
+    });
+    var slow = new Promise(function(resolve){ setTimeout(resolve, ms); });
+    return Promise.race([net.catch(function(){ return null; }), slow]).then(function(res){
+      if(res) return res;
+      return cache.match(key).then(function(hit){ return hit || net; });
+    });
+  });
+}
+
 /* Responde con lo guardado y actualiza la caché por detrás. */
 function staleWhileRevalidate(req, cacheName, key){
   return caches.open(cacheName).then(function(cache){
@@ -55,7 +71,7 @@ self.addEventListener("fetch", function(ev){
   if(url.origin === self.location.origin){
     /* Toda navegación dentro del alcance es la misma página. */
     if(req.mode === "navigate"){
-      ev.respondWith(staleWhileRevalidate(req, SHELL, "./"));
+      ev.respondWith(networkFirst(req, SHELL, "./", 3500));
       return;
     }
     ev.respondWith(staleWhileRevalidate(req, SHELL));

@@ -489,7 +489,7 @@ body.locked .gate{
   display:grid;place-items:center;min-height:100vh;min-height:100dvh;
   background-color:var(--bar);color:var(--bar-ink);--focus:var(--accent);
   /* el diamante del campo, en tiza tenue, detrás de la tarjeta */
-  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 900 820'%3E%3Cg fill='none' stroke='%23ffffff' stroke-opacity='.07' stroke-width='4'%3E%3Cpath d='M450 690 L54 294 A560 560 0 0 1 846 294 Z'/%3E%3Cpath d='M450 690 L567 573 L450 456 L333 573 Z'/%3E%3Cpath d='M298.8 538.8 A153 153 0 0 1 601.2 538.8'/%3E%3C/g%3E%3C/svg%3E");
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 900 820'%3E%3Cg fill='none' stroke='%23ffffff' stroke-opacity='.07' stroke-width='4'%3E%3Cpath d='M450 741 L37.8 328.8 A548 548 0 0 1 862.2 328.8 Z'/%3E%3Cpath d='M450 690 L567 573 L450 456 L333 573 Z'/%3E%3Cpath d='M247.3 487.3 A216 216 0 0 1 652.7 487.3'/%3E%3C/g%3E%3C/svg%3E");
   background-repeat:no-repeat;background-position:50% 100%;background-size:min(1100px,190vw) auto;
 }
 .gate-in{
@@ -914,14 +914,20 @@ body.locked .gate{
         <div class="field-scroll">
           <div class="field-stage" id="stage">
             <svg class="field-svg" viewBox="0 0 900 820" preserveAspectRatio="xMidYMid meet" aria-hidden="true" focusable="false">
+              <!-- Campo de softball como en un diagrama real: grama a ambos lados de
+                   las líneas de foul, pista de advertencia alrededor de todo el campo,
+                   grama dentro del diamante y tierra solo en el arco del cuadro, en
+                   las bases, en el montículo y en home. Slowpitch: bases a 65 pies y
+                   lanzador a 50; el cuadro va un poco más grande que la escala del
+                   jardín para que quepan las tarjetas de los jugadores. -->
               <defs>
                 <clipPath id="fairclip">
-                  <path d="M450 690 L54 294 A560 560 0 0 1 846 294 Z"></path>
+                  <path d="M450 741 L37.8 328.8 A548 548 0 0 1 862.2 328.8 Z"></path>
                 </clipPath>
               </defs>
               <rect x="0" y="0" width="900" height="820" rx="14" fill="var(--foul)"></rect>
-              <path d="M450 690 L36 280 A578 578 0 0 1 864 280 Z" fill="var(--dirt-2)"></path>
-              <path d="M450 690 L54 294 A560 560 0 0 1 846 294 Z" fill="var(--grass-a)"></path>
+              <!-- terreno completo; el trazo grueso de encima es la pista de advertencia -->
+              <path d="M450 741 L37.8 328.8 A548 548 0 0 1 862.2 328.8 Z" fill="var(--grass-a)"></path>
               <g clip-path="url(#fairclip)" fill="var(--grass-b)">
                 <rect x="0" y="120" width="900" height="58"></rect>
                 <rect x="0" y="236" width="900" height="58"></rect>
@@ -929,20 +935,25 @@ body.locked .gate{
                 <rect x="0" y="468" width="900" height="58"></rect>
                 <rect x="0" y="584" width="900" height="58"></rect>
               </g>
-              <!-- Campo de slowpitch: bases a 65 pies y lanzador a 50, con el cuadro
-                   un 25 % más grande que la escala del jardín (cerca a ~275 pies)
-                   para que quepan las tarjetas. El cuadro es todo de tierra y su
-                   arco (60 pies desde la goma) llega a media distancia de la cerca. -->
-              <path d="M450 690 L298.8 538.8 A153 153 0 0 1 601.2 538.8 Z" fill="var(--dirt)"></path>
-              <circle cx="450" cy="690" r="58" fill="var(--dirt)"></circle>
-              <path d="M450 690 L54 294 M450 690 L846 294" stroke="var(--chalk)" stroke-width="4" opacity=".92" fill="none"></path>
-              <path d="M450 690 L567 573 L450 456 L333 573 Z" fill="none" stroke="var(--chalk)" stroke-width="2" opacity=".45"></path>
-              <circle cx="450" cy="562" r="22" fill="none" stroke="var(--chalk)" stroke-width="2" opacity=".35"></circle>
-              <g fill="none" stroke="var(--chalk)" stroke-width="2" opacity=".6">
+              <path d="M450 741 L37.8 328.8 A548 548 0 0 1 862.2 328.8 Z" fill="none"
+                    stroke="var(--dirt-2)" stroke-width="24" stroke-linejoin="round"></path>
+              <!-- tierra del cuadro: arco centrado en la goma -->
+              <path d="M450 690 L247.3 487.3 A216 216 0 0 1 652.7 487.3 Z" fill="var(--dirt)"></path>
+              <!-- grama del diamante, con recortes de tierra en 1B, 3B, montículo y home -->
+              <path d="M450 662 L553 573 L450 470 L347 573 Z" fill="var(--grass-a)"></path>
+              <g fill="var(--dirt)">
+                <circle cx="567" cy="573" r="26"></circle>
+                <circle cx="333" cy="573" r="26"></circle>
+                <circle cx="450" cy="562" r="25"></circle>
+                <circle cx="450" cy="690" r="40"></circle>
+              </g>
+              <path d="M450 690 L71 311 M450 690 L829 311" stroke="var(--chalk)" stroke-width="4" opacity=".92" fill="none"></path>
+              <g fill="none" stroke="var(--chalk)" stroke-width="2" opacity=".7">
                 <rect x="419" y="676" width="15" height="28"></rect>
                 <rect x="466" y="676" width="15" height="28"></rect>
-                <circle cx="350" cy="744" r="11"></circle>
-                <circle cx="550" cy="744" r="11"></circle>
+                <!-- cajones de coach -->
+                <rect x="-20" y="-7" width="40" height="14" transform="translate(290 616) rotate(45)"></rect>
+                <rect x="-20" y="-7" width="40" height="14" transform="translate(610 616) rotate(-45)"></rect>
               </g>
               <g fill="var(--chalk)">
                 <rect x="-8" y="-8" width="16" height="16" transform="translate(567 573) rotate(45)"></rect>
@@ -951,7 +962,6 @@ body.locked .gate{
                 <rect x="440" y="559" width="20" height="6"></rect>
                 <path d="M442 683 h16 v7 l-8 8 l-8 -8 Z"></path>
               </g>
-              <path d="M389.4 725 A70 70 0 0 0 510.6 725" fill="none" stroke="var(--chalk)" stroke-width="3" opacity=".45"></path>
             </svg>
             <!-- slots injected here -->
           </div>
@@ -1146,7 +1156,7 @@ var POS = [
   {k:"LCF", n:8,  es:"Jardín izquierdo central", x:36, y:27,   mx:33, my:20},
   {k:"RCF", n:9,  es:"Jardín derecho central",   x:64, y:27,   mx:67, my:20},
   {k:"RF",  n:9,  es:"Jardín derecho",           x:79, y:35,   mx:83, my:30},
-  {k:"SF",  n:10, es:"Short fielder",            x:50, y:42,   mx:50, my:39}
+  {k:"SF",  n:10, es:"Short fielder",            x:50, y:38,   mx:50, my:37}
 ];
 var POS_ORDER = POS.map(function(p){return p.k;});
 
@@ -2511,9 +2521,9 @@ function buildTicketSvg(){
   o.push('<g transform="translate(0,' + top + ')">');
   o.push('<g transform="scale(' + K.toFixed(4) + ')" fill="none" stroke="#000" stroke-width="7" stroke-linejoin="round">');
   o.push('<path d="M450 690 L54 294 M450 690 L846 294"/>');
-  o.push('<path d="M54 294 A560 560 0 0 1 846 294"/>');
+  o.push('<path d="M71 311 A536 536 0 0 1 829 311"/>');
   o.push('<path d="M450 690 L567 573 L450 456 L333 573 Z" stroke-width="5"/>');
-  o.push('<path d="M298.8 538.8 A153 153 0 0 1 601.2 538.8" stroke-width="4"/>');
+  o.push('<path d="M247.3 487.3 A216 216 0 0 1 652.7 487.3" stroke-width="4"/>');
   o.push('</g>');
   o.push('<path d="M' + (435*K).toFixed(1) + ' ' + (672*K).toFixed(1) + ' h' + (30*K).toFixed(1) +
          ' v' + (13*K).toFixed(1) + ' l' + (-15*K).toFixed(1) + ' ' + (14*K).toFixed(1) +
