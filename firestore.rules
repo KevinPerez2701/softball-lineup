@@ -1,0 +1,11 @@
+rules_version = '2';
+// Diamante 10: cada usuario solo lee y escribe su propio espacio.
+// Copia de las reglas publicadas en Firebase (proyecto artful-zone-461419-t1).
+// Si cambias este archivo, pégalo en Firestore → Reglas y publica.
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /users/{uid}/{document=**} {
+      allow read, write: if request.auth != null && request.auth.uid == uid;
+    }
+  }
+}

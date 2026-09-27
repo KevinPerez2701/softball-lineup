@@ -2,9 +2,9 @@
    En el dugout la señal va y viene: la app se sirve siempre desde la caché
    (abre al instante y sin conexión) y, en paralelo, se pide la versión nueva
    para la próxima vez. Sube VERSION cuando cambie la lista de archivos. */
-var VERSION = "v1";
+var VERSION = "v2";
 var SHELL = "diamante10-shell-" + VERSION;
-var FONTS = "diamante10-fonts";
+var CDN = "diamante10-cdn";
 var ASSETS = [
   "./",
   "index.html",
@@ -28,7 +28,7 @@ self.addEventListener("activate", function(ev){
   ev.waitUntil(
     caches.keys().then(function(keys){
       return Promise.all(keys.map(function(k){
-        if(k !== SHELL && k !== FONTS) return caches.delete(k);
+        if(k !== SHELL && k !== CDN) return caches.delete(k);
       }));
     }).then(function(){ return self.clients.claim(); })
   );
@@ -62,7 +62,10 @@ self.addEventListener("fetch", function(ev){
     return;
   }
 
-  if(url.hostname === "fonts.googleapis.com" || url.hostname === "fonts.gstatic.com"){
-    ev.respondWith(staleWhileRevalidate(req, FONTS));
+  /* Tipografías y el SDK de Firebase: sin ellos la app no abre sin señal.
+     Las llamadas a la base y al login (googleapis.com) nunca pasan por aquí. */
+  if(url.hostname === "fonts.googleapis.com" || url.hostname === "fonts.gstatic.com" ||
+     (url.hostname === "www.gstatic.com" && url.pathname.indexOf("/firebasejs/") === 0)){
+    ev.respondWith(staleWhileRevalidate(req, CDN));
   }
 });

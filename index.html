@@ -13,6 +13,10 @@
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="Diamante 10">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<script>
+/* Chrome ofrece instalar la app apenas carga, antes del login: se guarda el aviso. */
+window.addEventListener("beforeinstallprompt", function(e){ e.preventDefault(); window.__installEvt = e; });
+</script>
 <!-- ART:HEAD:START -->
 <title>Diamante 10</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -463,6 +467,63 @@ dialog::backdrop{background:rgba(10,16,11,.55)}
 .ask-msg{margin:0;font-size:14px;color:var(--ink-2);line-height:1.5}
 .ask-acts{display:flex;gap:7px;justify-content:flex-end;margin-top:14px;flex-wrap:wrap}
 
+/* ---------- entrada (login) ---------- */
+.gate{display:none}
+body.locked .topbar,body.locked main,body.locked .tabbar{display:none}
+body.locked .gate{
+  display:grid;place-items:center;min-height:100vh;min-height:100dvh;
+  background-color:var(--bar);color:var(--bar-ink);--focus:var(--accent);
+  /* el diamante del campo, en tiza tenue, detrás de la tarjeta */
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 900 820'%3E%3Cg fill='none' stroke='%23ffffff' stroke-opacity='.07' stroke-width='4'%3E%3Cpath d='M450 690 L54 294 A560 560 0 0 1 846 294 Z'/%3E%3Cpath d='M450 690 L610 530 L450 370 L290 530 Z'/%3E%3Cpath d='M166.6 406.6 A300 300 0 0 1 733.4 406.6'/%3E%3C/g%3E%3C/svg%3E");
+  background-repeat:no-repeat;background-position:50% 100%;background-size:min(1100px,190vw) auto;
+}
+.gate-in{
+  width:min(400px,calc(100% - 32px));display:flex;flex-direction:column;gap:22px;
+  padding:calc(28px + env(safe-area-inset-top)) 0 calc(28px + env(safe-area-inset-bottom));
+}
+.gate-brand{display:flex;align-items:center;gap:14px}
+.gate-brand img{border-radius:14px;box-shadow:0 10px 30px -12px rgba(0,0,0,.6)}
+.gate-brand b{
+  display:block;font-family:var(--cond);font-weight:700;font-size:32px;line-height:1;
+  letter-spacing:.02em;text-transform:uppercase;
+}
+.gate-brand span{
+  display:block;margin-top:4px;font-family:var(--cond);font-weight:600;font-size:13px;
+  letter-spacing:.14em;text-transform:uppercase;color:var(--accent);
+}
+.gate-card{
+  background:var(--surface);color:var(--ink);border-radius:18px;padding:22px 20px 18px;
+  display:flex;flex-direction:column;gap:7px;--focus:var(--accent-text);
+  box-shadow:0 2px 6px rgba(0,0,0,.2),0 30px 60px -30px rgba(0,0,0,.75);
+}
+.gate-card h1{
+  margin:0 0 6px;font-family:var(--cond);font-weight:700;font-size:26px;
+  letter-spacing:.06em;text-transform:uppercase;
+}
+.gate-card .lbl{margin-top:8px}
+.gate-card .inp{font-size:16px;padding:11px 12px;border-radius:9px}
+.pass-wrap{position:relative}
+.pass-wrap .inp{padding-right:78px}
+.pass-wrap .btn{position:absolute;right:6px;top:50%;transform:translateY(-50%);min-height:34px}
+.gate-go{justify-content:center;min-height:50px;margin-top:14px;font-size:16px;border-radius:10px}
+.gate-go:disabled{opacity:.6;cursor:progress}
+.gate-link{
+  align-self:center;background:none;border:0;cursor:pointer;padding:10px 6px;
+  color:var(--ink-2);font-size:14px;text-decoration:underline;text-underline-offset:3px;
+}
+.gate-msg{margin:6px 0 0;font-size:14px;font-weight:600;color:var(--bad);line-height:1.4}
+.gate-msg.ok{color:var(--good)}
+.gate-note{margin:4px 0 0;font-size:13px;color:var(--ink-3);text-align:center;line-height:1.45}
+.gate-status{margin:0;font-weight:600;opacity:.7}
+.gate-when-loading,.gate-when-login,.gate-when-error{display:none}
+.gate[data-state="loading"] .gate-when-loading{display:block}
+.gate[data-state="login"] .gate-when-login,
+.gate[data-state="error"] .gate-when-error{display:flex}
+@media (prefers-reduced-motion:no-preference){
+  .gate-card{animation:gate-in .45s cubic-bezier(.16,1,.3,1)}
+}
+@keyframes gate-in{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+
 /* ---------- misc ---------- */
 .foot{margin-top:26px;font-size:12.5px;color:var(--ink-3);display:flex;gap:14px;flex-wrap:wrap}
 .print-only{display:none}
@@ -702,8 +763,40 @@ dialog::backdrop{background:rgba(10,16,11,.55)}
 </style>
 <!-- ART:HEAD:END -->
 </head>
-<body>
+<body class="locked">
 <!-- ART:BODY:START -->
+
+<div class="gate" id="gate" data-state="loading">
+  <div class="gate-in">
+    <div class="gate-brand">
+      <img src="icons/icon-192.png" width="56" height="56" alt="">
+      <div><b>Diamante 10</b><span>Softball · Lineups</span></div>
+    </div>
+
+    <p class="gate-status gate-when-loading" role="status">Cargando…</p>
+
+    <div class="gate-card gate-when-error">
+      <h1>Sin conexión</h1>
+      <p class="gate-msg">No se pudo cargar la app. Revisa tu conexión y vuelve a intentarlo.</p>
+      <button class="btn btn-key gate-go" type="button" onclick="location.reload()">Reintentar</button>
+    </div>
+
+    <form class="gate-card gate-when-login" id="loginForm" novalidate>
+      <h1>Entrar</h1>
+      <label class="lbl" for="lgEmail">Correo</label>
+      <input class="inp" id="lgEmail" type="email" autocomplete="username" inputmode="email" autocapitalize="off" spellcheck="false" required>
+      <label class="lbl" for="lgPass">Contraseña</label>
+      <div class="pass-wrap">
+        <input class="inp" id="lgPass" type="password" autocomplete="current-password" required>
+        <button class="btn btn-sm" id="lgShow" type="button" aria-pressed="false">Ver</button>
+      </div>
+      <p class="gate-msg" id="lgMsg" role="alert" hidden></p>
+      <button class="btn btn-key gate-go" id="lgGo" type="submit">Entrar</button>
+      <button class="gate-link" id="lgForgot" type="button">¿Olvidaste tu contraseña?</button>
+      <p class="gate-note">Acceso solo por invitación. Si no tienes cuenta, pídesela a quien administra el equipo.</p>
+    </form>
+  </div>
+</div>
 
 <header class="topbar no-print">
   <div class="topbar-in">
@@ -718,6 +811,7 @@ dialog::backdrop{background:rgba(10,16,11,.55)}
         <button class="btn btn-ghost btn-sm" id="btnLoad" type="button">Guardados</button>
         <button class="btn btn-ghost btn-sm" id="btnBackup" type="button">Respaldo</button>
         <button class="btn btn-ghost btn-sm" id="btnTeamRoster" type="button">Roster</button>
+        <button class="btn btn-ghost btn-sm" id="btnLogout" type="button">Salir</button>
       </div>
       <div class="tgroup" role="group" aria-label="Compartir">
         <button class="btn btn-ghost btn-sm" id="btnInstall" type="button" title="Instalar Diamante 10 como app en este dispositivo" hidden>Instalar</button>
@@ -900,7 +994,7 @@ dialog::backdrop{background:rgba(10,16,11,.55)}
   </div>
 
   <footer class="foot no-print">
-    <span>Todo se guarda en este navegador. Nada sale de tu equipo.</span>
+    <span>Todo se guarda en tu cuenta y se sincroniza entre tus dispositivos. Sin señal, sigue funcionando.</span>
     <span>Posiciones · SF y 4F pueden activarse simultáneamente. BD se activa o desactiva según el partido.</span>
   </footer>
 </main>
@@ -989,7 +1083,7 @@ dialog::backdrop{background:rgba(10,16,11,.55)}
   </div>
   <div class="dlg-body">
     <p style="margin:0 0 10px;font-size:13.5px;color:var(--ink-2)">
-      Copia este texto para respaldar tu roster y alineaciones, o pega uno anterior y pulsa Importar.
+      Tus datos ya se sincronizan con tu cuenta. Esto es una copia extra en texto: cópiala para guardarla, o pega una anterior y pulsa Importar.
     </p>
     <textarea id="backupText" class="inp" rows="8" style="font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12px"></textarea>
     <div class="chips" style="margin-top:10px">
@@ -1002,8 +1096,12 @@ dialog::backdrop{background:rgba(10,16,11,.55)}
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
 <script>
-(function(){
+/* La app arranca solo con sesión iniciada: el módulo de Firebase (al final)
+   llama a D10.start con el adaptador de nube del usuario. */
+window.D10 = {start: function(cloud){
 "use strict";
+if(window.D10.started) return;
+window.D10.started = true;
 
 /* ============ posiciones ============ */
 var POS = [
@@ -1022,17 +1120,99 @@ var POS = [
 ];
 var POS_ORDER = POS.map(function(p){return p.k;});
 
-/* ============ almacenamiento ============ */
-var K_CUR = "diamante10.current.v7";
-var K_SAVED = "diamante10.saved.v1";
-var K_TEAM = "diamante10.teamRoster.v1";
+/* ============ almacenamiento ============
+   Cada usuario tiene sus propias claves en este dispositivo: si otra persona
+   entra en el mismo teléfono, no ve nada de lo anterior. */
+var NS = "diamante10.u." + cloud.uid + ".";
+var K_CUR = NS + "current.v7";
+var K_SAVED = NS + "saved.v1";
+var K_TEAM = NS + "teamRoster.v1";
+var K_MIGRATED = NS + "migrated";
+
+/* Lo que había antes del login (claves sin usuario) pasa a la primera cuenta
+   que entre en este dispositivo, y se borra de las claves viejas. */
+(function migrateLegacy(){
+  var LEGACY = {"diamante10.current.v7":K_CUR, "diamante10.saved.v1":K_SAVED, "diamante10.teamRoster.v1":K_TEAM};
+  Object.keys(LEGACY).forEach(function(old){
+    try{
+      var v = localStorage.getItem(old);
+      if(v == null) return;
+      if(localStorage.getItem(LEGACY[old]) == null){
+        localStorage.setItem(LEGACY[old], v);
+        localStorage.setItem(K_MIGRATED, "1");
+      }
+      localStorage.removeItem(old);
+    }catch(e){}
+  });
+})();
+
+/* ============ nube ============
+   localStorage es la copia de trabajo (abre al instante y sin señal); cada
+   cambio sube a Firestore y lo que cambie en otro dispositivo baja solo. Gana
+   el último que guarda. Nada sube hasta conocer lo que ya hay en la nube, para
+   que un dispositivo vacío nunca pise los datos de la cuenta. */
+var SYNC = {};
+SYNC[K_CUR] = "current"; SYNC[K_TEAM] = "team"; SYNC[K_SAVED] = "saved";
+var KEY_OF = {current:K_CUR, team:K_TEAM, saved:K_SAVED};
+var K_DIRTY = NS + "dirty";
+var synced = {}, pending = {}, timers = {}, ready = {}, booted = false, warned = false;
+/* "Pendiente" = cambiado en este dispositivo y todavía sin confirmar por el
+   servidor. Vive en localStorage para sobrevivir a un cierre: al volver, esos
+   cambios no se pierden bajo la copia de la nube, y no se deja cerrar sesión
+   mientras existan. */
+function dirty(){ try{ return JSON.parse(localStorage.getItem(K_DIRTY) || "{}"); }catch(e){ return {}; } }
+function setDirty(name, on){
+  var d = dirty();
+  if(on) d[name] = 1; else delete d[name];
+  try{ localStorage.setItem(K_DIRTY, JSON.stringify(d)); }catch(e){}
+}
+function hasDirty(){ return Object.keys(dirty()).length > 0; }
+function syncWarn(){
+  if(warned) return;
+  warned = true;
+  toast("No se pudo sincronizar con tu cuenta. Tus cambios siguen guardados en este dispositivo.");
+}
+function queuePut(name, json){
+  if(synced[name] === json){ delete pending[name]; return; }
+  pending[name] = json;
+  clearTimeout(timers[name]);
+  if(ready[name]) timers[name] = setTimeout(function(){ flushPut(name); }, 600);
+}
+function flushPut(name){
+  clearTimeout(timers[name]);
+  if(!ready[name] || !(name in pending)) return;
+  var json = pending[name];
+  delete pending[name];
+  if(json === synced[name]) return;
+  synced[name] = json;
+  cloud.put(name, json).then(function(){
+    if(localStorage.getItem(KEY_OF[name]) === json) setDirty(name, false);
+  }, function(){
+    /* rechazada: se reintenta con el próximo cambio */
+    if(synced[name] === json) synced[name] = undefined;
+    syncWarn();
+  });
+}
+function flushAll(){ Object.keys(pending).forEach(flushPut); }
+document.addEventListener("visibilitychange", function(){ if(document.hidden) flushAll(); });
+window.addEventListener("pagehide", flushAll);
 
 function lsGet(k, fb){
   try{ var v = localStorage.getItem(k); return v ? JSON.parse(v) : fb; }
   catch(e){ return fb; }
 }
 function lsSet(k, v){
-  try{ localStorage.setItem(k, JSON.stringify(v)); return true; }
+  try{
+    var json = JSON.stringify(v);
+    var prev = localStorage.getItem(k);
+    localStorage.setItem(k, json);
+    if(SYNC[k]){
+      /* lo que la app normaliza al arrancar no cuenta como cambio del usuario */
+      if(booted && prev !== json) setDirty(SYNC[k], true);
+      queuePut(SYNC[k], json);
+    }
+    return true;
+  }
   catch(e){ return false; }
 }
 
@@ -1094,7 +1274,7 @@ normalizeTeam();
 ensureState();
 
 // Limpia duplicados que puedan existir en partidas creadas con versiones anteriores.
-(function dedupeGameRoster(){
+function dedupeGameRoster(){
   var seenId = {}, seenName = {}, clean = [], removed = {};
   S.roster.forEach(function(pl){
     var id = pl.id, name = String(pl.name || "").trim().toLowerCase();
@@ -1109,7 +1289,8 @@ ensureState();
     POS_ORDER.forEach(function(k){ if(removed[S.assign[k]]) S.assign[k] = null; });
     lsSet(K_CUR, S);
   }
-})();
+}
+dedupeGameRoster();
 
 /* ============ helpers ============ */
 function $(id){ return document.getElementById(id); }
@@ -1136,7 +1317,8 @@ var ICONS = {
   file:'<path d="M14 3H6.5A1.5 1.5 0 0 0 5 4.5v15A1.5 1.5 0 0 0 6.5 21h11a1.5 1.5 0 0 0 1.5-1.5V8z"/><path d="M14 3v5h5M12 11v6M9 14h6"/>',
   save:'<path d="M5 3.5h11l3.5 3.5v12a1.5 1.5 0 0 1-1.5 1.5H5A1.5 1.5 0 0 1 3.5 19V5A1.5 1.5 0 0 1 5 3.5z"/><path d="M8 3.5v5h7v-5M7.5 20.5v-6h9v6"/>',
   folder:'<path d="M3.5 6.5A1.5 1.5 0 0 1 5 5h4.5l2 2.5H19a1.5 1.5 0 0 1 1.5 1.5v9.5A1.5 1.5 0 0 1 19 20H5a1.5 1.5 0 0 1-1.5-1.5z"/>',
-  shield:'<path d="M12 3l7.5 3v5.5c0 4.6-3.2 8.2-7.5 9.5-4.3-1.3-7.5-4.9-7.5-9.5V6z"/><path d="M9 12l2 2 4-4"/>'
+  shield:'<path d="M12 3l7.5 3v5.5c0 4.6-3.2 8.2-7.5 9.5-4.3-1.3-7.5-4.9-7.5-9.5V6z"/><path d="M9 12l2 2 4-4"/>',
+  logout:'<path d="M14 4.5h4A1.5 1.5 0 0 1 19.5 6v12a1.5 1.5 0 0 1-1.5 1.5h-4"/><path d="M10 16.5L5.5 12 10 7.5M5.5 12H15"/>'
 };
 function svgIcon(name){
   return '<svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" ' +
@@ -1151,7 +1333,7 @@ function iconBtn(cls, name, label){
   return b;
 }
 /* Sincroniza jugadores del partido con el roster permanente por ID/nombre. */
-(function normalizeGameRoster(){
+function normalizeGameRoster(){
   var byId = {}, byName = {};
   TEAM.forEach(function(tp){ byId[tp.id] = tp; byName[tp.name.trim().toLowerCase()] = tp; });
   var clean = [], seen = {};
@@ -1166,7 +1348,8 @@ function iconBtn(cls, name, label){
   S.roster = clean;
   S.order = (Array.isArray(S.order) ? S.order : []).filter(function(id){ return !!valid[id]; });
   POS_ORDER.forEach(function(k){ if(S.assign[k] && !valid[S.assign[k]]) S.assign[k] = null; });
-})();
+}
+normalizeGameRoster();
 
 function player(id){
   for(var i=0;i<S.roster.length;i++) if(S.roster[i].id === id) return S.roster[i];
@@ -2488,7 +2671,8 @@ var SHEETS = {
     ["btnNew", "file", "Alineación nueva", "Limpia campo, orden y marcador"],
     ["btnSave", "save", "Guardar alineación", "Para reabrirla después"],
     ["btnLoad", "folder", "Alineaciones guardadas", "Abrir o borrar"],
-    ["btnBackup", "shield", "Respaldo", "Pasar tus datos a otro dispositivo"]
+    ["btnBackup", "shield", "Respaldo", "Exportar o importar tus datos como texto"],
+    ["btnLogout", "logout", "Cerrar sesión", cloud.email]
   ]}
 };
 function openSheet(key){
@@ -2520,19 +2704,120 @@ document.querySelectorAll("dialog").forEach(function(d){
 });
 
 renderAll();
+booted = true;
 
-/* ============ app instalable ============
-   El service worker guarda la página para abrirla sin señal en el campo. Solo
-   funciona servido por http(s): abierto como archivo local se salta. */
-if("serviceWorker" in navigator && /^https?:$/.test(location.protocol)){
+/* ============ nube: lo que baja ============ */
+function applyRemote(name, json){
+  synced[name] = json;
+  delete pending[name];
+  if(name === "current"){
+    localStorage.setItem(K_CUR, json);
+    S = JSON.parse(json);
+    ensureState(); dedupeGameRoster(); normalizeGameRoster();
+    renderAll();
+  }else if(name === "team"){
+    localStorage.setItem(K_TEAM, json);
+    TEAM = JSON.parse(json);
+    normalizeTeam(); normalizeGameRoster();
+    renderAll();
+    if($("teamRoster").open) renderTeamRoster();
+  }else{
+    localStorage.setItem(K_SAVED, json);
+  }
+}
+/* Primer ingreso con datos de antes del login: se suman a los de la cuenta en
+   vez de pisarlos (jugadores por nombre, alineaciones guardadas por id). */
+function mergeFirst(name, remote, local){
+  var r = JSON.parse(remote), l = JSON.parse(local);
+  if(name === "team"){
+    var names = {};
+    r.forEach(function(p){ names[String(p.name).trim().toLowerCase()] = 1; });
+    l.forEach(function(p){ if(!names[String(p.name).trim().toLowerCase()]) r.push(p); });
+    return JSON.stringify(r);
+  }
+  if(name === "saved"){
+    var ids = {};
+    r.forEach(function(x){ ids[x.id] = 1; });
+    l.forEach(function(x){ if(!ids[x.id]) r.push(x); });
+    r.sort(function(a, b){ return String(b.at).localeCompare(String(a.at)); });
+    return JSON.stringify(r.slice(0, 60));
+  }
+  /* partido en curso: se queda el que tenga jugadores */
+  return (r.roster && r.roster.length) || !(l.roster && l.roster.length) ? remote : local;
+}
+/* Primera respuesta de la nube para un documento: decide quién gana. */
+function firstSnapshot(name, remote, local){
+  if(remote == null){
+    if(local != null){ synced[name] = null; pending[name] = local; flushPut(name); }
+    return;
+  }
+  var mine = dirty()[name];
+  if(local != null && local !== remote && (mine || localStorage.getItem(K_MIGRATED))){
+    /* Este dispositivo tiene algo que la nube no: jugadores y guardadas se
+       suman; el partido en curso sin subir gana tal cual. */
+    var val = (name === "current" && mine) ? local : mergeFirst(name, remote, local);
+    if(val !== local) applyRemote(name, val);
+    synced[name] = remote;
+    if(val !== remote){ pending[name] = val; flushPut(name); }
+    else setDirty(name, false);
+    return;
+  }
+  if(local !== remote) applyRemote(name, remote);
+  else{ synced[name] = remote; delete pending[name]; }
+  setDirty(name, false);
+}
+["current", "team", "saved"].forEach(function(name){
+  cloud.watch(name, function(remote, meta){
+    var local = localStorage.getItem(KEY_OF[name]);
+    if(!ready[name]){
+      /* Sin documento en la caché todavía no se sabe si existe en el servidor:
+         se espera la respuesta antes de decidir nada. */
+      if(remote == null && meta.fromCache) return;
+      ready[name] = true;
+      firstSnapshot(name, remote, local);
+      if(ready.current && ready.team && ready.saved) localStorage.removeItem(K_MIGRATED);
+      return;
+    }
+    /* El eco de lo que este dispositivo subió, o un cambio local que aún no
+       sube: no se toca. Solo baja lo que cambió en otro lado. */
+    if(meta.pending || remote == null || remote === local || remote === synced[name] || name in pending) return;
+    applyRemote(name, remote);
+    setDirty(name, false);
+  }, syncWarn);
+});
+/* Con la app abierta en dos pestañas, lo que cambia una lo ve la otra. */
+window.addEventListener("storage", function(e){
+  var name = SYNC[e.key];
+  if(name && e.newValue != null && e.newValue !== synced[name]) applyRemote(name, e.newValue);
+});
+
+/* ============ sesión ============ */
+function logout(){
+  askConfirm("Cerrar sesión",
+    "Tus datos quedan guardados en tu cuenta y se borran de este dispositivo. Para volver a verlos, entra otra vez.",
+    "Cerrar sesión", function(){
+      flushAll();
+      toast("Cerrando sesión…");
+      cloud.signOut(hasDirty).catch(function(){
+        toast("Hay cambios sin subir: conéctate a internet y vuelve a intentarlo");
+      });
+    });
+}
+$("btnLogout").addEventListener("click", logout);
+$("btnLogout").title = "Cerrar sesión de " + cloud.email;
+window.addEventListener("offline", function(){ toast("Sin conexión: tus cambios se guardan y suben al volver la señal"); });
+
+/* ============ app instalable ============ */
+if("serviceWorker" in navigator){
   var hadSW = !!navigator.serviceWorker.controller;
-  navigator.serviceWorker.register("sw.js").catch(function(){});
   navigator.serviceWorker.addEventListener("controllerchange", function(){
     if(hadSW) toast("Versión nueva lista: se verá al volver a abrir");
     hadSW = true;
   });
 }
-var installEvt = null;
+/* el aviso de instalación puede llegar antes del login: lo guarda el <head> */
+var installEvt = window.__installEvt || null;
+if(installEvt) $("btnInstall").hidden = false;
 window.addEventListener("beforeinstallprompt", function(ev){
   ev.preventDefault();
   installEvt = ev;
@@ -2548,7 +2833,151 @@ window.addEventListener("appinstalled", function(){
   toast("Diamante 10 instalado");
 });
 
-})();
+}};
+
+/* Si Firebase no llega a cargar (sin señal la primera vez), no se queda en
+   "Cargando…" para siempre. */
+setTimeout(function(){
+  var g = document.getElementById("gate");
+  if(g.dataset.state === "loading") g.dataset.state = "error";
+}, 12000);
+</script>
+
+<script type="module">
+/* ============ cuenta y nube (Firebase) ============
+   La configuración web de Firebase es pública por diseño: lo que protege los
+   datos son las reglas de Firestore (firestore.rules), que solo dejan a cada
+   usuario leer y escribir users/{su uid}. */
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-app.js";
+import { getAuth, onAuthStateChanged, signInWithEmailAndPassword, sendPasswordResetEmail, signOut }
+  from "https://www.gstatic.com/firebasejs/12.19.0/firebase-auth.js";
+import { initializeFirestore, persistentLocalCache, persistentMultipleTabManager, memoryLocalCache,
+  doc, onSnapshot, setDoc, serverTimestamp, waitForPendingWrites, terminate, clearIndexedDbPersistence }
+  from "https://www.gstatic.com/firebasejs/12.19.0/firebase-firestore.js";
+
+const app = initializeApp({
+  apiKey: "AIzaSyChl8rxjfQTuqnaGj8QLUfy6GkoSASXk9Q",
+  authDomain: "artful-zone-461419-t1.firebaseapp.com",
+  projectId: "artful-zone-461419-t1",
+  storageBucket: "artful-zone-461419-t1.firebasestorage.app",
+  messagingSenderId: "1034744499324",
+  appId: "1:1034744499324:web:b863202d729af253758df9"
+});
+const auth = getAuth(app);
+auth.languageCode = "es";
+/* Caché persistente: sin señal se lee lo último y los cambios quedan en cola. */
+let db;
+try{
+  db = initializeFirestore(app, {localCache: persistentLocalCache({tabManager: persistentMultipleTabManager()})});
+}catch(e){
+  db = initializeFirestore(app, {localCache: memoryLocalCache()});
+}
+
+if("serviceWorker" in navigator && /^https?:$/.test(location.protocol)){
+  navigator.serviceWorker.register("sw.js").catch(() => {});
+}
+
+const $ = id => document.getElementById(id);
+const gate = $("gate");
+let started = false, leaving = false;
+
+onAuthStateChanged(auth, user => {
+  if(leaving) return;
+  if(!user){
+    if(started){ location.reload(); return; }
+    document.body.classList.add("locked");
+    gate.dataset.state = "login";
+    return;
+  }
+  if(started) return;
+  started = true;
+  document.body.classList.remove("locked");
+  gate.dataset.state = "off";
+  window.D10.start(cloudFor(user));
+});
+
+function cloudFor(user){
+  const ref = name => doc(db, "users", user.uid, "data", name);
+  return {
+    uid: user.uid,
+    email: user.email || "",
+    watch(name, cb, onError){
+      return onSnapshot(ref(name), {includeMetadataChanges: true}, snap => {
+        cb(snap.exists() ? snap.data().json : null,
+           {fromCache: snap.metadata.fromCache, pending: snap.metadata.hasPendingWrites});
+      }, err => { console.warn("[D10] watch " + name, err.code); if(onError) onError(err); });
+    },
+    put(name, json){
+      return setDoc(ref(name), {json, updatedAt: serverTimestamp()});
+    },
+    /* Antes de salir todo tiene que estar confirmado por el servidor. Luego se
+       cortan los listeners (para que nada vuelva a escribir), se borra la
+       copia de este dispositivo y recién entonces se cierra la sesión. */
+    async signOut(hasDirty){
+      const done = await Promise.race([
+        waitForPendingWrites(db).then(() => true),
+        new Promise(r => setTimeout(() => r(false), 6000))
+      ]);
+      await new Promise(r => setTimeout(r, 150));
+      if(!done || hasDirty()) throw new Error("pending");
+      leaving = true;
+      await terminate(db);
+      await clearIndexedDbPersistence(db).catch(() => {});
+      const prefix = "diamante10.u." + user.uid + ".";
+      Object.keys(localStorage).forEach(k => { if(k.startsWith(prefix)) localStorage.removeItem(k); });
+      await signOut(auth);
+      location.reload();
+    }
+  };
+}
+
+/* ---------- formulario de entrada ---------- */
+const form = $("loginForm"), msg = $("lgMsg"), go = $("lgGo");
+function say(text, ok){
+  msg.textContent = text;
+  msg.classList.toggle("ok", !!ok);
+  msg.hidden = !text;
+}
+const ERRORS = {
+  "auth/invalid-credential": "Correo o contraseña incorrectos.",
+  "auth/wrong-password": "Correo o contraseña incorrectos.",
+  "auth/user-not-found": "Correo o contraseña incorrectos.",
+  "auth/invalid-email": "Ese correo no es válido.",
+  "auth/missing-password": "Escribe tu contraseña.",
+  "auth/user-disabled": "Esta cuenta está desactivada. Habla con quien administra el equipo.",
+  "auth/too-many-requests": "Demasiados intentos. Espera unos minutos o restablece tu contraseña.",
+  "auth/network-request-failed": "Sin conexión. Para entrar necesitas internet; después funciona sin señal."
+};
+form.addEventListener("submit", async ev => {
+  ev.preventDefault();
+  const email = $("lgEmail").value.trim(), pass = $("lgPass").value;
+  if(!email){ say("Escribe tu correo."); $("lgEmail").focus(); return; }
+  if(!pass){ say("Escribe tu contraseña."); $("lgPass").focus(); return; }
+  say("");
+  go.disabled = true; go.textContent = "Entrando…";
+  try{
+    await signInWithEmailAndPassword(auth, email, pass);
+  }catch(err){
+    say(ERRORS[err.code] || "No se pudo entrar. Intenta de nuevo.");
+    go.disabled = false; go.textContent = "Entrar";
+  }
+});
+$("lgShow").addEventListener("click", () => {
+  const p = $("lgPass"), show = p.type === "password";
+  p.type = show ? "text" : "password";
+  $("lgShow").textContent = show ? "Ocultar" : "Ver";
+  $("lgShow").setAttribute("aria-pressed", String(show));
+});
+$("lgForgot").addEventListener("click", async () => {
+  const email = $("lgEmail").value.trim();
+  if(!email){ say("Escribe tu correo arriba y vuelve a pulsar aquí."); $("lgEmail").focus(); return; }
+  try{
+    await sendPasswordResetEmail(auth, email);
+    say("Si ese correo tiene cuenta, te llegará un enlace para crear una contraseña nueva.", true);
+  }catch(err){
+    say(ERRORS[err.code] || "No se pudo enviar el correo. Intenta de nuevo.");
+  }
+});
 </script>
 <!-- ART:BODY:END -->
 </body>

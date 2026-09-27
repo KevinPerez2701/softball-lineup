@@ -16,10 +16,12 @@ Hecho para llevarlo al dugout: se arma en el navegador, se guarda en el navegado
 
 ## Uso
 
-No hay que instalar nada. Abre la página y listo: arranca en blanco, y lo primero es cargar a tus jugadores en **Roster del equipo** (quedan guardados para cada partido).
+Se entra con **correo y contraseña**. El acceso es solo por invitación: no hay registro público, las cuentas se crean en la consola de Firebase (Authentication → Usuarios → Agregar usuario). Cada cuenta ve solo sus jugadores y alineaciones.
+
+La primera vez arranca en blanco: lo primero es cargar a tus jugadores en **Roster del equipo** (quedan guardados para cada partido).
 
 En el teléfono la app se usa por pestañas, abajo: **Juego** (marcador y carreras), **Campo** (diamante) y **Orden** (orden al bate y banca). Arriba, **Compartir** agrupa imagen, térmica e impresión, y el menú **☰** el resto (guardar, abrir, respaldo, roster).
-Todo se guarda en el `localStorage` del navegador: los datos no salen de tu equipo, pero tampoco se sincronizan entre dispositivos — para eso está el botón **Respaldo** (copiar el texto y pegarlo en el otro navegador).
+Los datos se guardan en tu cuenta (Firestore) y se sincronizan solos entre tus dispositivos. El teléfono guarda una copia local, así que sin señal la app abre y funciona igual; los cambios suben cuando vuelve la conexión. Al cerrar sesión, la copia local de ese usuario se borra del dispositivo. **Respaldo** sigue disponible como copia extra en texto.
 
 ### Instalar como app
 
@@ -28,7 +30,14 @@ Una vez abierta con conexión, funciona **sin señal**: el service worker guarda
 
 ## Estructura
 
-La app es un solo archivo, `index.html`, sin dependencias ni build. La única carga externa son las tipografías de Google Fonts; si no cargan, la página funciona igual con las fuentes del sistema.
+La app es un solo archivo, `index.html`, sin build. Cargas externas: las tipografías de Google Fonts y el SDK de Firebase (desde `www.gstatic.com`), ambos guardados por el service worker para el uso sin señal.
+
+Cuenta y datos (Firebase, proyecto `artful-zone-461419-t1`):
+
+- Login con correo/contraseña; el registro público está desactivado.
+- Cada usuario escribe en `users/{uid}/data/{current|team|saved}` (cada documento guarda el JSON en el campo `json`).
+- `firestore.rules` — copia de las reglas publicadas: cada usuario solo lee y escribe lo suyo. Si lo cambias, pégalo en Firestore → Reglas y publica.
+- La configuración web de Firebase en `index.html` es pública por diseño; lo que protege los datos son las reglas.
 
 Para la parte instalable:
 
