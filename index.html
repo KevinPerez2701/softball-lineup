@@ -2,9 +2,17 @@
 <html lang="es">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="description" content="Armador de alineaciones de softball: hasta 11 posiciones (short fielder y cuatro jardineros), roster guardado, orden al bate e impresión.">
-<meta name="theme-color" content="#141c16">
+<meta name="theme-color" content="#141c16" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#36452f" media="(prefers-color-scheme: dark)">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icons/favicon-32.png" sizes="32x32" type="image/png">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Diamante 10">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <!-- ART:HEAD:START -->
 <title>Diamante 10</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -19,12 +27,14 @@
   --surface-3:#dbe1d5;
   --ink:#141c16;
   --ink-2:#4c5a4e;
-  --ink-3:#7b887c;
+  --ink-3:#5f6c62;
   --line:#d2d9cd;
   --line-2:#b7c1b3;
   --accent:#c3d600;
   --accent-ink:#1b2410;
   --accent-soft:#eef5b4;
+  --accent-text:#5d6b00;
+  --focus:#5d6b00;
   --bar:#141c16;
   --bar-ink:#f3f6ee;
   --grass-a:#4e8a55;
@@ -40,6 +50,7 @@
   --r:10px;
   --sans:"Barlow","Helvetica Neue",Helvetica,Arial,sans-serif;
   --cond:"Barlow Condensed","Barlow","Arial Narrow",sans-serif;
+  color-scheme:light;
 }
 @media (prefers-color-scheme:dark){
   :root:not([data-theme="light"]){
@@ -49,12 +60,14 @@
     --surface-3:#2c352b;
     --ink:#e7ede4;
     --ink-2:#aab5a8;
-    --ink-3:#7d887c;
+    --ink-3:#8a958a;
     --line:#2e382d;
     --line-2:#3f4b3e;
     --accent:#cbdd22;
     --accent-ink:#141a06;
     --accent-soft:#3a4410;
+    --accent-text:#cbdd22;
+    --focus:#cbdd22;
     --bar:#36452f;
     --bar-ink:#eef3e6;
     --grass-a:#2f5636;
@@ -67,6 +80,7 @@
     --good:#5bb383;
     --shadow-1:0 1px 2px rgba(0,0,0,.4);
     --shadow-2:0 2px 4px rgba(0,0,0,.3),0 14px 30px -18px rgba(0,0,0,.8);
+    color-scheme:dark;
   }
 }
 :root[data-theme="dark"]{
@@ -76,12 +90,14 @@
   --surface-3:#2c352b;
   --ink:#e7ede4;
   --ink-2:#aab5a8;
-  --ink-3:#7d887c;
+  --ink-3:#8a958a;
   --line:#2e382d;
   --line-2:#3f4b3e;
   --accent:#cbdd22;
   --accent-ink:#141a06;
   --accent-soft:#3a4410;
+  --accent-text:#cbdd22;
+  --focus:#cbdd22;
   --bar:#36452f;
   --bar-ink:#eef3e6;
   --grass-a:#2f5636;
@@ -94,20 +110,26 @@
   --good:#5bb383;
   --shadow-1:0 1px 2px rgba(0,0,0,.4);
   --shadow-2:0 2px 4px rgba(0,0,0,.3),0 14px 30px -18px rgba(0,0,0,.8);
+  color-scheme:dark;
 }
 
 /* ---------- base ---------- */
 *{box-sizing:border-box}
-html{-webkit-text-size-adjust:100%}
+html{-webkit-text-size-adjust:100%;scrollbar-color:var(--line-2) transparent}
+[hidden]{display:none !important}
+::selection{background:var(--accent);color:var(--accent-ink)}
 body{
   margin:0;background:var(--bg);color:var(--ink);
   font-family:var(--sans);font-size:15px;line-height:1.45;
   -webkit-font-smoothing:antialiased;
 }
 button,input,select,textarea{font:inherit;color:inherit}
-:where(button,[tabindex],input,select,a):focus-visible{
-  outline:3px solid var(--accent);outline-offset:2px;border-radius:6px;
+button{-webkit-tap-highlight-color:transparent}
+input,textarea{caret-color:var(--accent-text)}
+:where(button,[tabindex],input,select,textarea,a):focus-visible{
+  outline:3px solid var(--focus);outline-offset:2px;border-radius:6px;
 }
+.ico{width:15px;height:15px;flex:none;display:block}
 
 /* ---------- shell ---------- */
 .wrap{max-width:1360px;margin:0 auto;padding:0 18px 56px}
@@ -115,9 +137,13 @@ button,input,select,textarea{font:inherit;color:inherit}
 .topbar{
   position:sticky;top:0;z-index:30;background:var(--bar);color:var(--bar-ink);
   border-bottom:3px solid var(--accent);
+  padding-top:env(safe-area-inset-top);
+  /* sobre la barra oscura el foco oliva no se ve: ahí va el lima */
+  --focus:var(--accent);
 }
 .topbar-in{
-  max-width:1360px;margin:0 auto;padding:9px 18px;
+  max-width:1360px;margin:0 auto;
+  padding:9px max(18px,env(safe-area-inset-right)) 9px max(18px,env(safe-area-inset-left));
   display:flex;align-items:center;gap:14px;flex-wrap:wrap;
 }
 .brand{display:flex;align-items:baseline;gap:9px;margin-right:auto}
@@ -129,7 +155,9 @@ button,input,select,textarea{font:inherit;color:inherit}
   font-family:var(--cond);font-weight:600;font-size:12px;letter-spacing:.14em;
   text-transform:uppercase;color:var(--accent);
 }
-.tools{display:flex;gap:7px;flex-wrap:wrap}
+.tools{display:flex;gap:7px;flex-wrap:wrap;align-items:center}
+.tgroup{display:flex;gap:7px;flex-wrap:wrap}
+.tgroup + .tgroup{padding-left:14px;border-left:1px solid rgba(255,255,255,.18)}
 
 /* ---------- buttons ---------- */
 .btn{
@@ -141,6 +169,7 @@ button,input,select,textarea{font:inherit;color:inherit}
 }
 .btn:hover{background:var(--surface-2);border-color:var(--ink-3)}
 .btn:active{transform:translateY(1px)}
+.btn:disabled{opacity:.35;cursor:default;transform:none}
 .btn-ghost{background:transparent;color:var(--bar-ink);border-color:rgba(255,255,255,.28)}
 .btn-ghost:hover{background:rgba(255,255,255,.12);border-color:rgba(255,255,255,.5)}
 /* el estilo ghost es para la barra oscura; dentro de un diálogo claro no se leía */
@@ -150,8 +179,9 @@ dialog .btn-ghost:hover{background:var(--surface-2);border-color:var(--ink-3)}
 .btn-key:hover{background:var(--accent);filter:brightness(1.06)}
 .btn-sm{padding:3px 8px;font-size:12.5px;border-radius:6px}
 .btn-icon{padding:3px 7px;font-family:var(--cond);font-weight:700;font-size:15px}
-.btn-danger:hover{background:var(--bad);color:#fff;border-color:transparent}.btn-add-order{padding:3px 8px}
-.btn-remove-order{padding:3px 8px}
+.btn-icon.btn-sm{padding:4px 6px}
+.btn-danger:hover{background:var(--bad);color:#fff;border-color:transparent}
+.btn-add-order,.btn-remove-order{padding:3px 8px}
 
 
 /* ---------- scorecard strip ---------- */
@@ -181,8 +211,13 @@ dialog .btn-ghost:hover{background:var(--surface-2);border-color:var(--ink-3)}
   display:flex;align-items:center;gap:8px;background:var(--bar);color:var(--bar-ink);
   border-radius:9px;padding:7px 14px;
 }
+.score .sc{display:flex;flex-direction:column;align-items:center;gap:2px;min-width:1.4em}
 .score b{font-family:var(--cond);font-weight:700;font-size:34px;line-height:1;font-variant-numeric:tabular-nums}
-.score i{font-style:normal;opacity:.5;font-size:20px}
+.score small{
+  font-family:var(--cond);font-weight:600;font-size:11px;letter-spacing:.1em;
+  text-transform:uppercase;opacity:.62;line-height:1;
+}
+.score i{font-style:normal;opacity:.5;font-size:20px;align-self:flex-start;margin-top:5px}
 .score .tag{
   font-family:var(--cond);font-size:11px;letter-spacing:.13em;text-transform:uppercase;
   color:var(--accent);writing-mode:vertical-rl;transform:rotate(180deg);
@@ -215,7 +250,7 @@ dialog .btn-ghost:hover{background:var(--surface-2);border-color:var(--ink-3)}
   width:19cqw;
   z-index:5;
 }
-.dh-slot .slot-key{color:var(--accent)}
+.dh-slot .slot-key{color:var(--accent-text)}
 @media (max-width:700px){
   .field-options{width:100%;}
   .dh-slot{--x:50%;--y:79%;width:28.5cqw}
@@ -285,7 +320,10 @@ table.inn th{
   font-family:var(--cond);font-weight:700;font-size:12.5px;letter-spacing:.08em;
   text-transform:uppercase;color:var(--ink-2);padding:2px 4px;text-align:center;
 }
-table.inn tbody th{text-align:left;white-space:nowrap;font-size:13.5px;color:var(--ink);padding-right:8px}
+table.inn tbody th{text-align:left;white-space:nowrap;font-size:13.5px;color:var(--ink);padding-right:8px;line-height:1.15}
+table.inn tbody th small{
+  display:block;font-size:11px;letter-spacing:.1em;color:var(--ink-3);
+}
 table.inn td{padding:0}
 table.inn input{
   width:100%;min-width:38px;text-align:center;background:var(--surface-2);
@@ -295,7 +333,7 @@ table.inn input{
 table.inn .tot{
   background:var(--bar);color:var(--bar-ink);border-radius:6px;
   font-family:var(--cond);font-weight:700;font-size:19px;text-align:center;padding:5px 8px;
-  font-variant-numeric:tabular-nums;
+  font-variant-numeric:tabular-nums;min-width:42px;
 }
 
 /* ---------- side rail ---------- */
@@ -347,6 +385,11 @@ ul.list{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;ga
   min-width:17px;text-align:right;font-variant-numeric:tabular-nums;
 }
 .empty-note{color:var(--ink-3);font-size:13.5px;font-style:italic;padding:6px 2px}
+.empty-cta{
+  display:flex;flex-direction:column;align-items:flex-start;gap:10px;
+  padding:14px;border:1px dashed var(--line-2);border-radius:8px;
+}
+.empty-cta p{margin:0;color:var(--ink-2);font-size:14px}
 .chips{display:flex;gap:6px;flex-wrap:wrap}
 
 
@@ -372,11 +415,12 @@ dialog{
 }
 dialog::backdrop{background:rgba(10,16,11,.55)}
 .dlg-head{
-  display:flex;align-items:center;gap:10px;padding:13px 15px;
+  display:flex;align-items:center;gap:8px 10px;flex-wrap:wrap;padding:13px 15px;
   border-bottom:1px solid var(--line);
 }
 .dlg-head h3{margin:0;font-family:var(--cond);font-weight:700;font-size:19px;letter-spacing:.05em;text-transform:uppercase}
-.dlg-head .sub{font-size:13px;color:var(--ink-3)}
+.dlg-head .sub{font-size:13px;color:var(--ink-3);flex:1 0 100%;order:5}
+#teamRoster{width:min(520px,calc(100vw - 28px))}
 .dlg-body{padding:12px 15px 15px;overflow:auto;max-height:60vh}
 .pickitem{
   display:grid;grid-template-columns:auto minmax(0,1fr) auto;align-items:center;gap:10px;
@@ -396,7 +440,8 @@ dialog::backdrop{background:rgba(10,16,11,.55)}
 .foot{margin-top:26px;font-size:12.5px;color:var(--ink-3);display:flex;gap:14px;flex-wrap:wrap}
 .print-only{display:none}
 .toast{
-  position:fixed;left:50%;bottom:22px;transform:translateX(-50%);z-index:80;
+  position:fixed;left:50%;bottom:calc(22px + env(safe-area-inset-bottom));transform:translateX(-50%);z-index:80;
+  max-width:calc(100vw - 28px);text-align:center;
   background:var(--bar);color:var(--bar-ink);padding:9px 16px;border-radius:999px;
   font-weight:600;font-size:13.5px;box-shadow:var(--shadow-2);
   opacity:0;pointer-events:none;transition:opacity .2s,transform .2s;
@@ -413,16 +458,16 @@ dialog::backdrop{background:rgba(10,16,11,.55)}
 @media (max-width:680px){
   .wrap{padding:0 10px 40px}
 
-  .topbar-in{padding:7px 10px;gap:6px;flex-wrap:wrap}
+  /* en el teléfono la barra no se pega arriba: con todas las acciones a la
+     vista ocupa dos filas, y fija se comería media pantalla del diamante */
+  .topbar{position:relative}
+  .topbar-in{padding:8px max(10px,env(safe-area-inset-right)) 10px max(10px,env(safe-area-inset-left));gap:8px}
   .brand{margin-right:auto;flex:0 0 auto}
   .brand b{font-size:20px}
-  .brand span{display:none}
-  .tools{
-    flex:1 0 100%;flex-wrap:nowrap;overflow-x:auto;justify-content:flex-start;
-    gap:6px;padding-bottom:2px;scrollbar-width:none;
-  }
-  .tools::-webkit-scrollbar{display:none}
-  .tools .btn{flex:0 0 auto;padding:6px 10px}
+  .tools{flex:1 0 100%;flex-direction:column;align-items:stretch;gap:6px}
+  .tgroup{flex-wrap:nowrap;gap:6px}
+  .tgroup + .tgroup{padding-left:0;border-left:0}
+  .tgroup .btn{flex:1 1 auto;justify-content:center;padding:8px 4px;font-size:13px;min-width:0}
 
   .scorecard{margin:12px 0;padding:11px;gap:9px;grid-template-columns:repeat(2,minmax(0,1fr))}
   .scorecard .fieldset:nth-child(1),
@@ -471,7 +516,7 @@ dialog::backdrop{background:rgba(10,16,11,.55)}
   /* encabezado de diálogo: título arriba, subtítulo abajo, botones a la derecha */
   .dlg-head{flex-wrap:wrap;padding:11px 12px;gap:8px}
   .dlg-head h3{font-size:17px;flex:0 1 auto}
-  .dlg-head .sub{flex:1 0 100%;order:5;font-size:12.5px}
+  .dlg-head .sub{font-size:12.5px}
   .row.editing{grid-template-columns:62px minmax(0,1fr);row-gap:7px}
   .row.editing .rowacts{grid-column:1/-1;justify-content:flex-end}
   .row.editing .inp{font-size:16px;padding:7px}
@@ -483,6 +528,12 @@ dialog::backdrop{background:rgba(10,16,11,.55)}
   .slot{width:28.5cqw}
   .slot-name{font-size:3.15cqw}
   .slot-num{width:4.8cqw;height:4.8cqw;font-size:3.1cqw}
+}
+/* dedos, no cursor: ningún control por debajo de ~36 px */
+@media (pointer:coarse){
+  .btn-sm,.toggle{min-height:36px}
+  .btn-icon{min-width:36px;justify-content:center}
+  .row .check{width:22px;height:22px}
 }
 @media (prefers-reduced-motion:reduce){
   *{transition:none !important;animation:none !important}
@@ -572,14 +623,19 @@ dialog::backdrop{background:rgba(10,16,11,.55)}
       <span>Softball · Lineups</span>
     </div>
     <div class="tools">
-      <button class="btn btn-ghost btn-sm" id="btnNew" type="button">Nuevo</button>
-      <button class="btn btn-ghost btn-sm" id="btnSave" type="button">Guardar</button>
-      <button class="btn btn-ghost btn-sm" id="btnLoad" type="button">Guardados</button>
-      <button class="btn btn-ghost btn-sm" id="btnBackup" type="button">Respaldo</button>
-      <button class="btn btn-ghost btn-sm" id="btnTeamRoster" type="button">Roster</button>
-      <button class="btn btn-ghost btn-sm" id="btnCopyImg" type="button">Copiar imagen</button>
-      <button class="btn btn-ghost btn-sm" id="btnTicket" type="button" title="Generar la imagen para el rollo térmico de 55 mm">Térmica</button>
-      <button class="btn btn-key btn-sm" id="btnPrint" type="button">Imprimir / PDF</button>
+      <div class="tgroup" role="group" aria-label="Alineación">
+        <button class="btn btn-ghost btn-sm" id="btnNew" type="button">Nuevo</button>
+        <button class="btn btn-ghost btn-sm" id="btnSave" type="button">Guardar</button>
+        <button class="btn btn-ghost btn-sm" id="btnLoad" type="button">Guardados</button>
+        <button class="btn btn-ghost btn-sm" id="btnBackup" type="button">Respaldo</button>
+        <button class="btn btn-ghost btn-sm" id="btnTeamRoster" type="button">Roster</button>
+      </div>
+      <div class="tgroup" role="group" aria-label="Compartir">
+        <button class="btn btn-ghost btn-sm" id="btnInstall" type="button" title="Instalar Diamante 10 como app en este dispositivo" hidden>Instalar</button>
+        <button class="btn btn-ghost btn-sm" id="btnCopyImg" type="button">Copiar imagen</button>
+        <button class="btn btn-ghost btn-sm" id="btnTicket" type="button" title="Generar la imagen para el rollo térmico de 55 mm">Térmica</button>
+        <button class="btn btn-key btn-sm" id="btnPrint" type="button">Imprimir / PDF</button>
+      </div>
     </div>
   </div>
 </header>
@@ -610,7 +666,9 @@ dialog::backdrop{background:rgba(10,16,11,.55)}
       <span class="lbl">Marcador</span>
       <div class="score" aria-label="Marcador final: visitante - casa">
         <span class="tag">Final</span>
-        <b id="scUs">0</b><i>–</i><b id="scThem">0</b>
+        <span class="sc"><b id="scUs">0</b><small>Visita</small></span>
+        <i aria-hidden="true">–</i>
+        <span class="sc"><b id="scThem">0</b><small>Casa</small></span>
       </div>
     </div>
   </section>
@@ -958,6 +1016,23 @@ function el(tag, cls, txt){
   if(cls) e.className = cls;
   if(txt != null) e.textContent = txt;
   return e;
+}
+/* Iconos dibujados, no glifos: ✎ y ✕ cambian de forma y peso según la fuente
+   del sistema, y en algunos Android salen como emoji. */
+var ICONS = {
+  up:'<path d="M12 19V5M5.5 11.5L12 5l6.5 6.5"/>',
+  down:'<path d="M12 5v14M5.5 12.5L12 19l6.5-6.5"/>',
+  edit:'<path d="M4 20h4L19 9l-4-4L4 16z"/><path d="M13.5 6.5l4 4"/>',
+  x:'<path d="M6.5 6.5l11 11M17.5 6.5l-11 11"/>'
+};
+function iconBtn(cls, name, label){
+  var b = el("button", cls);
+  b.type = "button";
+  b.innerHTML = '<svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" ' +
+    'stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + ICONS[name] + '</svg>';
+  b.title = label;
+  b.setAttribute("aria-label", label);
+  return b;
 }
 /* Sincroniza jugadores del partido con el roster permanente por ID/nombre. */
 (function normalizeGameRoster(){
@@ -1360,10 +1435,20 @@ function renderRoster(){
   S.roster.forEach(function(p){ if(ids.indexOf(p.id) < 0 && inLineup(p.id)) ids.push(p.id); });
 
   $("rosterCount").textContent = ids.length;
+  if(!S.roster.length){
+    /* Primer paso de cada partido: sin asistencia no hay nada que armar, así
+       que el panel vacío lleva directo a marcarla. */
+    var cta = el("li", "empty-cta");
+    cta.appendChild(el("p", null, "Todavía no has marcado quién vino a este partido."));
+    var go = el("button", "btn btn-key", "Marcar asistencia");
+    go.type = "button";
+    go.addEventListener("click", openTeamRoster);
+    cta.appendChild(go);
+    ul.appendChild(cta);
+    return;
+  }
   if(!ids.length){
-    ul.appendChild(el("li", "empty-note",
-      S.roster.length ? "Nadie en la alineación todavía. Usa Agregar en la banca o arrastra al campo."
-                      : "Selecciona jugadores desde Roster."));
+    ul.appendChild(el("li", "empty-note", "Nadie en la alineación todavía. Usa Agregar en la banca o arrastra al campo."));
     return;
   }
 
@@ -1421,16 +1506,14 @@ function renderRoster(){
     /* Controles explícitos para subir/bajar un jugador.
        Funcionan incluso si el usuario no quiere usar arrastrar. */
     if(ord >= 0){
-      var up = el("button", "btn btn-sm btn-icon", "↑");
-      up.type = "button"; up.title = "Subir en el orden al bate";
+      var up = iconBtn("btn btn-sm btn-icon", "up", "Subir en el orden al bate");
       up.disabled = ord === 0;
       up.addEventListener("click", function(ev){
         ev.stopPropagation();
         var i = S.order.indexOf(pl.id);
         if(i > 0){ var t = S.order[i-1]; S.order[i-1] = S.order[i]; S.order[i] = t; renderAll(); }
       });
-      var down = el("button", "btn btn-sm btn-icon", "↓");
-      down.type = "button"; down.title = "Bajar en el orden al bate";
+      var down = iconBtn("btn btn-sm btn-icon", "down", "Bajar en el orden al bate");
       down.disabled = ord === S.order.length - 1;
       down.addEventListener("click", function(ev){
         ev.stopPropagation();
@@ -1441,8 +1524,7 @@ function renderRoster(){
       r.acts.appendChild(down);
     }
 
-    var edit = el("button", "btn btn-sm btn-icon", "✎");
-    edit.type = "button"; edit.title = "Editar jugador";
+    var edit = iconBtn("btn btn-sm btn-icon", "edit", "Editar a " + pl.name);
     edit.addEventListener("click", function(){
       inlineEdit(r.li, pl, function(name, num){
         pl.name = name; pl.num = num;
@@ -1503,6 +1585,7 @@ function renderTeamRoster(){
     var cb = document.createElement("input");
     cb.type = "checkbox"; cb.className = "check"; cb.checked = active;
     cb.title = "Participa en este partido";
+    cb.setAttribute("aria-label", tp.name + " participa en este partido");
     cb.addEventListener("change", function(){
       /* IMPORTANTE: esta acción solo afecta al jugador de ESTA fila. */
       var id = tp.id;
@@ -1521,8 +1604,7 @@ function renderTeamRoster(){
     li.appendChild(el("span", "nm", tp.name));
     li.appendChild(el("span", "jersey" + (tp.num ? "" : " ghost"), tp.num || "–"));
     var acts = el("span", "rowacts no-print");
-    var ed = el("button", "btn btn-sm btn-icon", "✎");
-    ed.type="button"; ed.title="Editar jugador";
+    var ed = iconBtn("btn btn-sm btn-icon", "edit", "Editar a " + tp.name);
     ed.addEventListener("click", function(){
       inlineEdit(li, tp, function(name, num){
         tp.name = name; tp.num = num;
@@ -1532,9 +1614,7 @@ function renderTeamRoster(){
         toast("Jugador actualizado");
       }, renderTeamRoster);
     });
-    var del = el("button","btn btn-sm btn-icon btn-danger","✕");
-    del.type="button"; del.title="Eliminar definitivamente del roster del equipo";
-    del.setAttribute("aria-label", del.title);
+    var del = iconBtn("btn btn-sm btn-icon btn-danger", "x", "Eliminar a " + tp.name + " del roster del equipo");
     del.addEventListener("click",function(){
       askConfirm("Eliminar del equipo",
         "Se saca a " + tp.name + " de la plantilla, no solo de este partido.",
@@ -1664,7 +1744,11 @@ function renderInnings(){
   rows.forEach(function(row){
     var key = row[0], label = row[1], side = row[2];
     var tr = el("tr");
-    tr.appendChild(el("th", null, side + " · " + label));
+    var th = el("th");
+    th.appendChild(el("small", null, side));
+    th.appendChild(document.createTextNode(label));
+    th.title = side + " · " + label;
+    tr.appendChild(th);
     for(var i=0;i<n;i++){
       (function(idx){
         var td = el("td");
@@ -1796,12 +1880,15 @@ $("btnLoad").addEventListener("click", function(){
       if(!Array.isArray(S.them)) S.them = [0,0,0,0,0,0,0];
       renderAll(); $("saved").close(); toast("Alineación cargada");
     });
-    var bd = el("button", "btn btn-sm btn-danger", "✕");
-    bd.type = "button";
+    var bd = iconBtn("btn btn-sm btn-icon btn-danger", "x", "Borrar " + item.name);
     bd.addEventListener("click", function(){
-      var l2 = lsGet(K_SAVED, []).filter(function(x){ return x.id !== item.id; });
-      lsSet(K_SAVED, l2);
-      it.remove();
+      askConfirm("Borrar alineación", "Se borra «" + item.name + "» de las guardadas. No se puede deshacer.",
+        "Borrar", function(){
+          var l2 = lsGet(K_SAVED, []).filter(function(x){ return x.id !== item.id; });
+          lsSet(K_SAVED, l2);
+          it.remove();
+          toast("Alineación borrada");
+        });
     });
     acts.appendChild(bl); acts.appendChild(bd);
     it.appendChild(info); it.appendChild(spacer); it.appendChild(acts);
@@ -2233,6 +2320,33 @@ function renderAll(){
   save();
 }
 renderAll();
+
+/* ============ app instalable ============
+   El service worker guarda la página para abrirla sin señal en el campo. Solo
+   funciona servido por http(s): abierto como archivo local se salta. */
+if("serviceWorker" in navigator && /^https?:$/.test(location.protocol)){
+  var hadSW = !!navigator.serviceWorker.controller;
+  navigator.serviceWorker.register("sw.js").catch(function(){});
+  navigator.serviceWorker.addEventListener("controllerchange", function(){
+    if(hadSW) toast("Versión nueva lista: se verá al volver a abrir");
+    hadSW = true;
+  });
+}
+var installEvt = null;
+window.addEventListener("beforeinstallprompt", function(ev){
+  ev.preventDefault();
+  installEvt = ev;
+  $("btnInstall").hidden = false;
+});
+$("btnInstall").addEventListener("click", function(){
+  if(!installEvt) return;
+  installEvt.prompt();
+  installEvt.userChoice.then(function(){ installEvt = null; $("btnInstall").hidden = true; });
+});
+window.addEventListener("appinstalled", function(){
+  $("btnInstall").hidden = true;
+  toast("Diamante 10 instalado");
+});
 
 })();
 </script>

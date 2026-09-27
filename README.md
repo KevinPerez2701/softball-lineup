@@ -19,9 +19,20 @@ Hecho para llevarlo al dugout: se arma en el navegador, se guarda en el navegado
 No hay que instalar nada. Abre la página y listo.
 Todo se guarda en el `localStorage` del navegador: los datos no salen de tu equipo, pero tampoco se sincronizan entre dispositivos — para eso está el botón **Respaldo** (copiar el texto y pegarlo en el otro navegador).
 
+### Instalar como app
+
+Es una PWA: en Chrome/Edge (Android o escritorio) aparece el botón **Instalar** en la barra; en iPhone, *Compartir → Agregar a inicio*.
+Una vez abierta con conexión, funciona **sin señal**: el service worker guarda la página y las tipografías, y cada vez que hay red descarga la versión nueva para la siguiente apertura.
+
 ## Estructura
 
-Un solo archivo, `index.html`, sin dependencias ni build. La única carga externa son las tipografías de Google Fonts; si no cargan, la página funciona igual con las fuentes del sistema.
+La app es un solo archivo, `index.html`, sin dependencias ni build. La única carga externa son las tipografías de Google Fonts; si no cargan, la página funciona igual con las fuentes del sistema.
+
+Para la parte instalable:
+
+- `manifest.webmanifest` — nombre, colores e iconos de la app.
+- `sw.js` — service worker (caché para uso sin conexión). Si agregas archivos a la app, súmalos a `ASSETS` y sube `VERSION`.
+- `icons/` — iconos de la app (192, 512, maskable, Apple y favicon).
 
 Para editarlo: abre `index.html`, todo está adentro — tokens de color al principio del `<style>`, coordenadas de las posiciones en el arreglo `POS` del `<script>`.
 
