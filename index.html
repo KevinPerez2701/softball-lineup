@@ -2092,12 +2092,16 @@ $("btnAutoField").addEventListener("click", function(){
   var used = {};
   POS_ORDER.forEach(function(k){ if(S.assign[k]) used[S.assign[k]] = 1; });
   var free = S.roster.filter(function(p){ return !used[p.id]; });
-  var fi = 0;
+  var fi = 0, missing = 0;
+  /* solo las posiciones activas: LCF/RCF sin 4F (o SF apagado) no se ven */
   POS_ORDER.forEach(function(k){
-    if(!S.assign[k] && fi < free.length){ S.assign[k] = free[fi].id; fi++; }
+    if(!isPosEnabled(k) || S.assign[k]) return;
+    if(fi < free.length){ S.assign[k] = free[fi].id; fi++; }
+    else missing++;
   });
   renderAll();
-  toast("Posiciones vacías completadas");
+  toast(missing ? "Faltan " + missing + (missing === 1 ? " jugador" : " jugadores") + " para llenar el campo"
+                : "Posiciones vacías completadas");
 });
 $("btnClearField").addEventListener("click", function(){
   var before = JSON.parse(JSON.stringify(S.assign)), dh = S.dh;
@@ -2223,7 +2227,8 @@ $("btnNew").addEventListener("click", function(){
       var roster = S.roster;
       S = blankState();
       S.roster = roster;
-      S.date = new Date().toISOString().slice(0,10);
+      /* fecha local: toISOString es UTC y de noche ya marca el día siguiente */
+      S.date = new Date(Date.now() - new Date().getTimezoneOffset()*60000).toISOString().slice(0,10);
       renderAll();
       toast("Alineación nueva");
     });
@@ -2707,6 +2712,7 @@ function renderAll(){
   });
   renderGame();
   renderField();
+  $("teamRosterClear").disabled = !S.roster.length;
   renderRoster();
   renderBench();
   renderInnings();
