@@ -393,6 +393,22 @@ ul.list{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;ga
   font-family:var(--cond);font-weight:700;font-size:15px;color:var(--ink-3);
   min-width:17px;text-align:right;font-variant-numeric:tabular-nums;
 }
+/* asa para reordenar el orden al bate con el dedo (con mouse se arrastra la fila) */
+.grip{
+  display:grid;place-items:center;width:22px;height:30px;margin:-4px -4px -4px -2px;
+  color:var(--ink-3);cursor:grab;touch-action:none;border-radius:6px;
+}
+.grip .ico{width:16px;height:16px}
+.grip.off{visibility:hidden}
+.row.lifting{position:relative;z-index:5;background:var(--surface-3);box-shadow:var(--shadow-2);transition:none}
+.row.ins-before{box-shadow:0 -3px 0 var(--accent)}
+.row.ins-after{box-shadow:0 3px 0 var(--accent)}
+.hint-touch{display:none}
+@media (pointer:coarse){
+  .hint-mouse{display:none}
+  .hint-touch{display:inline}
+  .grip{width:32px;height:40px;margin:-6px -4px -6px -4px}
+}
 .empty-note{color:var(--ink-3);font-size:13.5px;font-style:italic;padding:6px 2px}
 .empty-cta{
   display:flex;flex-direction:column;align-items:flex-start;gap:10px;
@@ -448,7 +464,7 @@ ul.list{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;ga
 .sheet-item small{color:var(--ink-3);font-size:12.5px}
 .sheet-item.key{background:var(--accent);color:var(--accent-ink)}
 .sheet-item.key .ico,.sheet-item.key small{color:var(--accent-ink)}
-.row.lineup-row{grid-template-columns:28px minmax(0,1fr) auto auto}
+.row.lineup-row{grid-template-columns:auto 28px minmax(0,1fr) auto auto}
 .row.inactive{opacity:.55}
 .row .check{width:18px;height:18px;accent-color:var(--accent);cursor:pointer}
 
@@ -673,7 +689,7 @@ body.locked .gate{
   /* acciones de cada tarjeta: una fila pareja debajo del título */
   .panel-head .spacer,.field-head .spacer{flex-basis:100%;height:0;margin:0}
   .panel-head > .btn,.field-head > .btn{flex:1 1 0;justify-content:center;min-width:0;white-space:nowrap}
-  .row.lineup-row{grid-template-columns:22px minmax(0,1fr) auto auto;gap:6px;padding:6px 6px 6px 8px}
+  .row.lineup-row{grid-template-columns:auto 22px minmax(0,1fr) auto auto;gap:6px;padding:6px 6px 6px 8px}
   .rowacts{gap:4px}
   .btn .t-opt{display:none}
   .row.lineup-row .btn-remove-order,.row.lineup-row .btn-add-order,.row.lineup-row .row-edit{display:none}
@@ -968,7 +984,8 @@ body.locked .gate{
 
         <p class="field-note no-print">
           <span>Toca una posición para asignar jugador.</span>
-          <span>Arrastra desde el roster o entre posiciones para intercambiar.</span>
+          <span class="hint-mouse">Arrastra desde el orden al bate o la banca, o entre posiciones, para intercambiar.</span>
+          <span class="hint-touch">Al elegir, se abre sola la siguiente posición vacía. Toca una ocupada para cambiar o quitar al jugador.</span>
         </p>
       </section>
 
@@ -988,9 +1005,9 @@ body.locked .gate{
 
     <aside class="rail">
 
-      <section class="card no-print" aria-label="Roster de alineación" data-view="orden">
+      <section class="card no-print" aria-label="Orden al bate" data-view="orden">
         <div class="panel-head">
-          <h2>Roster</h2>
+          <h2>Orden al bate</h2>
           <span class="count" id="rosterCount">0</span>
           <span class="spacer"></span>
           <button class="btn btn-sm no-print" id="btnTeamRosterInline" type="button">Jugadores</button>
@@ -1000,7 +1017,7 @@ body.locked .gate{
         <div class="panel-body">
           <details class="hint no-print">
             <summary>Cómo armar el orden</summary>
-            <p>Pulsa <b>Agregar</b> para meter a cada jugador en el orden al bate, y arrastra las filas (o usa ↑ ↓) para ordenarlas. El orden al bate es independiente de la defensa: puede batear alguien sin posición en el campo. Arrastra un jugador al diamante para asignarle posición.</p>
+            <p><b>Completar orden</b> mete a todos los que vinieron; <b>Agregar</b> (en la banca) mete a uno. Para ordenarlos, arrastra cada fila por el asa ⠿ o usa ↑ ↓. El orden al bate es independiente de la defensa: puede batear alguien sin posición en el campo.</p>
           </details>
           <ul class="list" id="rosterList"></ul>
         </div>
@@ -1091,6 +1108,7 @@ body.locked .gate{
     <h3>Roster del equipo</h3>
     <span class="sub">Marca solo los jugadores que asistieron a este partido</span>
     <span style="margin-left:auto"></span>
+    <button class="btn btn-sm btn-key" id="teamRosterAll" type="button">Marcar todos</button>
     <button class="btn btn-sm btn-ghost" id="teamRosterClear" type="button">Desmarcar todos</button>
     <button class="btn btn-sm" id="teamRosterClose" type="button">Cerrar</button>
   </div>
@@ -1100,7 +1118,7 @@ body.locked .gate{
       <input class="inp" id="newName" type="text" placeholder="Nombre del jugador" aria-label="Nombre">
       <button class="btn btn-key" type="submit">Agregar</button>
     </form>
-    <p class="panel-hint">Marca los jugadores que asistieron a este partido. Después, en el Roster (pestaña <b>Orden</b> en el teléfono), pulsa <b>Agregar</b> en cada jugador que quieras poner <b>uno por uno</b> en el orden al bate. El botón ✕ elimina al jugador definitivamente del roster del equipo.</p>
+    <p class="panel-hint">Marca a los que vinieron a este partido, o usa <b>Marcar todos</b>. Después, en <b>Orden al bate</b> (pestaña <b>Orden</b> en el teléfono), usa <b>Completar orden</b> o agrégalos uno por uno. El botón ✕ elimina al jugador definitivamente del roster del equipo.</p>
     <ul class="list" id="teamRosterList"></ul>
   </div>
 </dialog>
@@ -1358,7 +1376,8 @@ var ICONS = {
   folder:'<path d="M3.5 6.5A1.5 1.5 0 0 1 5 5h4.5l2 2.5H19a1.5 1.5 0 0 1 1.5 1.5v9.5A1.5 1.5 0 0 1 19 20H5a1.5 1.5 0 0 1-1.5-1.5z"/>',
   shield:'<path d="M12 3l7.5 3v5.5c0 4.6-3.2 8.2-7.5 9.5-4.3-1.3-7.5-4.9-7.5-9.5V6z"/><path d="M9 12l2 2 4-4"/>',
   logout:'<path d="M14 4.5h4A1.5 1.5 0 0 1 19.5 6v12a1.5 1.5 0 0 1-1.5 1.5h-4"/><path d="M10 16.5L5.5 12 10 7.5M5.5 12H15"/>',
-  dots:'<circle cx="5.5" cy="12" r="1.2"/><circle cx="12" cy="12" r="1.2"/><circle cx="18.5" cy="12" r="1.2"/>'
+  dots:'<circle cx="5.5" cy="12" r="1.2"/><circle cx="12" cy="12" r="1.2"/><circle cx="18.5" cy="12" r="1.2"/>',
+  grip:'<circle cx="9" cy="6" r="1.1"/><circle cx="15" cy="6" r="1.1"/><circle cx="9" cy="12" r="1.1"/><circle cx="15" cy="12" r="1.1"/><circle cx="9" cy="18" r="1.1"/><circle cx="15" cy="18" r="1.1"/>'
 };
 function svgIcon(name){
   return '<svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" ' +
@@ -1513,6 +1532,10 @@ var toastT;
    botón Deshacer y dura un poco más. */
 function toast(msg, undo){
   var t = $("toast");
+  /* con un diálogo abierto, el aviso va dentro de él: fuera quedaría tapado
+     por el fondo del modal y su botón Deshacer no se podría tocar */
+  var host = document.querySelector("dialog[open]") || document.body;
+  if(t.parentNode !== host) host.appendChild(t);
   t.textContent = "";
   t.appendChild(el("span", null, msg));
   if(undo){
@@ -1680,7 +1703,20 @@ function setPos(posKey, playerId){
 }
 
 /* ============ picker ============ */
-function openPicker(posKey){
+/* La siguiente posición vacía después de "from" (y el BD al final, si está
+   activo), siempre que quede alguien sin posición para ponerle. */
+function nextEmptyPos(from){
+  var keys = POS_ORDER.filter(isPosEnabled);
+  if(S.enabledDH) keys.push("DH");
+  if(!S.roster.some(function(pl){ return !posOf(pl.id); })) return null;
+  var i = keys.indexOf(from);
+  for(var n = 1; n <= keys.length; n++){
+    var k = keys[(i + n) % keys.length];
+    if(!(k === "DH" ? S.dh : S.assign[k])) return k;
+  }
+  return null;
+}
+function openPicker(posKey, chained){
   var p = POS.filter(function(q){ return q.k === posKey; })[0];
   if(posKey === "DH") {
     $("pickTitle").textContent = "BD · Bateador designado";
@@ -1689,6 +1725,7 @@ function openPicker(posKey){
     $("pickTitle").textContent = p.k + " · " + p.n;
     $("pickSub").textContent = p.es;
   }
+  if(chained) $("pickSub").textContent += " · siguiente posición vacía";
   var body = $("pickBody");
   body.innerHTML = "";
 
@@ -1709,7 +1746,7 @@ function openPicker(posKey){
   }
 
   if(!S.roster.length){
-    body.appendChild(el("p", "empty-note", "Aún no hay jugadores. Agrégalos en el panel Roster."));
+    body.appendChild(el("p", "empty-note", "Nadie marcado para este partido. Márcalos en Roster."));
   }
 
   var sorted = S.roster.slice().sort(function(a,b){
@@ -1733,6 +1770,9 @@ function openPicker(posKey){
     it.addEventListener("click", function(){
       setPos(posKey, pl.id);
       renderAll(); $("picker").close();
+      /* llenando posiciones vacías, se sigue con la próxima sin volver al campo */
+      var next = !currentAssigned && nextEmptyPos(posKey);
+      if(next) openPicker(next, true);
     });
     body.appendChild(it);
   });
@@ -1818,6 +1858,12 @@ function renderRoster(){
   ids.forEach(function(id){
     var pl = byId[id];
     var r = rowFor(pl, {lineup:true});
+    var grip = el("span", "grip no-print" + (S.order.indexOf(pl.id) >= 0 ? "" : " off"));
+    grip.innerHTML = svgIcon("grip");
+    grip.title = "Arrastra para cambiar el orden";
+    grip.setAttribute("aria-hidden", "true");
+    if(S.order.indexOf(pl.id) >= 0) touchReorder(grip, r.li, pl.id);
+    r.li.insertBefore(grip, r.li.firstChild);
     r.li.setAttribute("draggable", "true");
     r.li.addEventListener("dragstart", function(ev){
       dragOrderId = pl.id;
@@ -2018,6 +2064,19 @@ function openTeamRoster(){
 $("btnTeamRoster").addEventListener("click", openTeamRoster);
 $("btnTeamRosterInline").addEventListener("click", openTeamRoster);
 $("teamRosterClose").addEventListener("click", function(){ $("teamRoster").close(); });
+$("teamRosterAll").addEventListener("click", function(){
+  var added = [];
+  TEAM.forEach(function(tp){
+    if(!player(tp.id)){ S.roster.push({id:tp.id, num:tp.num || "", name:tp.name}); added.push(tp.id); }
+  });
+  if(!added.length) return;
+  save(); renderAll(); renderTeamRoster();
+  toast(added.length + (added.length === 1 ? " jugador agregado" : " jugadores agregados") + " al partido", function(){
+    added.forEach(removePlayerEverywhere);
+    save(); renderAll();
+    if($("teamRoster").open) renderTeamRoster();
+  });
+});
 $("teamRosterClear").addEventListener("click", function(){
   if(!S.roster.length) return;
   askConfirm("Vaciar asistencia",
@@ -2033,6 +2092,55 @@ $("teamRosterClear").addEventListener("click", function(){
 
 /* ============ orden al bate ============ */
 var dragOrderId = null;
+
+/* Arrastrar con el dedo por el asa: el arrastre nativo (HTML5) no funciona en
+   pantallas táctiles, así que aquí se sigue el puntero a mano. Con mouse se
+   deja pasar y actúa el arrastre de la fila completa. */
+function touchReorder(grip, li, id){
+  grip.addEventListener("pointerdown", function(ev){
+    if(ev.pointerType === "mouse") return;
+    ev.preventDefault();
+    grip.setPointerCapture(ev.pointerId);
+    var rows = Array.prototype.filter.call($("rosterList").children, function(x){
+      return x !== li && S.order.indexOf(x.dataset.id) >= 0;
+    });
+    var startY = ev.clientY, to = S.order.indexOf(id), mark = null;
+    li.classList.add("lifting");
+
+    function move(e){
+      var y = e.clientY;
+      li.style.transform = "translateY(" + (y - startY) + "px)";
+      /* cuántas filas quedan por encima del dedo = índice donde cae */
+      to = rows.filter(function(x){
+        var b = x.getBoundingClientRect();
+        return b.top + b.height / 2 < y;
+      }).length;
+      if(mark) mark.classList.remove("ins-before", "ins-after");
+      mark = rows[to] || rows[rows.length - 1] || null;
+      if(mark) mark.classList.add(rows[to] ? "ins-before" : "ins-after");
+      /* cerca del borde, la página se desplaza sola */
+      if(y < 90) scrollBy(0, -10);
+      else if(y > innerHeight - 130) scrollBy(0, 10);
+    }
+    function end(e){
+      grip.removeEventListener("pointermove", move);
+      grip.removeEventListener("pointerup", end);
+      grip.removeEventListener("pointercancel", end);
+      if(mark) mark.classList.remove("ins-before", "ins-after");
+      li.classList.remove("lifting");
+      li.style.transform = "";
+      if(e.type === "pointercancel") return;
+      var from = S.order.indexOf(id);
+      if(from < 0 || from === to) return;
+      S.order.splice(from, 1);
+      S.order.splice(to, 0, id);
+      renderAll();
+    }
+    grip.addEventListener("pointermove", move);
+    grip.addEventListener("pointerup", end);
+    grip.addEventListener("pointercancel", end);
+  });
+}
 
 $("btnFillOrder").addEventListener("click", function(){
   var have = {}, added = 0;
@@ -2713,6 +2821,7 @@ function renderAll(){
   renderGame();
   renderField();
   $("teamRosterClear").disabled = !S.roster.length;
+  $("teamRosterAll").disabled = TEAM.every(function(tp){ return !!player(tp.id); });
   renderRoster();
   renderBench();
   renderInnings();
