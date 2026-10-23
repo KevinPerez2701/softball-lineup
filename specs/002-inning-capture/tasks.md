@@ -18,7 +18,7 @@ Parallel work only in worktrees outside the repo (`../softball-lineup-wt/Tn`), m
       Files: `stats.js`, `tests/guide.test.js` (new)
       Done when: tests green for every `dueBatter` case of the plan (no anchor, wrap, deleted anchor, sub with PA,
       2-PA skip, all full ⇒ null).
-- [ ] T3. Stats views: `players` (`cs`, ro-only rows count), `playerGames` (ro lines, seq with ro labels). Tests
+- [x] T3. Stats views: `players` (`cs`, ro-only rows count), `playerGames` (ro lines, seq with ro labels). Tests
       first. (RF-13, RF-14, RF-18, RF-12) Deps: T1
       Files: `stats.js`, `tests/views.test.js`
       Done when: tests green; existing views assertions unchanged.

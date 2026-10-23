@@ -3,16 +3,16 @@
 Single source of truth for what is in flight and what is left. Update it in the same commit as the
 work it describes. Dates come from `date`, never from memory.
 
-Last updated: 2026-10-23 12:25 UTC-4 by Claude (sdd:implement)
+Last updated: 2026-10-23 12:27 UTC-4 by Claude (sdd:implement)
 
 ## Now (one line)
-Spec 002 — T1 done; T2 ‖ T3 ‖ T5 in progress (worktrees ../softball-lineup-wt/002-T2, 002-T3, 002-T5).
+Spec 002 — T1, T3 done; T2 and T5+T7 in review; then T4, T6, T8.
 
 ## Active specs
 | Spec | Phase | Current task | Next task | Blocked by |
 |---|---|---|---|---|
 | 001-game-stats | done | — | — | — |
-| 002-inning-capture | implement | T2 ‖ T3 ‖ T5 | T4 ‖ T7, then T6 | — |
+| 002-inning-capture | implement | T2 ‖ T5 ‖ T7 (review) | T4, then T6 | — |
 
 Phases: constitution · spec · clarify · plan · tasks · implement · validate · done
 
@@ -25,6 +25,7 @@ Phases: constitution · spec · clarify · plan · tasks · implement · validat
   the Esc/back guard (step 18) and the console rollback check (step 19). Run them if a sync problem shows up.
 
 ## Recently done (keep last 10)
+- 2026-10-23 · 002 · T3 done — cs + runner-out-only players in players/playerGames, 5 tests, reviewer APPROVE
 - 2026-10-23 · 002 · T1 done — outs, runner outs, cell lines, minInnings with ro; 13 tests; reviewer APPROVE (12a46bc).
 - 2026-10-23 · 001 · Spec done — G3 accepted by Kevin after a partial demo; 39/39 RFs implemented, 43 tests green, live on Pages (d1e9f7f).
 - 2026-10-23 · — · SDD docs moved from the private personal-docs repo into this repo (STATUS.md, docs/, specs/); CLAUDE.local.md became the committed CLAUDE.md.
