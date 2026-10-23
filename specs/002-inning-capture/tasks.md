@@ -39,10 +39,10 @@ Parallel work only in worktrees outside the repo (`../softball-lineup-wt/Tn`), m
 - [x] T7. Players table: `STAT_COLS` AR after BR. (RF-14, RF-18) Deps: T3
       Files: `index.html` ("estadísticas: ver" `STAT_COLS` only)
       Done when: `node --check` OK; reviewer confirms sort and totals use `cs`.
-- [ ] T6. Guided mode: "Anotar por inning" button, `guide` state, `guideStart/Show/Advance/Ask`, "Otro bateador"
+- [x] T6. Guided mode: "Anotar por inning" button, `guide` state, `guideStart/Show/Advance/Ask`, "Otro bateador"
       (rows with < 2 PAs + "Agregar sustituto"), "Out corriendo" in the mode, "Terminar", `#paPick` close handler,
       `closeCapture` reset. (RF-1, RF-2, RF-3, RF-4, RF-5, RF-7, RF-15, RF-19, RF-20) Deps: T2, T4, T5
-      Files: `index.html` (`#capture` head, new "modo guiado" block, `closeCapture`)
+      Files: `index.html` (`#capture` head, new "modo guiado" block, `closeCapture`; small hooks in `openCapture`, `paForm`, `roPick`)
       Done when: tests green; `node --check` OK; reviewer traced a 3-out inning by PA and by runner out, the
       last-column ask and the 12-inning stop.
 

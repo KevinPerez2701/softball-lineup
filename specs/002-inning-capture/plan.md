@@ -86,7 +86,7 @@ code the guided mode uses, so RF-6/RF-11 come for free.
   guideAdvance()`.
 - **Advance (RF-4)**: `renderCapture()`; if `inningOuts(rec, guide.inn) >= 3` ⇒ `guide.inn++`; if
   `guide.inn > innings` ⇒ `guideAsk()` else `guideShow()`.
-- **Ask (RF-4)**: title "¿Hubo otro inning?", "Sí"/"No". "Sí" with `innings < 12` ⇒ `innings++`, `Stats.fit`,
+- **Ask (RF-4)** (as built in T6: at 12 innings the picker closes and a toast "Máximo 12 innings" shows in `#capture`): title "¿Hubo otro inning?", "Sí"/"No". "Sí" with `innings < 12` ⇒ `innings++`, `Stats.fit`,
   `guideShow()`; "No", or 12 ⇒ close the picker (no toast: toasts land in `#capture` under the modal).
 - **Otro bateador (RF-5)**: list rows with < 2 PAs in the inning (`num · name`) + "Agregar sustituto"; row ⇒
   `guide.batter = i; guideShow()`; sub ⇒ `paSubs(dueRi, function(newRi){ guide.batter = newRi; guideShow(); })`,

@@ -2829,7 +2829,8 @@ function guideOnPA(pa){ cap.anchor = pa; guide.batter = null; guideAdvance(); } 
 // RF-4/7: tras un turno o un out corriendo; con 3 outs pasa al siguiente inning con el mismo bateador que toca
 function guideAdvance(){
   renderCapture();
-  if(Stats.inningOuts(cap.rec, guide.inn) >= 3) guide.inn++;
+  // salta también los innings que ya estaban cerrados (anotados antes desde las celdas)
+  while(guide.inn <= cap.rec.game.innings && Stats.inningOuts(cap.rec, guide.inn) >= 3) guide.inn++;
   if(guide.inn > cap.rec.game.innings) guideAsk(); else guideShow();
 }
 function guideAsk(){
