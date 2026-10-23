@@ -188,7 +188,7 @@ Stats.fmt = function(x){
 };
 
 Stats.players = function(entries, team){
-  var COUNT_KEYS = ["pa", "ab", "h", "b2", "b3", "hr", "r", "rbi", "bb", "k", "sb", "sf", "tb"];
+  var COUNT_KEYS = ["pa", "ab", "h", "b2", "b3", "hr", "r", "rbi", "bb", "k", "sb", "sf", "tb", "cs"];
   var TB_WEIGHT = {"1B": 1, "2B": 2, "3B": 3, "HR": 4};
   function withRates(o){
     var r = Stats.rates(o);
@@ -203,14 +203,15 @@ Stats.players = function(entries, team){
   (team || []).forEach(function(p){ tm[p.id] = p; });
   recs.forEach(function(rec){
     rec.rows.forEach(function(row){
-      var a = acc[row.pid];
-      if(!row.pas.length) return;
+      var a = acc[row.pid], ros = row.ro || [];
+      if(!row.pas.length && !ros.length) return;
       if(!a){
-        // recs va de nuevo a viejo: la primera fila con turnos fija la etiqueta (RF-21)
+        // recs va de nuevo a viejo: la primera fila con turnos u outs corriendo fija la etiqueta (RF-21)
         a = acc[row.pid] = zeroCounts({pid: row.pid, num: row.num, name: row.name, g: 0});
         rows.push(a);
       }
       a.g++;
+      ros.forEach(function(o){ if(o.kind === "CS") a.cs++; });
       row.pas.forEach(function(p){
         a.pa++;
         if(p.run) a.r++;
@@ -270,7 +271,8 @@ Stats.playerGames = function(entries, pid){
   var out = {lines: [], total: {ab: 0, h: 0, r: 0, rbi: 0, bb: 0, k: 0}};
   Stats.byNewest(Stats.live(entries)).forEach(function(rec){
     rec.rows.forEach(function(row){
-      if(row.pid !== pid || !row.pas.length) return;
+      var ros = row.ro || [];
+      if(row.pid !== pid || (!row.pas.length && !ros.length)) return;
       var line = {id: rec.id, date: rec.game.date, opp: rec.game.opp, ab: row.pas.length, h: 0, r: 0, rbi: 0, bb: 0, k: 0};
       row.pas.forEach(function(p){
         if(HITS[p.code]) line.h++;
@@ -280,10 +282,11 @@ Stats.playerGames = function(entries, pid){
         else if(p.code === "SF") line.ab--;
         else if(p.code === "K") line.k++;
       });
-      // índice como desempate: dentro de una misma entrada se conserva el orden de captura
-      line.seq = row.pas.map(function(p, i){ return {p: p, i: i}; })
-        .sort(function(a, b){ return a.p.inn - b.p.inn || a.i - b.i; })
-        .map(function(x){ return Stats.cellLabel(x.p); }).join(" · ");
+      // por entrada: turnos en orden de captura y luego sus outs corriendo (RF-13); k y el índice desempatan
+      line.seq = row.pas.map(function(p, i){ return {inn: p.inn, k: 0, i: i, text: Stats.cellLabel(p)}; })
+        .concat(ros.map(function(o, i){ return {inn: o.inn, k: 1, i: i, text: Stats.roLabel(o.kind)}; }))
+        .sort(function(a, b){ return a.inn - b.inn || a.k - b.k || a.i - b.i; })
+        .map(function(x){ return x.text; }).join(" · ");
       out.lines.push(line);
       KEYS.forEach(function(key){ out.total[key] += line[key]; });
     });

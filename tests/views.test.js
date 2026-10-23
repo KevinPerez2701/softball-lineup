@@ -212,3 +212,67 @@ test("playerGames: unknown pid gives empty lines and zero totals", function(){
   assert.deepStrictEqual(Stats.playerGames(ENTRIES, "nope"),
     {lines: [], total: {ab: 0, h: 0, r: 0, rbi: 0, bb: 0, k: 0}});
 });
+
+// ---- spec 002: outs corriendo (RF-12/13/14/18) ----
+function ro(inn, kind){ return {inn: inn, kind: kind}; }
+function rowRo(pid, num, name, pas, ros){
+  var r = row(pid, num, name, pas);
+  r.ro = ros;
+  return r;
+}
+
+test("players: cs counts only CS runner outs per player and team; PO/OB ignored", function(){
+  var g1 = rec("a", "2026-06-01", "2026-06-01T10:00:00Z", [
+    rowRo("p1", 7, "Ana", [pa(1, "1B")], [ro(1, "CS"), ro(2, "PO"), ro(3, "CS")]),
+    rowRo("p2", 9, "Beto", [pa(1, "K")], [ro(2, "OB")])
+  ]);
+  var g2 = rec("b", "2026-06-08", "2026-06-08T10:00:00Z", [
+    rowRo("p1", 7, "Ana", [pa(1, "BB")], [ro(1, "CS")])
+  ]);
+  var res = Stats.players([g1, g2], TEAM), p = byPid(res.rows);
+  assert.strictEqual(p.p1.cs, 3);
+  assert.strictEqual(p.p2.cs, 0);
+  assert.strictEqual(res.team.cs, 3);
+});
+
+test("players: a runner-out-only player is listed with pa 0, ab 0, g 1 and null rates", function(){
+  var g = rec("a", "2026-06-01", "2026-06-01T10:00:00Z", [
+    rowRo("p3", 11, "Cai", [], [ro(2, "CS")]),
+    row("p1", 7, "Ana", [pa(1, "1B")])
+  ]);
+  var res = Stats.players([g], [{id: "p1", num: 7, name: "Ana"}]), c = byPid(res.rows).p3;
+  assert.deepStrictEqual([c.g, c.pa, c.ab, c.h, c.tb, c.cs], [1, 0, 0, 0, 0, 1]);
+  assert.deepStrictEqual([c.avg, c.obp, c.slg, c.ops], [null, null, null, null]);
+  assert.strictEqual(Stats.fmt(c.avg), "—");
+  // sin entrada en el equipo, la etiqueta sale de esa fila
+  assert.deepStrictEqual([c.num, c.name], [11, "Cai"]);
+});
+
+test("players: g counts a record where the player only has a runner out; runner outs never change ab/h", function(){
+  var g1 = rec("a", "2026-06-01", "2026-06-01T10:00:00Z", [row("p1", 7, "Ana", [pa(1, "1B"), pa(2, "K")])]);
+  var g2 = rec("b", "2026-06-08", "2026-06-08T10:00:00Z", [rowRo("p1", 7, "Ana", [], [ro(1, "CS")])]);
+  var withRo = byPid(Stats.players([g1, g2], TEAM).rows).p1;
+  var without = byPid(Stats.players([g1], TEAM).rows).p1;
+  assert.strictEqual(withRo.g, 2);
+  assert.strictEqual(without.g, 1);
+  ["pa", "ab", "h", "tb", "r", "rbi", "bb", "k", "sb", "sf", "avg", "obp", "slg", "ops"].forEach(function(key){
+    assert.strictEqual(withRo[key], without[key], key);
+  });
+});
+
+test("playerGames: seq puts each inning's runner outs after its PAs", function(){
+  var g = rec("g", "2026-06-01", "2026-06-01T10:00:00Z", [rowRo("p1", 7, "Ana",
+    [pa(2, "1B"), pa(1, "K")], [ro(1, "CS")])]);
+  var l = Stats.playerGames([g], "p1").lines[0];
+  assert.strictEqual(l.seq, "K · AR · 1B");
+  assert.deepStrictEqual([l.ab, l.h], [2, 1]);
+});
+
+test("playerGames: a runner-out-only game is a line with zero counts and adds nothing to the totals", function(){
+  var g1 = rec("a", "2026-06-01", "2026-06-01T10:00:00Z", [row("p1", 7, "Ana", [pa(1, "1B")])]);
+  var g2 = rec("b", "2026-06-08", "2026-06-08T10:00:00Z", [rowRo("p1", 7, "Ana", [], [ro(2, "PO"), ro(1, "CS")])]);
+  var res = Stats.playerGames([g1, g2], "p1");
+  assert.deepStrictEqual(res.lines[0], {id: "b", date: "2026-06-08", opp: "X", ab: 0, h: 0, r: 0, rbi: 0, bb: 0, k: 0, seq: "AR · Sor"});
+  assert.strictEqual(res.lines.length, 2);
+  assert.deepStrictEqual(res.total, {ab: 1, h: 1, r: 0, rbi: 0, bb: 0, k: 0});
+});
