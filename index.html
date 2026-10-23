@@ -498,7 +498,9 @@ table.sheet th:first-child{
   position:sticky;left:0;z-index:1;background:var(--surface);border-right:1px solid var(--line);
   text-align:left;min-width:112px;max-width:150px;padding:2px 8px 2px 0;
 }
-table.sheet tbody th{font-size:13.5px;font-weight:600;color:var(--ink);line-height:1.15;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+table.sheet tbody th{font-size:13.5px;font-weight:600;color:var(--ink);line-height:1.15}
+/* max-width no limita una celda de tabla: el recorte va en un bloque adentro */
+table.sheet tbody th .nm{display:block;max-width:150px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 table.sheet tbody th small{display:block;font-size:11px;letter-spacing:.1em;color:var(--ink-3);font-weight:400}
 .sheet-cell{
   display:block;width:100%;min-width:44px;min-height:44px;padding:2px;cursor:pointer;
@@ -2414,6 +2416,7 @@ $("btnDelInn").addEventListener("click", function(){
 /* ============ estadísticas: anotar ============ */
 var cap = null; // {rec: copia que se edita, opened: JSON al abrir, fromCurrent, linkId}
 function openCapture(rec, fromCurrent){
+  rec = JSON.parse(JSON.stringify(rec)); // nunca tocar el objeto de quien llama
   if(fromCurrent){
     rec.game = {date:S.date, team:S.team, opp:S.opp, home:S.home, innings:S.innings, us:S.us.slice(), them:S.them.slice()};
     var lineup = S.order.map(function(id){
@@ -2422,7 +2425,7 @@ function openCapture(rec, fromCurrent){
     });
     rec.rows = Stats.refreshRows(rec.rows, lineup);
   }
-  var copy = Stats.fit(JSON.parse(JSON.stringify(rec)));
+  var copy = Stats.fit(rec);
   cap = {rec:copy, opened:JSON.stringify(copy), fromCurrent:fromCurrent, linkId:S.statsId || null};
   renderCapture();
   $("capture").showModal();
@@ -2440,7 +2443,7 @@ function renderCapture(){
   cap.rec.rows.forEach(function(row, ri){
     var tr = el("tr"), th = el("th");
     th.scope = "row";
-    th.appendChild(document.createTextNode((row.num ? row.num + " · " : "") + row.name));
+    th.appendChild(el("span", "nm", (row.num ? row.num + " · " : "") + row.name));
     th.appendChild(el("small", null, row.pos ? posLabel(row.pos) : "—")); // T8: menú de fila
     tr.appendChild(th);
     for(var inn = 1; inn <= g.innings; inn++){
