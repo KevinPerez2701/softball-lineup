@@ -3,15 +3,16 @@
 Single source of truth for what is in flight and what is left. Update it in the same commit as the
 work it describes. Dates come from `date`, never from memory.
 
-Last updated: 2026-10-23 11:06 UTC-4 by Claude (sdd:validate)
+Last updated: 2026-10-23 11:30 UTC-4 by Claude (sdd:tasks)
 
 ## Now (one line)
-Idle. Spec 001 done and live on Pages. Next candidate: spec 002 (inning-by-inning capture with outs), see Backlog.
+Spec 002 (inning capture with outs) — plan + 8 tasks written; WAITING for Kevin's G2 approval before T1.
 
 ## Active specs
 | Spec | Phase | Current task | Next task | Blocked by |
 |---|---|---|---|---|
 | 001-game-stats | done | — | — | — |
+| 002-inning-capture | tasks | T1 (not started) | T2 | G2 (Kevin) |
 
 Phases: constitution · spec · clarify · plan · tasks · implement · validate · done
 
