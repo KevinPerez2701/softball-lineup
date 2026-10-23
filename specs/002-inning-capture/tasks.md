@@ -24,7 +24,7 @@ Parallel work only in worktrees outside the repo (`../softball-lineup-wt/Tn`), m
       Done when: tests green; existing views assertions unchanged.
 
 ## UI (index.html) — T4 ‖ T5 ‖ T7 in worktrees, then T6
-- [ ] T4. Picker: "Outs en la jugada" chips (preset/reset/store-only-if-different), `ord` on every new PA,
+- [x] T4. Picker: "Outs en la jugada" chips (preset/reset/store-only-if-different), `ord` on every new PA,
       `renumberOrd` on delete, runner outs listed with "Borrar", `roPick`, "Out corriendo" in the empty-cell picker,
       `done` callbacks on `paForm`/`paSubs`, `sub:true` on new substitutes. (RF-6, RF-10, RF-11, RF-16, RF-5 data)
       Deps: T1, T2

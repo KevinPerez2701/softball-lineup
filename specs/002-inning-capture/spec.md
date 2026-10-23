@@ -78,8 +78,9 @@ counting outs on the play and outs on the bases.
 - RF-15: WHEN the user taps "Terminar" (or RF-4 ends the mode), THE SYSTEM SHALL leave the guided mode and show the
   grid; the anchor is kept while the sheet stays open.
 - RF-16: WHEN the user taps a cell holding a PA or a runner out, THE SYSTEM SHALL list the PAs (spec 001 RF-3/27/28)
-  and the runner outs, each runner out with "Borrar"; the picker of an empty cell SHALL also offer "Out corriendo",
-  adding a runner out (kind asked) to that cell's row and inning.
+  and the runner outs, each runner out with "Borrar", plus "Out corriendo" (and "Anotar turno" when the cell has only
+  runner outs); the picker of a new PA SHALL also offer "Out corriendo", adding a runner out (kind asked) to that
+  cell's row and inning. (Amended 2026-10-23 after the T4 review so a full cell can still get a runner out.)
 - RF-17: THE SYSTEM SHALL treat runner outs like PAs for the minimum innings (spec 001 RF-30) and for row removal
   (spec 001 RF-29): a column or row holding a runner out cannot be removed.
 - RF-18: THE SYSTEM SHALL list in "Jugadores" every player with ≥ 1 PA or runner out; JJ counts records where the

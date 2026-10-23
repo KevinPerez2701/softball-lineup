@@ -3,16 +3,16 @@
 Single source of truth for what is in flight and what is left. Update it in the same commit as the
 work it describes. Dates come from `date`, never from memory.
 
-Last updated: 2026-10-23 12:29 UTC-4 by Claude (sdd:implement)
+Last updated: 2026-10-23 12:33 UTC-4 by Claude (sdd:implement)
 
 ## Now (one line)
-Spec 002 — T1, T2, T3, T5, T7 done; T4 in progress (worktree ../softball-lineup-wt/002-T4); then T6, T8.
+Spec 002 — T1–T5, T7 done; T6 (guided mode) next, then T8 demo.
 
 ## Active specs
 | Spec | Phase | Current task | Next task | Blocked by |
 |---|---|---|---|---|
 | 001-game-stats | done | — | — | — |
-| 002-inning-capture | implement | T4 | T6 | — |
+| 002-inning-capture | implement | T6 | T8 | — |
 
 Phases: constitution · spec · clarify · plan · tasks · implement · validate · done
 
@@ -25,6 +25,7 @@ Phases: constitution · spec · clarify · plan · tasks · implement · validat
   the Esc/back guard (step 18) and the console rollback check (step 19). Run them if a sync problem shows up.
 
 ## Recently done (keep last 10)
+- 2026-10-23 · 002 · T4 done — outs chips, ord, renumber, runner outs list + roPick, sub flag; reviewer APPROVE. Orchestrator: merge conflict resolved, re-tapping the same result keeps outs, "Out corriendo" also in a full cell (RF-16 amended)
 - 2026-10-23 · 002 · T5 + T7 done — grid shows turn order, runner outs, inning outs + ⚠; AR column; sw v5; reviewer APPROVE. RF-8 amended: blank at 0 outs, ⚠ above 3 in the last inning too (+test)
 - 2026-10-23 · 002 · T2 done — slots, dueBatter, nextOrd, renumberOrd; review BLOCK (fallback test let an inning-blind mutant pass) fixed by the orchestrator, mutant now fails
 - 2026-10-23 · 002 · T3 done — cs + runner-out-only players in players/playerGames, 5 tests, reviewer APPROVE
