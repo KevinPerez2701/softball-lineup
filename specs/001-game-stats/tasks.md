@@ -90,7 +90,7 @@ All tasks touch `stats.js` or `index.html`, so they run sequentially (no paralle
       Files: `index.html`
       Done when: manual: open an old game shows its stored scoreboard; deleting asks, drops it from both views,
       and it does not come back on reload or on a second device.
-- [ ] T15. Final validation: RF → test/demo traceability, full manual demo of the spec's Done criteria
+- [x] T15. Final validation: RF → test/demo traceability, full manual demo of the spec's Done criteria
       (offline + two devices), README section for stats. (All) Deps: T1–T14
       Files: `README.md`
       Done when: `/sdd:validate` reports every RF traced and the demo checklist passed.

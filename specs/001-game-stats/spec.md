@@ -1,6 +1,6 @@
 # Spec 001 — Game stats (scorebook transcription and batting stats)
 
-Status: in-progress (G2 approved 2026-10-23; G1 approved by Kevin 2026-10-23)
+Status: done (G3 accepted by Kevin 2026-10-23 after a partial demo; G2, G1 approved 2026-10-23)
 Created: 2026-10-23 · Clarified: 2026-10-23 (2 rounds)
 
 ## Context and goal
