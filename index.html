@@ -2848,7 +2848,7 @@ var statsViewName = "players";
 var statsSort = {key:"avg", desc:true};
 /* [clave, rótulo, entero]: las tasas salen con Stats.fmt */
 var STAT_COLS = [["g","JJ",1],["pa","AP",1],["ab","VB",1],["h","H",1],["b2","2B",1],["b3","3B",1],["hr","HR",1],
-  ["r","CA",1],["rbi","CI",1],["bb","BB",1],["k","K",1],["sb","BR",1],["avg","AVE"],["obp","OBP"],["slg","SLG"],["ops","OPS"]];
+  ["r","CA",1],["rbi","CI",1],["bb","BB",1],["k","K",1],["sb","BR",1],["cs","AR",1],["avg","AVE"],["obp","OBP"],["slg","SLG"],["ops","OPS"]];
 var statsDetail = null; /* pid del jugador abierto en Jugadores, o null */
 function openPlayerDetail(pid){ statsDetail = pid; openStats("players"); }
 function closePlayerDetail(view){ statsDetail = null; openStats(view); }
