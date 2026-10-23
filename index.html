@@ -1299,11 +1299,16 @@ function flushPut(name){
   delete pending[name];
   if(json === synced[name]) return;
   synced[name] = json;
-  cloud.put(name, json).then(function(){
+  /* estadísticas: transacción que mezcla con lo que haya en el servidor */
+  (name === "stats" ? cloud.putMerged(name, json) : cloud.put(name, json)).then(function(){
     if(localStorage.getItem(KEY_OF[name]) === json) setDirty(name, false);
   }, function(){
-    /* rechazada: se reintenta con el próximo cambio */
+    /* rechazada: se reintenta con el próximo cambio (estadísticas: al volver la conexión) */
     if(synced[name] === json) synced[name] = undefined;
+    if(name === "stats"){
+      if(!(name in pending)) pending[name] = json;
+      if(navigator.onLine === false) return;
+    }
     syncWarn();
   });
 }
@@ -3057,6 +3062,8 @@ function firstSnapshot(name, remote, local){
        remoto posterior se mezcla igual que el primero (lo local sin subir se
        mezcla en vez de ignorarse). */
     if(name === "stats"){
+      /* llegó una respuesta del servidor: se reintenta la subida que falló sin señal */
+      if(!meta.fromCache && "stats" in pending) flushPut("stats");
       if(meta.pending || remote == null || remote === local || remote === synced[name]) return;
       firstSnapshot(name, remote, local);
       return;
@@ -3135,7 +3142,7 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/12.19.0/fireba
 import { getAuth, onAuthStateChanged, signInWithEmailAndPassword, sendPasswordResetEmail, signOut }
   from "https://www.gstatic.com/firebasejs/12.19.0/firebase-auth.js";
 import { initializeFirestore, persistentLocalCache, persistentMultipleTabManager, memoryLocalCache,
-  doc, onSnapshot, setDoc, serverTimestamp, waitForPendingWrites, terminate, clearIndexedDbPersistence }
+  doc, onSnapshot, setDoc, runTransaction, serverTimestamp, waitForPendingWrites, terminate, clearIndexedDbPersistence }
   from "https://www.gstatic.com/firebasejs/12.19.0/firebase-firestore.js";
 
 const app = initializeApp({
@@ -3192,6 +3199,17 @@ function cloudFor(user){
     },
     put(name, json){
       return setDoc(ref(name), {json, updatedAt: serverTimestamp()});
+    },
+    /* Estadísticas: setDoc pisaría lo que otro dispositivo subió sin señal, así
+       que se lee el documento del servidor y se mezcla por id antes de escribir. */
+    putMerged(name, json){
+      return runTransaction(db, async t => {
+        const snap = await t.get(ref(name));
+        const remote = snap.exists() ? snap.data().json : null;
+        const merged = remote == null ? json : JSON.stringify(Stats.merge(JSON.parse(remote), JSON.parse(json)));
+        t.set(ref(name), {json: merged, updatedAt: serverTimestamp()});
+        return merged;
+      });
     },
     /* Antes de salir todo tiene que estar confirmado por el servidor. Luego se
        cortan los listeners (para que nada vuelva a escribir), se borra la
