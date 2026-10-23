@@ -1,6 +1,6 @@
 # Spec 002 — Inning-by-inning capture with outs
 
-Status: planned (G1 pre-approved by Kevin 2026-10-23; G2 waits for Kevin). The product
+Status: in-progress (G1 pre-approved, G2 approved by Kevin 2026-10-23). The product
 decisions below are the orchestrator's, recorded as assumptions.
 Created: 2026-10-23
 

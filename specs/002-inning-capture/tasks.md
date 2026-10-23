@@ -8,7 +8,7 @@ Test command: `node --test 'tests/*.test.js'`. UI tasks: syntax check of the ext
 Parallel work only in worktrees outside the repo (`../softball-lineup-wt/Tn`), merged by the orchestrator.
 
 ## Logic (stats.js) — sequential, one file
-- [ ] T1. Outs and cells: `RO_KINDS`, `roLabel`, `defaultOuts`, `paOuts`, `inningOuts`, `outsCheck`, `openInning`,
+- [x] T1. Outs and cells: `RO_KINDS`, `roLabel`, `defaultOuts`, `paOuts`, `inningOuts`, `outsCheck`, `openInning`,
       `cellLines`, `rowEmpty`; `minInnings` counts `ro`. Tests first. (RF-1, RF-4, RF-6, RF-7, RF-8, RF-9, RF-12,
       RF-16, RF-17, RF-21) Deps: —
       Files: `stats.js`, `tests/outs.test.js` (new), `tests/sheet.test.js`
