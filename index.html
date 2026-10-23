@@ -3267,6 +3267,7 @@ function applyRemote(name, json){
     normalizeTeam(); normalizeGameRoster();
     renderAll();
     if($("teamRoster").open) renderTeamRoster();
+    if($("statsView").open) openStats(statsViewName);
   }else{
     localStorage.setItem(KEY_OF[name], json);
     if(name === "stats" && $("statsView").open) openStats(statsViewName);
