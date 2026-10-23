@@ -149,3 +149,66 @@ test("rates: ops rounds half-up on the exact sum (no float drift)", function(){
   // OBP 21/50 + SLG 21/48 = .8575 exacto; sumar floats daba .857
   assert.strictEqual(Stats.rates({h: 19, ab: 48, bb: 2, sf: 0, tb: 21}).ops, 0.858);
 });
+
+function scored(id, date, savedAt, us, them, rows){
+  var r = rec(id, date, savedAt, rows || []);
+  r.game.us = us; r.game.them = them; r.game.opp = "Rival " + id;
+  return r;
+}
+
+test("games: newest first by date, same date by later savedAt, whatever the input order", function(){
+  var a = scored("a", "2026-05-01", "2026-05-01T10:00:00Z", [1], [0]);
+  var b = scored("b", "2026-06-01", "2026-06-01T10:00:00Z", [1], [0]);
+  var c = scored("c", "2026-06-01", "2026-06-01T18:00:00Z", [1], [0]);
+  var ids = function(l){ return Stats.games(l).list.map(function(g){ return g.id; }); };
+  assert.deepStrictEqual(ids([a, b, c]), ["c", "b", "a"]);
+  assert.deepStrictEqual(ids([c, a, b]), ["c", "b", "a"]);
+  assert.deepStrictEqual(Stats.games([c]).list[0], {id: "c", date: "2026-06-01", opp: "Rival c", savedAt: "2026-06-01T18:00:00Z", us: 1, them: 0, result: "W"});
+});
+
+test("games: stored scoreboard gives W/L/T, record and totals; markers are excluded", function(){
+  var w = scored("w", "2026-05-01", "2026-05-01T10:00:00Z", [2, 3, 0], [1, 0, 0]);
+  var l = scored("l", "2026-05-08", "2026-05-08T10:00:00Z", [0, 1], [4, 0]);
+  var t = scored("t", "2026-05-15", "2026-05-15T10:00:00Z", [2, 2], [3, 1]);
+  var res = Stats.games([w, l, t, {id: "x", deletedAt: "2026-05-20T00:00:00Z"}]);
+  assert.deepStrictEqual(res.list.map(function(g){ return [g.id, g.us, g.them, g.result]; }),
+    [["t", 4, 4, "T"], ["l", 1, 4, "L"], ["w", 5, 1, "W"]]);
+  assert.deepStrictEqual([res.w, res.l, res.t, res.runsFor, res.runsAgainst], [1, 1, 1, 10, 9]);
+});
+
+test("games: score comes from the stored us/them, not from the sheet's run marks", function(){
+  var g = scored("g", "2026-05-01", "2026-05-01T10:00:00Z", [0, 0, 0], [2, 0, 0],
+    [row("p1", 7, "Ana", [pa(1, "1B", {run: true}), pa(2, "HR", {run: true})])]);
+  var res = Stats.games([g]);
+  assert.deepStrictEqual([res.list[0].us, res.list[0].result, res.l], [0, "L", 1]);
+});
+
+test("games: no live records gives an empty list and zero totals", function(){
+  assert.deepStrictEqual(Stats.games([{id: "x", deletedAt: "z"}]),
+    {list: [], w: 0, l: 0, t: 0, runsFor: 0, runsAgainst: 0});
+});
+
+test("playerGames: lines per game with counts, in newest order, skipping records without PAs", function(){
+  var res = Stats.playerGames(ENTRIES, "p1");
+  assert.deepStrictEqual(res.lines.map(function(l){ return l.id; }), ["g2", "g1"]);
+  assert.deepStrictEqual(res.lines[0], {id: "g2", date: "2026-05-08", opp: "X", ab: 3, h: 2, r: 1, rbi: 2, bb: 0, k: 0, seq: "HR• · SF · E · 3B"});
+  assert.deepStrictEqual(res.lines[1], {id: "g1", date: "2026-05-01", opp: "X", ab: 3, h: 2, r: 1, rbi: 3, bb: 1, k: 1, seq: "1B• · BB · K · 2B"});
+  assert.deepStrictEqual(res.total, {ab: 6, h: 4, r: 2, rbi: 5, bb: 1, k: 1});
+  // Cai tiene fila en ambos juegos pero sin turnos; Beto solo juega en g1
+  assert.deepStrictEqual(Stats.playerGames(ENTRIES, "p3").lines, []);
+  assert.deepStrictEqual(Stats.playerGames(ENTRIES, "p2").lines.map(function(l){ return l.id; }), ["g1"]);
+});
+
+test("playerGames: seq sorts by inning, keeping entry order within an inning", function(){
+  var g = rec("g", "2026-05-01", "2026-05-01T10:00:00Z", [row("p1", 7, "Ana", [
+    pa(3, "K"), pa(1, "FL"), pa(3, "RO", {run: true}), pa(1, "BB")
+  ])]);
+  var l = Stats.playerGames([g], "p1").lines[0];
+  assert.strictEqual(l.seq, "Fly · BB · K · Rol•");
+  assert.deepStrictEqual([l.ab, l.bb, l.k, l.r], [3, 1, 1, 1]);
+});
+
+test("playerGames: unknown pid gives empty lines and zero totals", function(){
+  assert.deepStrictEqual(Stats.playerGames(ENTRIES, "nope"),
+    {lines: [], total: {ab: 0, h: 0, r: 0, rbi: 0, bb: 0, k: 0}});
+});

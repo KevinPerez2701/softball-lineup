@@ -182,6 +182,45 @@ Stats.sortPlayers = function(rows, key, desc){
 
 
 /* ============ juegos: historial y ficha del jugador ============ */
+// El marcador sale de game.us/them guardados, no de las marcas de carrera de la hoja.
+Stats.games = function(entries){
+  function sum(a){ return a.reduce(function(s, n){ return s + n; }, 0); }
+  var out = {list: [], w: 0, l: 0, t: 0, runsFor: 0, runsAgainst: 0};
+  Stats.byNewest(Stats.live(entries)).forEach(function(rec){
+    var g = rec.game, us = sum(g.us), them = sum(g.them), res = us > them ? "W" : us < them ? "L" : "T";
+    out.list.push({id: rec.id, date: g.date, opp: g.opp, savedAt: rec.savedAt, us: us, them: them, result: res});
+    out[res.toLowerCase()]++;
+    out.runsFor += us; out.runsAgainst += them;
+  });
+  return out;
+};
+
+Stats.playerGames = function(entries, pid){
+  var HITS = {"1B": 1, "2B": 1, "3B": 1, "HR": 1};
+  var KEYS = ["ab", "h", "r", "rbi", "bb", "k"];
+  var out = {lines: [], total: {ab: 0, h: 0, r: 0, rbi: 0, bb: 0, k: 0}};
+  Stats.byNewest(Stats.live(entries)).forEach(function(rec){
+    rec.rows.forEach(function(row){
+      if(row.pid !== pid || !row.pas.length) return;
+      var line = {id: rec.id, date: rec.game.date, opp: rec.game.opp, ab: row.pas.length, h: 0, r: 0, rbi: 0, bb: 0, k: 0};
+      row.pas.forEach(function(p){
+        if(HITS[p.code]) line.h++;
+        if(p.run) line.r++;
+        line.rbi += p.rbi;
+        if(p.code === "BB"){ line.bb++; line.ab--; }
+        else if(p.code === "SF") line.ab--;
+        else if(p.code === "K") line.k++;
+      });
+      // índice como desempate: dentro de una misma entrada se conserva el orden de captura
+      line.seq = row.pas.map(function(p, i){ return {p: p, i: i}; })
+        .sort(function(a, b){ return a.p.inn - b.p.inn || a.i - b.i; })
+        .map(function(x){ return Stats.cellLabel(x.p); }).join(" · ");
+      out.lines.push(line);
+      KEYS.forEach(function(key){ out.total[key] += line[key]; });
+    });
+  });
+  return out;
+};
 
 
 if(typeof module !== "undefined") module.exports = Stats;
