@@ -13,6 +13,7 @@ Hecho para llevarlo al dugout: se arma en el navegador, se guarda en el navegado
 - **Carreras por inning** (7 innings de softball, con extras hasta 12) y marcador final automático.
 - **Imprimir / PDF**: una hoja carta lista para el anotador, con notas y firmas.
 - **Guardar alineaciones** con nombre para reabrirlas después, y **respaldo** en texto para pasar el roster a otro dispositivo.
+- **Estadísticas de bateo**: después del juego, **Anotar estadísticas** (pestaña Juego) abre una hoja como la del anotador, con una fila por bateador y una columna por inning. Cada turno se anota con un toque (`1B 2B 3B HR BB K Rolling Fly Línea E BO SF`), más carrera anotada, CI y bases robadas. Si las carreras de un inning no cuadran con el marcador, el inning sale en rojo con la diferencia. En **☰ → Estadísticas** están la tabla por jugador (JJ, AP, VB, H, 2B, 3B, HR, CA, CI, BB, K, BR, AVE, OBP, SLG, OPS), la ficha de cada jugador juego por juego y el historial de juegos con el récord.
 
 ## Uso
 
@@ -35,7 +36,8 @@ La app es un solo archivo, `index.html`, sin build. Cargas externas: las tipogra
 Cuenta y datos (Firebase, proyecto `artful-zone-461419-t1`):
 
 - Login con correo/contraseña; el registro público está desactivado.
-- Cada usuario escribe en `users/{uid}/data/{current|team|saved}` (cada documento guarda el JSON en el campo `json`).
+- Cada usuario escribe en `users/{uid}/data/{current|team|saved|stats}` (cada documento guarda el JSON en el campo `json`).
+- `stats` es una lista de juegos anotados más marcas de borrado. Se mezcla juego por juego (gana el guardado más reciente) y se sube con una transacción, así dos teléfonos que anotaron sin señal no se pisan.
 - `firestore.rules` — copia de las reglas publicadas: cada usuario solo lee y escribe lo suyo. Si lo cambias, pégalo en Firestore → Reglas y publica.
 - La configuración web de Firebase en `index.html` es pública por diseño; lo que protege los datos son las reglas.
 
@@ -46,6 +48,12 @@ Para la parte instalable:
 - `icons/` — iconos de la app (192, 512, maskable, Apple y favicon).
 
 Para editarlo: abre `index.html`, todo está adentro — tokens de color al principio del `<style>`, coordenadas de las posiciones en el arreglo `POS` del `<script>`.
+
+Las cuentas de las estadísticas viven aparte, en `stats.js` (funciones puras, sin pantalla ni Firebase), y se prueban con Node sin instalar nada:
+
+```bash
+node --test 'tests/*.test.js'
+```
 
 ## Licencia
 
