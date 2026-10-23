@@ -1315,6 +1315,9 @@ function flushPut(name){
 function flushAll(){ Object.keys(pending).forEach(flushPut); }
 document.addEventListener("visibilitychange", function(){ if(document.hidden) flushAll(); });
 window.addEventListener("pagehide", flushAll);
+/* Un corte breve hace fallar la transacción de stats sin que llegue otra
+   instantánea del servidor: al volver la red se reintenta. */
+window.addEventListener("online", flushAll);
 
 function lsGet(k, fb){
   try{ var v = localStorage.getItem(k); return v ? JSON.parse(v) : fb; }
