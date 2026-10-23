@@ -2724,7 +2724,7 @@ function saveCapture(){
     S.us = rec.game.us.slice(); S.them = rec.game.them.slice(); S.statsId = rec.id;
     if(!lsSet(K_CUR, S)){
       S.date = old.date; S.innings = old.innings; S.us = old.us; S.them = old.them; S.statsId = old.statsId;
-      lsSet(K_STATS, prev);
+      if(!lsSet(K_STATS, prev)) wasDirty = true; // no se pudo restaurar: la marca debe quedarse
       if(!wasDirty) setDirty("stats", false); // lo restaurado es lo ya sincronizado: que no frene el cierre de sesión
       toast("No se pudo guardar en este navegador");
       return;
@@ -2743,7 +2743,12 @@ function tryCloseCapture(){
 }
 $("capSave").addEventListener("click", saveCapture);
 $("capClose").addEventListener("click", tryCloseCapture);
-$("capture").addEventListener("cancel", function(ev){ ev.preventDefault(); tryCloseCapture(); });
+$("capture").addEventListener("cancel", function(ev){ if(ev.cancelable){ ev.preventDefault(); tryCloseCapture(); } });
+/* Chromium no deja cancelar un segundo Esc/atrás sin un toque: si se cerró solo con cambios, se reabre y se pregunta */
+$("capture").addEventListener("close", function(){
+  if(!cap || this.open) return;
+  if(JSON.stringify(cap.rec) === cap.opened) cap = null; else { this.showModal(); tryCloseCapture(); }
+});
 
 /* ============ datos del juego ============ */
 var bind = [["fTeam","team"],["fOpp","opp"],["fDate","date"]];
