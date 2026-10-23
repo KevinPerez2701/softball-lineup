@@ -3,10 +3,10 @@
 Single source of truth for what is in flight and what is left. Update it in the same commit as the
 work it describes. Dates come from `date`, never from memory.
 
-Last updated: 2026-10-23 12:42 UTC-4 by Claude (sdd:validate)
+Last updated: 2026-10-23 12:46 UTC-4 by Claude
 
 ## Now (one line)
-Spec 002 — validated: 21/21 RFs implemented (17 with node tests, 4 UI-only), 77 tests green; waiting for Kevin's demo (specs/002-inning-capture/demo.md) and push OK.
+Spec 002 — validated: 21/21 RFs implemented (17 with node tests, 4 UI-only), 77 tests green; live on Pages (1aabd24, pushed on Kevin's OK); waiting for Kevin's demo in prod (specs/002-inning-capture/demo.md).
 
 ## Active specs
 | Spec | Phase | Current task | Next task | Blocked by |
