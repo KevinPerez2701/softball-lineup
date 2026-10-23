@@ -501,6 +501,11 @@ table.sheet th:first-child{
 table.sheet tbody th{font-size:13.5px;font-weight:600;color:var(--ink);line-height:1.15}
 /* max-width no limita una celda de tabla: el recorte va en un bloque adentro */
 table.sheet th .nm{display:block;max-width:150px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+table.sheet th .rh{display:flex;align-items:center}
+table.sheet th .rh-txt{flex:1;min-width:0}
+table.sheet tbody th .nm{max-width:100px}
+.rh-menu{flex:none;min-width:40px;min-height:40px;background:transparent;border:0;color:var(--ink-2);font-size:20px;line-height:1;cursor:pointer}
+.rh-menu:hover{background:var(--surface-2)}
 table.sheet tbody th small{display:block;font-size:11px;letter-spacing:.1em;color:var(--ink-3);font-weight:400}
 .sheet-cell{
   display:block;width:100%;min-width:44px;min-height:44px;padding:2px;cursor:pointer;
@@ -2518,8 +2523,13 @@ function renderCapture(){
   cap.rec.rows.forEach(function(row, ri){
     var tr = el("tr"), th = el("th");
     th.scope = "row";
-    th.appendChild(el("span", "nm", (row.num ? row.num + " · " : "") + row.name));
-    th.appendChild(el("small", null, row.pos ? posLabel(row.pos) : "—")); // T8: menú de fila
+    var rh = el("div", "rh"), rt = el("div", "rh-txt"), mb = el("button", "rh-menu", "⋯");
+    rt.appendChild(el("span", "nm", (row.num ? row.num + " · " : "") + row.name));
+    rt.appendChild(el("small", null, row.pos ? posLabel(row.pos) : "—"));
+    mb.type = "button";
+    mb.setAttribute("aria-label", "Opciones de " + row.name);
+    mb.addEventListener("click", function(){ onRowMenu(ri); });
+    rh.appendChild(rt); rh.appendChild(mb); th.appendChild(rh);
     tr.appendChild(th);
     for(var inn = 1; inn <= g.innings; inn++){
       (function(n){
@@ -2650,6 +2660,46 @@ function paForm(ri, inn, idx){
     body.appendChild(acts);
   }
   draw();
+}
+// RF-4/29/36: menú de fila. "Quitar fila" solo sin turnos; los sustitutos son jugadores de TEAM sin fila
+function onRowMenu(ri){
+  var row = cap.rec.rows[ri], body = $("paBody");
+  $("paTitle").textContent = (row.num ? row.num + " · " : "") + row.name;
+  body.innerHTML = "";
+  var add = el("button", "btn btn-key", "Agregar sustituto");
+  add.type = "button";
+  add.addEventListener("click", function(){ paSubs(ri); });
+  body.appendChild(add);
+  if(!row.pas.length){
+    var del = el("button", "btn btn-danger", "Quitar fila");
+    del.type = "button";
+    del.style.marginLeft = "8px";
+    del.addEventListener("click", function(){
+      if(cap.rec.rows[ri].pas.length) return;
+      cap.rec.rows.splice(ri, 1); paDone();
+    });
+    body.appendChild(del);
+  }
+  $("paPick").showModal();
+}
+function paSubs(ri){
+  var body = $("paBody"), used = {}, n = 0;
+  cap.rec.rows.forEach(function(r){ used[r.pid] = true; });
+  body.innerHTML = "";
+  TEAM.forEach(function(p){
+    if(used[p.id]) return;
+    n++;
+    var it = el("button", "pickitem");
+    it.type = "button";
+    it.appendChild(el("span", "pa-code", p.num || ""));
+    it.appendChild(el("span", null, p.name));
+    it.addEventListener("click", function(){
+      cap.rec.rows.splice(ri + 1, 0, {pid:p.id, num:p.num, name:p.name, pos:null, pas:[]});
+      paDone();
+    });
+    body.appendChild(it);
+  });
+  if(!n) body.appendChild(el("p", "empty-note", "Todos los jugadores del roster ya están en la hoja"));
 }
 $("paClose").addEventListener("click", function(){ $("paPick").close(); });
 $("btnCapture").addEventListener("click", function(){
