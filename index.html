@@ -544,6 +544,8 @@ table.stat thead button:hover{background:var(--surface-2)}
 table.stat th[aria-sort] button{color:var(--ink)}
 table.stat td{height:40px}
 table.stat tbody tr{cursor:pointer}
+table.stat.det tbody tr{cursor:default}
+table.stat.det td:nth-child(-n+2),table.stat.det td:last-child{text-align:left}
 table.stat tbody tr:hover td,table.stat tbody tr:hover th{background:var(--surface-2)}
 table.stat th:first-child{
   position:sticky;left:0;z-index:1;background:var(--surface);border-right:1px solid var(--line);
@@ -2667,7 +2669,9 @@ var statsSort = {key:"avg", desc:true};
 /* [clave, rótulo, entero]: las tasas salen con Stats.fmt */
 var STAT_COLS = [["g","JJ",1],["pa","AP",1],["ab","VB",1],["h","H",1],["b2","2B",1],["b3","3B",1],["hr","HR",1],
   ["r","CA",1],["rbi","CI",1],["bb","BB",1],["k","K",1],["sb","BR",1],["avg","AVE"],["obp","OBP"],["slg","SLG"],["ops","OPS"]];
-function openPlayerDetail(pid){ /* T13 */ }
+var statsDetail = null; /* pid del jugador abierto en Jugadores, o null */
+function openPlayerDetail(pid){ statsDetail = pid; openStats("players"); }
+function closePlayerDetail(view){ statsDetail = null; openStats(view); }
 function renderStatsGames(body){ /* T14 */ }
 function statCell(tag, o, c){
   return el(tag, null, c[2] ? String(o[c[0]]) : Stats.fmt(o[c[0]]));
@@ -2711,6 +2715,46 @@ function renderStatsPlayers(body, entries){
   tf.appendChild(tr); tb.appendChild(tf);
   wrap.appendChild(tb); body.appendChild(wrap);
 }
+/* Detalle de un jugador (RF-22); false si ya no tiene líneas (borrado remoto) */
+function renderPlayerDetail(body, entries, pid){
+  var g = Stats.playerGames(entries, pid);
+  if(!g.lines.length) return false;
+  var p = Stats.players(entries, TEAM).rows.filter(function(r){ return r.pid === pid; })[0];
+  var back = el("button", "btn btn-sm", "← Jugadores");
+  back.type = "button";
+  back.addEventListener("click", function(){ closePlayerDetail("players"); });
+  body.appendChild(back);
+  if(p) body.appendChild(el("h3", null, (p.num ? p.num + " · " : "") + p.name));
+  var cols = [["VB","ab"],["H","h"],["CA","r"],["CI","rbi"],["BB","bb"],["K","k"]];
+  var wrap = el("div", "sheet-scroll"), tb = el("table", "stat det"), hr = el("tr");
+  ["Fecha", "Rival"].concat(cols.map(function(c){ return c[0]; }), ["Turnos"]).forEach(function(t, i){
+    var th = el("th", null, t);
+    th.scope = "col";
+    if(i < 2 || t === "Turnos") th.style.textAlign = "left";
+    hr.appendChild(th);
+  });
+  var th0 = el("thead"); th0.appendChild(hr); tb.appendChild(th0);
+  var tbody = el("tbody");
+  g.lines.forEach(function(l){
+    var tr = el("tr"), th = el("th", null, (l.date || "").split("-").reverse().join("/"));
+    th.scope = "row";
+    tr.appendChild(th);
+    tr.appendChild(el("td", null, l.opp || ""));
+    cols.forEach(function(c){ tr.appendChild(el("td", null, String(l[c[1]]))); });
+    tr.appendChild(el("td", null, l.seq));
+    tbody.appendChild(tr);
+  });
+  tb.appendChild(tbody);
+  var tf = el("tfoot"), tr = el("tr"), thT = el("th", null, "Total");
+  thT.scope = "row";
+  tr.appendChild(thT);
+  tr.appendChild(el("td"));
+  cols.forEach(function(c){ tr.appendChild(el("td", null, String(g.total[c[1]]))); });
+  tr.appendChild(el("td"));
+  tf.appendChild(tr); tb.appendChild(tf);
+  wrap.appendChild(tb); body.appendChild(wrap);
+  return true;
+}
 /* Dibuja la vista; showModal solo si el diálogo no está abierto. */
 function openStats(view){
   statsViewName = view === "games" ? "games" : "players";
@@ -2721,14 +2765,16 @@ function openStats(view){
   $("statsTabGames").classList.toggle("btn-key", statsViewName === "games");
   body.innerHTML = "";
   if(!Stats.live(entries).length) body.appendChild(el("p", "empty-note", "Todavía no hay juegos anotados"));
-  else if(statsViewName === "games") renderStatsGames(body);
-  else renderStatsPlayers(body, entries);
+  else if(statsViewName !== "players" || !statsDetail || !renderPlayerDetail(body, entries, statsDetail)){
+    if(statsViewName === "games") renderStatsGames(body);
+    else { statsDetail = null; renderStatsPlayers(body, entries); }
+  }
   if(!dlg.open) dlg.showModal();
 }
-$("btnStats").addEventListener("click", function(){ openStats("players"); });
-$("statsTabPlayers").addEventListener("click", function(){ openStats("players"); });
-$("statsTabGames").addEventListener("click", function(){ openStats("games"); });
-$("statsClose").addEventListener("click", function(){ $("statsView").close(); });
+$("btnStats").addEventListener("click", function(){ closePlayerDetail("players"); });
+$("statsTabPlayers").addEventListener("click", function(){ closePlayerDetail("players"); });
+$("statsTabGames").addEventListener("click", function(){ closePlayerDetail("games"); });
+$("statsClose").addEventListener("click", function(){ statsDetail = null; $("statsView").close(); });
 
 /* ============ respaldo ============ */
 $("btnBackup").addEventListener("click", function(){
