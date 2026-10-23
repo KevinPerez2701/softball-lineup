@@ -483,6 +483,29 @@ dialog::backdrop{background:rgba(10,16,11,.55)}
 .dlg-head h3{margin:0;font-family:var(--cond);font-weight:700;font-size:19px;letter-spacing:.05em;text-transform:uppercase}
 .dlg-head .sub{font-size:13px;color:var(--ink-3);flex:1 0 100%;order:5}
 #teamRoster{width:min(520px,calc(100vw - 28px))}
+#capture{width:min(980px,calc(100vw - 28px))}
+#capture .dlg-body{overflow-x:hidden}
+
+/* hoja de estadísticas: solo la tabla se desplaza a los lados; la columna del bateador queda fija */
+.sheet-scroll{overflow-x:auto}
+table.sheet{border-collapse:separate;border-spacing:0;width:100%}
+table.sheet th,table.sheet td{padding:0;border-bottom:1px solid var(--line)}
+table.sheet thead th{
+  font-family:var(--cond);font-weight:700;font-size:12.5px;letter-spacing:.08em;
+  text-transform:uppercase;color:var(--ink-2);padding:4px;text-align:center;min-width:44px;
+}
+table.sheet th:first-child{
+  position:sticky;left:0;z-index:1;background:var(--surface);border-right:1px solid var(--line);
+  text-align:left;min-width:112px;max-width:150px;padding:2px 8px 2px 0;
+}
+table.sheet tbody th{font-size:13.5px;font-weight:600;color:var(--ink);line-height:1.15;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+table.sheet tbody th small{display:block;font-size:11px;letter-spacing:.1em;color:var(--ink-3);font-weight:400}
+.sheet-cell{
+  display:block;width:100%;min-width:44px;min-height:44px;padding:2px;cursor:pointer;
+  background:transparent;color:var(--ink);border:0;white-space:pre-line;line-height:1.15;
+  font-family:var(--cond);font-weight:700;font-size:15px;
+}
+.sheet-cell:hover{background:var(--surface-2)}
 .dlg-body{padding:12px 15px 15px;overflow:auto;max-height:60vh}
 .pickitem{
   display:grid;grid-template-columns:auto minmax(0,1fr) auto;align-items:center;gap:10px;
@@ -621,7 +644,7 @@ body.locked .gate{
   .toast{bottom:calc(84px + env(safe-area-inset-bottom))}
 
   /* diálogos como hojas que suben desde abajo */
-  dialog,#teamRoster{
+  dialog,#teamRoster,#capture{
     width:100%;max-width:100%;margin:auto 0 0;
     border-radius:20px 20px 0 0;border-bottom:0;
     max-height:90vh;padding-bottom:env(safe-area-inset-bottom);
@@ -1046,6 +1069,7 @@ body.locked .gate{
           <h2>Carreras por inning</h2>
           <span class="pill">Softball · 7 innings</span>
           <span class="spacer" style="margin-left:auto"></span>
+          <button class="btn btn-sm btn-key no-print" id="btnCapture" type="button">Anotar estadísticas</button>
           <button class="btn btn-sm no-print" id="btnAddInn" type="button">+ Inning extra</button>
           <button class="btn btn-sm no-print" id="btnDelInn" type="button">− Quitar</button>
         </div>
@@ -1182,6 +1206,18 @@ body.locked .gate{
     <button class="btn btn-sm" id="savedClose" type="button">Cerrar</button>
   </div>
   <div class="dlg-body" id="savedBody"></div>
+</dialog>
+
+<dialog id="capture">
+  <div class="dlg-head">
+    <h3 id="capTitle">Estadísticas</h3>
+    <!-- T6: fecha, +/− innings; T9: Guardar -->
+    <span style="margin-left:auto"></span>
+    <button class="btn btn-sm" id="capClose" type="button">Cerrar</button>
+  </div>
+  <div class="dlg-body">
+    <div class="sheet-scroll"><table class="sheet" id="capTable"></table></div>
+  </div>
 </dialog>
 
 <dialog id="backup">
@@ -2374,6 +2410,64 @@ $("btnDelInn").addEventListener("click", function(){
   if(S.innings <= 3) return;
   S.innings--; renderInnings(); save();
 });
+
+/* ============ estadísticas: anotar ============ */
+var cap = null; // {rec: copia que se edita, opened: JSON al abrir, fromCurrent, linkId}
+function openCapture(rec, fromCurrent){
+  if(fromCurrent){
+    rec.game = {date:S.date, team:S.team, opp:S.opp, home:S.home, innings:S.innings, us:S.us.slice(), them:S.them.slice()};
+    var lineup = S.order.map(function(id){
+      var p = player(id);
+      return {pid:id, num:p ? p.num : "", name:p ? p.name : "", pos:posOf(id)};
+    });
+    rec.rows = Stats.refreshRows(rec.rows, lineup);
+  }
+  var copy = Stats.fit(JSON.parse(JSON.stringify(rec)));
+  cap = {rec:copy, opened:JSON.stringify(copy), fromCurrent:fromCurrent, linkId:S.statsId || null};
+  renderCapture();
+  $("capture").showModal();
+}
+function renderCapture(){
+  var g = cap.rec.game, t = $("capTable");
+  $("capTitle").textContent = "Estadísticas · " + (g.opp || "rival");
+  t.innerHTML = "";
+  var thead = el("thead"), hr = el("tr");
+  hr.appendChild(el("th", null, "Bateador"));
+  for(var i = 1; i <= g.innings; i++) hr.appendChild(el("th", null, String(i))); // T6: rojo + diferencia (RF-6)
+  thead.appendChild(hr);
+  t.appendChild(thead);
+  var tbody = el("tbody");
+  cap.rec.rows.forEach(function(row, ri){
+    var tr = el("tr"), th = el("th");
+    th.scope = "row";
+    th.appendChild(document.createTextNode((row.num ? row.num + " · " : "") + row.name));
+    th.appendChild(el("small", null, row.pos ? posLabel(row.pos) : "—")); // T8: menú de fila
+    tr.appendChild(th);
+    for(var inn = 1; inn <= g.innings; inn++){
+      (function(n){
+        var td = el("td"), b = el("button", "sheet-cell");
+        b.type = "button";
+        b.textContent = row.pas.filter(function(p){ return p.inn === n; }).map(Stats.cellLabel).join("\n");
+        b.setAttribute("aria-label", row.name + ", inning " + n);
+        b.addEventListener("click", function(){ onCellTap(ri, n); });
+        td.appendChild(b); tr.appendChild(td);
+      })(inn);
+    }
+    tbody.appendChild(tr);
+  });
+  t.appendChild(tbody);
+  t.appendChild(el("tfoot")); // T6: Nosotros / Ellos
+}
+function onCellTap(rowIdx, inn){} // T7: selector de turno
+$("btnCapture").addEventListener("click", function(){
+  var rec = Stats.live(lsGet(K_STATS, [])).filter(function(e){ return e.id === S.statsId; })[0];
+  if(!rec){
+    if(!S.order.length){ toast("Primero arma el orden al bate"); return; }
+    rec = {id:nid(), savedAt:null, game:{}, rows:[]};
+  }
+  openCapture(rec, true);
+});
+$("capClose").addEventListener("click", function(){ $("capture").close(); }); // T9: confirmar si hay cambios
 
 /* ============ datos del juego ============ */
 var bind = [["fTeam","team"],["fOpp","opp"],["fDate","date"]];
