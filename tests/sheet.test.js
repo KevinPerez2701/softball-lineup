@@ -13,7 +13,8 @@ function rec(innings, us, them, rows){
 }
 
 test("RF-2 CODES: 12 entries, textos de picker y celda", function(){
-  assert.strictEqual(Stats.CODES.length, 12);
+  assert.deepStrictEqual(Stats.CODES.map(function(c){ return c.code; }),
+    ["1B","2B","3B","HR","BB","K","RO","FL","LI","E","BO","SF"]);
   var by = {};
   Stats.CODES.forEach(function(c){ by[c.code] = c; });
   assert.strictEqual(Object.keys(by).length, 12);
