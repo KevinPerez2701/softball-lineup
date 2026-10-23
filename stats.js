@@ -37,7 +37,10 @@ Stats.refreshRows = function(rows, lineup){
 
 Stats.minInnings = function(rec){
   var m = 3;
-  rec.rows.forEach(function(r){ r.pas.forEach(function(p){ if(p.inn > m) m = p.inn; }); });
+  rec.rows.forEach(function(r){
+    r.pas.forEach(function(p){ if(p.inn > m) m = p.inn; });
+    (r.ro || []).forEach(function(o){ if(o.inn > m) m = o.inn; });
+  });
   return m;
 };
 
@@ -71,6 +74,71 @@ Stats.signed = function(n){
 
 Stats.hasPA = function(rec){
   return rec.rows.some(function(r){ return r.pas.length > 0; });
+};
+
+/* ---- outs y outs corriendo (spec 002) ---- */
+Stats.RO_KINDS = [
+  {kind:"CS", pick:"Atrapado robando", cell:"AR"},
+  {kind:"PO", pick:"Sorprendido en base", cell:"Sor"},
+  {kind:"OB", pick:"Out corriendo las bases", cell:"OC"}
+];
+
+Stats.roLabel = function(kind){
+  var i;
+  for(i = 0; i < Stats.RO_KINDS.length; i++) if(Stats.RO_KINDS[i].kind === kind) return Stats.RO_KINDS[i].cell;
+  return kind;
+};
+
+Stats.defaultOuts = function(code){
+  return ["K", "RO", "FL", "LI", "SF", "BO"].indexOf(code) >= 0 ? 1 : 0;
+};
+
+Stats.paOuts = function(pa){
+  return typeof pa.outs === "number" ? pa.outs : Stats.defaultOuts(pa.code);
+};
+
+Stats.inningOuts = function(rec, inn){
+  var n = 0;
+  rec.rows.forEach(function(r){
+    r.pas.forEach(function(p){ if(p.inn === inn) n += Stats.paOuts(p); });
+    (r.ro || []).forEach(function(o){ if(o.inn === inn) n++; });
+  });
+  return n;
+};
+
+// warn: outs !== 3 en un inning anterior al último con turno u out corriendo (el último nunca avisa)
+Stats.outsCheck = function(rec){
+  var out = [], last = 0, i;
+  rec.rows.forEach(function(r){
+    r.pas.forEach(function(p){ if(p.inn > last) last = p.inn; });
+    (r.ro || []).forEach(function(o){ if(o.inn > last) last = o.inn; });
+  });
+  for(i = 1; i <= rec.game.innings; i++){
+    var n = Stats.inningOuts(rec, i);
+    out.push({outs: n, warn: n !== 3 && i < last});
+  }
+  return out;
+};
+
+Stats.openInning = function(rec){
+  var i;
+  for(i = 1; i <= rec.game.innings; i++) if(Stats.inningOuts(rec, i) < 3) return i;
+  return rec.game.innings + 1;
+};
+
+Stats.cellLines = function(row, inn){
+  var out = [];
+  row.pas.forEach(function(p){
+    if(p.inn === inn) out.push({ord: typeof p.ord === "number" ? p.ord : null, text: Stats.cellLabel(p)});
+  });
+  (row.ro || []).forEach(function(o){
+    if(o.inn === inn) out.push({ord: null, text: Stats.roLabel(o.kind)});
+  });
+  return out;
+};
+
+Stats.rowEmpty = function(row){
+  return !row.pas.length && !(row.ro || []).length;
 };
 
 

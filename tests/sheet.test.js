@@ -94,6 +94,15 @@ test("RF-30 minInnings: max(3, inning más alto con turno)", function(){
   assert.strictEqual(Stats.minInnings(rec(7, [], [], rows)), 5);
 });
 
+test("spec 002 RF-17 minInnings cuenta outs corriendo (inning 6 => 6)", function(){
+  var rows = [{pid: "a", pas: [pa(2, "K")], ro: [{inn: 6, kind: "CS"}]}];
+  assert.strictEqual(Stats.minInnings(rec(7, [], [], rows)), 6);
+});
+
+test("spec 002 RF-21 hasPA sigue contando solo turnos (solo outs corriendo => false)", function(){
+  assert.strictEqual(Stats.hasPA(rec(3, [], [], [{pid: "a", pas: [], ro: [{inn: 1, kind: "CS"}]}])), false);
+});
+
 test("RF-5/6 runCheck: cuenta carreras por inning vs pizarra", function(){
   var rows = [
     {pid: "a", pas: [pa(1, "1B", true), pa(3, "K", false)]},
