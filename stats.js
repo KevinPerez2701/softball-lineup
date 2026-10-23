@@ -142,6 +142,65 @@ Stats.rowEmpty = function(row){
 };
 
 
+/* ============ modo guiado: orden al bate ============ */
+// Turnos: una fila sin sub + las sub de abajo; una sub en el índice 0 abre su propio turno.
+Stats.slots = function(rows){
+  var out = [];
+  rows.forEach(function(r, i){
+    if(!r.sub || !out.length) out.push([i]);
+    else out[out.length - 1].push(i);
+  });
+  return out;
+};
+
+// La fila activa es la más baja del turno con algún turno al bate; si no hay, la primera.
+Stats.activeRow = function(rows, slot){
+  var act = slot[0];
+  slot.forEach(function(i){ if(rows[i].pas.length) act = i; });
+  return act;
+};
+
+// Bateador que le toca: anchor es un objeto PA (se busca por identidad) o null.
+Stats.dueBatter = function(rec, inn, anchor){
+  var rows = rec.rows, slots = Stats.slots(rows), ai = -1, best = null, k;
+  if(anchor) rows.forEach(function(r, i){ if(r.pas.indexOf(anchor) >= 0) ai = i; });
+  if(ai < 0){
+    // sin ancla (o borrada): la PA con mayor ord del último inning que tenga ord
+    rows.forEach(function(r, i){
+      r.pas.forEach(function(p){
+        if(typeof p.ord !== "number") return;
+        if(!best || p.inn > best.inn || (p.inn === best.inn && p.ord > best.ord)){ best = p; ai = i; }
+      });
+    });
+  }
+  var s = 0; // sin ancla: el primer turno
+  if(ai >= 0) slots.forEach(function(sl, j){ if(sl.indexOf(ai) >= 0) s = j + 1; });
+  for(k = 0; k < slots.length; k++){
+    var ri = Stats.activeRow(rows, slots[(s + k) % slots.length]), n = 0;
+    rows[ri].pas.forEach(function(p){ if(p.inn === inn) n++; });
+    if(n < 2) return ri;
+  }
+  return null;
+};
+
+Stats.nextOrd = function(rec, inn){
+  var n = 0;
+  rec.rows.forEach(function(r){
+    r.pas.forEach(function(p){ if(p.inn === inn && typeof p.ord === "number") n++; });
+  });
+  return n + 1;
+};
+
+// Muta: tras quitar la PA con ord removedOrd, cierra el hueco en ese inning.
+Stats.renumberOrd = function(rec, inn, removedOrd){
+  rec.rows.forEach(function(r){
+    r.pas.forEach(function(p){
+      if(p.inn === inn && typeof p.ord === "number" && p.ord > removedOrd) p.ord--;
+    });
+  });
+};
+
+
 /* ============ mezcla entre dispositivos ============ */
 Stats.merge = function(a, b){
   function ts(e){ return e.deletedAt || e.savedAt; }
