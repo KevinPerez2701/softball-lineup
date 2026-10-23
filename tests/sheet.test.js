@@ -81,6 +81,13 @@ test("RF-38 fit: trunca us/them a innings", function(){
   assert.deepStrictEqual(r.game.them, [1, 0, 0]);
 });
 
+test("RF-38 fit: carreras guardadas como texto pasan a número", function(){
+  var r = rec(3, ["3", "", null], ["2"], []);
+  Stats.fit(r);
+  assert.deepStrictEqual(r.game.us, [3, 0, 0]);
+  assert.deepStrictEqual(r.game.them, [2, 0, 0]);
+});
+
 test("RF-30 minInnings: max(3, inning más alto con turno)", function(){
   assert.strictEqual(Stats.minInnings(rec(7, [], [], [])), 3);
   var rows = [{pid: "a", pas: [pa(2, "K")]}, {pid: "b", pas: [pa(5, "BB")]}];

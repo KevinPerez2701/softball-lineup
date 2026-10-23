@@ -47,7 +47,8 @@ Stats.fit = function(rec){
   g.innings = Math.max(g.innings, Stats.minInnings(rec));
   n = g.innings;
   ["us", "them"].forEach(function(k){
-    var a = (g[k] || []).slice(0, n);
+    // estados viejos pueden traer carreras como texto: "3" + "2" sumaría "32"
+    var a = (g[k] || []).slice(0, n).map(function(v){ return parseInt(v, 10) || 0; });
     for(i = a.length; i < n; i++) a.push(0);
     g[k] = a;
   });

@@ -500,7 +500,7 @@ table.sheet th:first-child{
 }
 table.sheet tbody th{font-size:13.5px;font-weight:600;color:var(--ink);line-height:1.15}
 /* max-width no limita una celda de tabla: el recorte va en un bloque adentro */
-table.sheet tbody th .nm{display:block;max-width:150px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+table.sheet th .nm{display:block;max-width:150px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 table.sheet tbody th small{display:block;font-size:11px;letter-spacing:.1em;color:var(--ink-3);font-weight:400}
 .sheet-cell{
   display:block;width:100%;min-width:44px;min-height:44px;padding:2px;cursor:pointer;
@@ -2479,7 +2479,8 @@ function renderCapture(){
   t.appendChild(tbody);
   var tfoot = el("tfoot");
   [["us", g.team || "Nosotros"], ["them", g.opp || "Ellos"]].forEach(function(r){
-    var key = r[0], tr = el("tr"), th = el("th", null, r[1]);
+    var key = r[0], tr = el("tr"), th = el("th");
+    th.appendChild(el("span", "nm", r[1]));
     th.scope = "row";
     tr.appendChild(th);
     for(var i = 0; i < g.innings; i++){
