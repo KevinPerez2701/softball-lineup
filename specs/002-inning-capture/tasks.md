@@ -13,7 +13,7 @@ Parallel work only in worktrees outside the repo (`../softball-lineup-wt/Tn`), m
       RF-16, RF-17, RF-21) Deps: —
       Files: `stats.js`, `tests/outs.test.js` (new), `tests/sheet.test.js`
       Done when: tests green, incl. the plan's `outsCheck` and `minInnings` cases; spec 001 assertions unchanged.
-- [ ] T2. Batting sequence: `slots`, `activeRow`, `dueBatter`, `nextOrd`, `renumberOrd`. Tests first. (RF-3, RF-5,
+- [x] T2. Batting sequence: `slots`, `activeRow`, `dueBatter`, `nextOrd`, `renumberOrd`. Tests first. (RF-3, RF-5,
       RF-10, RF-11, RF-19) Deps: T1
       Files: `stats.js`, `tests/guide.test.js` (new)
       Done when: tests green for every `dueBatter` case of the plan (no anchor, wrap, deleted anchor, sub with PA,
