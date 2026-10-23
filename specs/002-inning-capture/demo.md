@@ -49,4 +49,9 @@ el service worker v5. Marca cada paso con ✔ o anota lo que viste.
 22. Repite 4–8 en el teléfono. No dejes ningún servidor local corriendo.
 
 ## Resultado
-- Fecha: ____  Pasos ✔: __/22  Fallas (paso → qué se vio):
+- Fecha: 2026-10-23 (escritorio, Chrome, en prod, por Claude con la sesión de Kevin)  Pasos ✔: 21/22 (falta 22, teléfono)
+  Fallas (paso → qué se vio):
+  - Antes del paso 1, primera carga tras el deploy → la hoja no abría ("Stats.cellLines is not a function"): index.html
+    nuevo con stats.js viejo de la caché. Al recargar funcionó. Corregido en sw.js (stats.js de la red primero).
+  - Juego nuevo: se usó una hoja vacía de prueba ("PRUEBA DEMO") abierta desde Juegos para no tocar el juego actual;
+    se guardó para los pasos 19–20 y luego se borró.

@@ -3,16 +3,16 @@
 Single source of truth for what is in flight and what is left. Update it in the same commit as the
 work it describes. Dates come from `date`, never from memory.
 
-Last updated: 2026-10-23 12:46 UTC-4 by Claude
+Last updated: 2026-10-23 12:55 UTC-4 by Claude
 
 ## Now (one line)
-Spec 002 — validated: 21/21 RFs implemented (17 with node tests, 4 UI-only), 77 tests green; live on Pages (1aabd24, pushed on Kevin's OK); waiting for Kevin's demo in prod (specs/002-inning-capture/demo.md).
+Spec 002 — validated: 21/21 RFs implemented (17 with node tests, 4 UI-only), 77 tests green; live on Pages (1aabd24, pushed on Kevin's OK); desktop demo in prod 21/22 ✔ (run by Claude on Kevin's account, test game deleted); only step 22 (phone) left for Kevin.
 
 ## Active specs
 | Spec | Phase | Current task | Next task | Blocked by |
 |---|---|---|---|---|
 | 001-game-stats | done | — | — | — |
-| 002-inning-capture | validate | T8 (demo) | G3 | Kevin's demo |
+| 002-inning-capture | validate | T8 (phone step 22) | G3 | Kevin on the phone |
 
 Phases: constitution · spec · clarify · plan · tasks · implement · validate · done
 
@@ -25,6 +25,7 @@ Phases: constitution · spec · clarify · plan · tasks · implement · validat
   the Esc/back guard (step 18) and the console rollback check (step 19). Run them if a sync problem shows up.
 
 ## Recently done (keep last 10)
+- 2026-10-23 · 002 · T8 desktop demo in prod: steps 1–21 ✔. Found and fixed (quick fix): first load after a deploy paired the new index.html with the cached old stats.js (sheet crashed, "Stats.cellLines is not a function"); sw.js now fetches stats.js network-first like the page
 - 2026-10-23 · 002 · T8 partial — validator: 21/21 RFs, 0 missing; README section; RF-4/5/19 wording aligned; message when every batter has 2 turns; demo checklist
 - 2026-10-23 · 002 · T6 done — guided mode (opus implementer), reviewer APPROVE; orchestrator: advance skips innings already closed
 - 2026-10-23 · 002 · T4 done — outs chips, ord, renumber, runner outs list + roPick, sub flag; reviewer APPROVE. Orchestrator: merge conflict resolved, re-tapping the same result keeps outs, "Out corriendo" also in a full cell (RF-16 amended)

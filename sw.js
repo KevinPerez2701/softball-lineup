@@ -1,5 +1,5 @@
 /* Diamante 10 — service worker.
-   En el dugout la señal va y viene. La página se pide a la red primero (con
+   En el dugout la señal va y viene. La página y stats.js se piden a la red primero (con
    señal siempre se ve la última versión) y, si no responde en unos segundos,
    se abre desde la caché. El resto de archivos sale de la caché al instante
    y se actualiza por detrás. Sube VERSION cuando cambie la lista de archivos. */
@@ -73,6 +73,11 @@ self.addEventListener("fetch", function(ev){
     /* Toda navegación dentro del alcance es la misma página. */
     if(req.mode === "navigate"){
       ev.respondWith(networkFirst(req, SHELL, "./", 3500));
+      return;
+    }
+    /* stats.js va con la página: página nueva con stats.js viejo de la caché rompe la hoja tras un deploy. */
+    if(url.pathname.slice(-9) === "/stats.js"){
+      ev.respondWith(networkFirst(req, SHELL, "stats.js", 3500));
       return;
     }
     ev.respondWith(staleWhileRevalidate(req, SHELL));
