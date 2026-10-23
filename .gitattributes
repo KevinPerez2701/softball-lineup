@@ -1,0 +1,23 @@
+# Normalize line endings so the same repo diff-cleanly on Windows and macOS.
+# Text files are stored with LF in git and checked out with LF everywhere
+# (Claude Code, pnpm, Docker and shell scripts all prefer LF; editors handle it fine).
+* text=auto eol=lf
+
+# Windows-only scripts keep CRLF on checkout (PowerShell 5.1 / cmd expect it)
+*.ps1 text eol=crlf
+*.cmd text eol=crlf
+*.bat text eol=crlf
+
+# Never touch binaries
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+*.pdf binary
+*.zip binary
+*.woff binary
+*.woff2 binary
+*.docx binary
+*.xlsx binary
+*.pptx binary
