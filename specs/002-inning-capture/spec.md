@@ -59,9 +59,10 @@ counting outs on the play and outs on the bases.
   new result's default; the PA stores `outs` only when it differs from the default.
 - RF-7: WHEN the user picks "Out corriendo" in the guided mode, THE SYSTEM SHALL ask for the runner (any row) and the
   kind, and add the runner out to that row in the current inning, keeping the due batter, then apply RF-4.
-- RF-8: THE SYSTEM SHALL show under each inning header "<n> out", and "⚠ <n> out" for every inning before the last
-  inning holding a PA or runner out whose outs ≠ 3; this mark is independent of the run difference (spec 001 RF-6)
-  and never blocks saving.
+- RF-8: THE SYSTEM SHALL show under each inning header "<n> out" when n > 0 (blank at 0), and "⚠ <n> out" for every
+  inning before the last inning holding a PA or runner out whose outs ≠ 3, and for any inning with more than 3 outs;
+  this mark is independent of the run difference (spec 001 RF-6) and never blocks saving. (Amended 2026-10-23 after
+  the T5 review: blank at 0, ⚠ above 3 in the last inning too.)
 - RF-9: THE SYSTEM SHALL show in a cell each PA as "<ord> <label>" (ord small, before the label; the run mark stays
   after the label) and, after the PAs, the runner outs of that row and inning by their cell label.
 - RF-10: WHEN the user deletes a PA that has `ord`, THE SYSTEM SHALL decrease by 1 the `ord` of the PAs of that

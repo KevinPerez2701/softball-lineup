@@ -70,6 +70,11 @@ test("RF-8 outsCheck: hoja vacía sin avisos; walk-off con 1 out no avisa", func
   assert.deepStrictEqual(Stats.outsCheck(r).map(function(o){ return o.warn; }), [false, false, false]);
 });
 
+test("RF-8 outsCheck: más de 3 outs avisa también en el último inning", function(){
+  var r = rec(2, [{pid: "a", pas: ks(1, 3).concat(ks(2, 4))}]);
+  assert.deepStrictEqual(Stats.outsCheck(r).map(function(o){ return o.warn; }), [false, true]);
+});
+
 test("RF-1 openInning: primer inning con menos de 3 outs, innings+1 si todos cerrados, 1 si vacía", function(){
   assert.strictEqual(Stats.openInning(rec(3, [{pid: "a", pas: ks(1, 3).concat(ks(2, 3), ks(3, 1))}])), 3);
   assert.strictEqual(Stats.openInning(rec(3, [{pid: "a", pas: ks(1, 3).concat(ks(2, 3), ks(3, 3))}])), 4);

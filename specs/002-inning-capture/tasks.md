@@ -31,12 +31,12 @@ Parallel work only in worktrees outside the repo (`../softball-lineup-wt/Tn`), m
       Files: `index.html` (capture section: `paForm`, `paList`, `onCellTap`, `paSubs`, new `roPick`)
       Done when: tests green; main script passes `node --check`; reviewer traced: unchanged PA confirm ⇒ identical
       JSON (RF-12).
-- [ ] T5. Grid: `cellLines` rendering with small `ord`, header outs line ("<n> out" / "⚠ <n> out") next to the run
+- [x] T5. Grid: `cellLines` rendering with small `ord`, header outs line ("<n> out" / "⚠ <n> out") next to the run
       diff without breaking `refreshCheck`, "Quitar fila" only when `rowEmpty`, CSS, `sw.js` v5. (RF-8, RF-9, RF-17)
       Deps: T1
       Files: `index.html` (`renderCapture`, `refreshCheck`, `onRowMenu`, capture CSS), `sw.js`
       Done when: tests green; `node --check` OK; reviewer confirms the run-diff mark still updates.
-- [ ] T7. Players table: `STAT_COLS` AR after BR. (RF-14, RF-18) Deps: T3
+- [x] T7. Players table: `STAT_COLS` AR after BR. (RF-14, RF-18) Deps: T3
       Files: `index.html` ("estadísticas: ver" `STAT_COLS` only)
       Done when: `node --check` OK; reviewer confirms sort and totals use `cs`.
 - [ ] T6. Guided mode: "Anotar por inning" button, `guide` state, `guideStart/Show/Advance/Ask`, "Otro bateador"

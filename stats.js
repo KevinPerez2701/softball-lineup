@@ -106,7 +106,7 @@ Stats.inningOuts = function(rec, inn){
   return n;
 };
 
-// warn: outs !== 3 en un inning anterior al último con turno u out corriendo (el último nunca avisa)
+// warn: outs !== 3 en un inning anterior al último con turno u out corriendo, o más de 3 en cualquiera
 Stats.outsCheck = function(rec){
   var out = [], last = 0, i;
   rec.rows.forEach(function(r){
@@ -115,7 +115,7 @@ Stats.outsCheck = function(rec){
   });
   for(i = 1; i <= rec.game.innings; i++){
     var n = Stats.inningOuts(rec, i);
-    out.push({outs: n, warn: n !== 3 && i < last});
+    out.push({outs: n, warn: (n !== 3 && i < last) || n > 3});
   }
   return out;
 };
