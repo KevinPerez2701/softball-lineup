@@ -3,16 +3,16 @@
 Single source of truth for what is in flight and what is left. Update it in the same commit as the
 work it describes. Dates come from `date`, never from memory.
 
-Last updated: 2026-10-23 12:39 UTC-4 by Claude (sdd:implement)
+Last updated: 2026-10-23 12:42 UTC-4 by Claude (sdd:validate)
 
 ## Now (one line)
-Spec 002 — T1–T7 done; T8 validation + Kevin's demo next. Not pushed.
+Spec 002 — validated: 21/21 RFs implemented (17 with node tests, 4 UI-only), 77 tests green; waiting for Kevin's demo (specs/002-inning-capture/demo.md) and push OK.
 
 ## Active specs
 | Spec | Phase | Current task | Next task | Blocked by |
 |---|---|---|---|---|
 | 001-game-stats | done | — | — | — |
-| 002-inning-capture | implement | T8 | G3 | — |
+| 002-inning-capture | validate | T8 (demo) | G3 | Kevin's demo |
 
 Phases: constitution · spec · clarify · plan · tasks · implement · validate · done
 
@@ -25,6 +25,7 @@ Phases: constitution · spec · clarify · plan · tasks · implement · validat
   the Esc/back guard (step 18) and the console rollback check (step 19). Run them if a sync problem shows up.
 
 ## Recently done (keep last 10)
+- 2026-10-23 · 002 · T8 partial — validator: 21/21 RFs, 0 missing; README section; RF-4/5/19 wording aligned; message when every batter has 2 turns; demo checklist
 - 2026-10-23 · 002 · T6 done — guided mode (opus implementer), reviewer APPROVE; orchestrator: advance skips innings already closed
 - 2026-10-23 · 002 · T4 done — outs chips, ord, renumber, runner outs list + roPick, sub flag; reviewer APPROVE. Orchestrator: merge conflict resolved, re-tapping the same result keeps outs, "Out corriendo" also in a full cell (RF-16 amended)
 - 2026-10-23 · 002 · T5 + T7 done — grid shows turn order, runner outs, inning outs + ⚠; AR column; sw v5; reviewer APPROVE. RF-8 amended: blank at 0 outs, ⚠ above 3 in the last inning too (+test)

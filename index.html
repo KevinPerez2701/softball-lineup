@@ -2819,7 +2819,8 @@ function guideStart(){
 function guideShow(){
   if(guide.batter !== null && guidePas(guide.batter) >= 2) guide.batter = null; // RF-19: elegido a mano pero ya lleno en este inning
   var ri = guide.batter !== null ? guide.batter : Stats.dueBatter(cap.rec, guide.inn, cap.anchor);
-  if(ri === null){ $("paPick").close(); return; } // todos con 2 turnos en el inning: termina
+  // todos con 2 turnos en el inning: termina y avisa (el aviso se ve porque #paPick ya está cerrado)
+  if(ri === null){ $("paPick").close(); toast("Todos ya tienen 2 turnos en este inning"); return; }
   var row = cap.rec.rows[ri];
   paForm(ri, guide.inn, null, guideOnPA);
   $("paTitle").textContent = "Inning " + guide.inn + " · " + Stats.inningOuts(cap.rec, guide.inn) + " out · Al bate: " +

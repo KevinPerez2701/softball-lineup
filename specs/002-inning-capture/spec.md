@@ -49,9 +49,11 @@ counting outs on the play and outs on the bases.
 - RF-3: WHEN the user confirms a PA in the guided mode, THE SYSTEM SHALL add it to the due batter's row with
   `ord` = (number of PAs with `ord` in that inning) + 1, make it the anchor, and put up the next due batter.
 - RF-4: WHEN an inning's outs become 3 or more in the guided mode (by a PA or a runner out), THE SYSTEM SHALL move
-  to the next inning keeping the due batter; IF that inning is the last column, THEN THE SYSTEM SHALL ask "¿Hubo
-  otro inning?" and add a column (up to 12) only on "Sí"; on "No", or at 12, it SHALL apply RF-15.
-- RF-5: WHEN the user taps "Otro bateador", THE SYSTEM SHALL list every row (num · name) plus "Agregar sustituto"; a
+  to the next inning with fewer than 3 outs, keeping the due batter; IF there is none, THEN THE SYSTEM SHALL ask
+  "¿Hubo otro inning?" and add a column (up to 12) only on "Sí"; on "No", or at 12 ("Máximo 12 innings"), it SHALL
+  apply RF-15. (Amended after T6: innings already closed are skipped.)
+- RF-5: WHEN the user taps "Otro bateador", THE SYSTEM SHALL list every row with fewer than 2 PAs in the inning
+  (num · name) plus "Agregar sustituto"; a
   chosen row becomes the batter for this PA (the sequence continues after it); "Agregar sustituto" applies spec 001
   RF-4 under the due batter's row, with `sub: true`, and that new row bats now.
 - RF-6: THE SYSTEM SHALL show "Outs en la jugada" (0–3) in the result picker, in the guided mode and in the free cell
@@ -85,7 +87,8 @@ counting outs on the play and outs on the bases.
   (spec 001 RF-29): a column or row holding a runner out cannot be removed.
 - RF-18: THE SYSTEM SHALL list in "Jugadores" every player with ≥ 1 PA or runner out; JJ counts records where the
   player has either; a player with only runner outs shows AP and VB 0; the player detail shows those games too.
-- RF-19: IF the due batter already has 2 PAs in the current inning, THEN THE SYSTEM SHALL skip to the next slot.
+- RF-19: IF the due batter already has 2 PAs in the current inning, THEN THE SYSTEM SHALL skip to the next slot; if
+  every slot has 2, it SHALL end the guided mode and show "Todos ya tienen 2 turnos en este inning".
 - RF-20: IF the user closes the capture screen while the guided mode is on, THEN THE SYSTEM SHALL drop the guided
   state and apply spec 001 RF-11.
 - RF-21: THE SYSTEM SHALL keep spec 001 RF-33: a sheet with runner outs but no PA is not saved ("Anota al menos un
