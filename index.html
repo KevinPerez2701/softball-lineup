@@ -2673,7 +2673,43 @@ var STAT_COLS = [["g","JJ",1],["pa","AP",1],["ab","VB",1],["h","H",1],["b2","2B"
 var statsDetail = null; /* pid del jugador abierto en Jugadores, o null */
 function openPlayerDetail(pid){ statsDetail = pid; openStats("players"); }
 function closePlayerDetail(view){ statsDetail = null; openStats(view); }
-function renderStatsGames(body){ /* T14 */ }
+/* Juegos (RF-23 a RF-25): resumen, lista, abrir en la captura y borrar con marcador */
+function renderStatsGames(body){
+  var g = Stats.games(lsGet(K_STATS, []));
+  var sum = el("p", null, "Récord " + g.w + "-" + g.l + "-" + g.t + " · Carreras " + g.runsFor + " a favor, " + g.runsAgainst + " en contra");
+  sum.style.fontWeight = "600";
+  body.appendChild(sum);
+  g.list.forEach(function(x){
+    var it = el("div", "pickitem");
+    it.style.cursor = "default";
+    var info = el("span");
+    info.style.minWidth = "0";
+    var t = el("div", null, (x.date || "").split("-").reverse().join("/") + " · vs " + (x.opp || "rival"));
+    t.style.fontWeight = "600";
+    var d = el("div", "where", x.us + "–" + x.them + " · " + {W:"G", L:"P", T:"E"}[x.result]);
+    info.appendChild(t); info.appendChild(d);
+    var acts = el("span", "rowacts");
+    var bo = el("button", "btn btn-sm", "Abrir");
+    bo.type = "button";
+    bo.addEventListener("click", function(){
+      var rec = lsGet(K_STATS, []).filter(function(r){ return r.id === x.id; })[0];
+      if(!rec) return;
+      $("statsView").close(); /* para no apilar la captura sobre la vista */
+      openCapture(rec, rec.id === S.statsId);
+    });
+    var bd = iconBtn("btn btn-sm btn-icon btn-danger", "x", "Borrar estadísticas del juego");
+    bd.addEventListener("click", function(){
+      askConfirm("¿Borrar las estadísticas de este juego?", "No se puede deshacer.", "Borrar", function(){
+        var ok = lsSet(K_STATS, Stats.merge(lsGet(K_STATS, []), [{id: x.id, deletedAt: new Date().toISOString()}]));
+        if(!ok) toast("No se pudo guardar en este navegador");
+        else openStats("games");
+      });
+    });
+    acts.appendChild(bo); acts.appendChild(bd);
+    it.appendChild(info); it.appendChild(el("span")); it.appendChild(acts);
+    body.appendChild(it);
+  });
+}
 function statCell(tag, o, c){
   return el(tag, null, c[2] ? String(o[c[0]]) : Stats.fmt(o[c[0]]));
 }
