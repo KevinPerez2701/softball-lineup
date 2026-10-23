@@ -1263,7 +1263,7 @@ body.locked .gate{
     <input class="inp" id="capDate" type="date" aria-label="Fecha del juego" style="width:auto">
     <button class="btn btn-sm" id="capDelInn" type="button" aria-label="Quitar un inning">− Inning</button>
     <button class="btn btn-sm" id="capAddInn" type="button" aria-label="Agregar un inning">+ Inning</button>
-    <!-- T9: Guardar -->
+    <button class="btn btn-sm btn-key" id="capSave" type="button">Guardar</button>
     <span style="margin-left:auto"></span>
     <button class="btn btn-sm" id="capClose" type="button">Cerrar</button>
   </div>
@@ -2710,7 +2710,40 @@ $("btnCapture").addEventListener("click", function(){
   }
   openCapture(rec, true);
 });
-$("capClose").addEventListener("click", function(){ $("capture").close(); }); // T9: confirmar si hay cambios
+/* guardar (RF-7/32/33/34/37/39): primero K_STATS; el juego actual solo se toca si sigue enlazado; si falla una escritura se revierte todo */
+function saveCapture(){
+  if(!Stats.hasPA(cap.rec)){ toast("Anota al menos un turno"); return; }
+  if(!cap.rec.game.date){ toast("Ponle fecha al juego"); return; }
+  var rec = JSON.parse(JSON.stringify(cap.rec));
+  rec.savedAt = new Date().toISOString();
+  var prev = lsGet(K_STATS, []), wasDirty = !!dirty().stats;
+  if(!lsSet(K_STATS, Stats.merge(prev, [rec]))){ toast("No se pudo guardar en este navegador"); return; }
+  if(cap.fromCurrent && (S.statsId || null) === cap.linkId){
+    var old = {date:S.date, innings:S.innings, us:S.us, them:S.them, statsId:S.statsId};
+    S.date = rec.game.date; S.innings = rec.game.innings;
+    S.us = rec.game.us.slice(); S.them = rec.game.them.slice(); S.statsId = rec.id;
+    if(!lsSet(K_CUR, S)){
+      S.date = old.date; S.innings = old.innings; S.us = old.us; S.them = old.them; S.statsId = old.statsId;
+      lsSet(K_STATS, prev);
+      if(!wasDirty) setDirty("stats", false); // lo restaurado es lo ya sincronizado: que no frene el cierre de sesión
+      toast("No se pudo guardar en este navegador");
+      return;
+    }
+  }
+  closeCapture();
+  renderAll();
+  if($("statsView").open) openStats(statsViewName);
+  toast("Estadísticas guardadas"); // después de cerrar: toast() va dentro del primer diálogo abierto
+}
+function closeCapture(){ cap = null; $("capture").close(); }
+// RF-11: si hay cambios sin guardar, confirmar antes de descartar
+function tryCloseCapture(){
+  if(!cap || JSON.stringify(cap.rec) === cap.opened){ closeCapture(); return; }
+  askConfirm("¿Salir sin guardar?", "Se pierden los cambios.", "Salir", closeCapture);
+}
+$("capSave").addEventListener("click", saveCapture);
+$("capClose").addEventListener("click", tryCloseCapture);
+$("capture").addEventListener("cancel", function(ev){ ev.preventDefault(); tryCloseCapture(); });
 
 /* ============ datos del juego ============ */
 var bind = [["fTeam","team"],["fOpp","opp"],["fDate","date"]];
@@ -3433,7 +3466,7 @@ $("sheetClose").addEventListener("click", function(){ $("sheet").close(); });
 
 /* Tocar el fondo oscuro cierra cualquier hoja o diálogo, como en una app. */
 document.querySelectorAll("dialog").forEach(function(d){
-  d.addEventListener("click", function(ev){ if(ev.target === d) d.close(); });
+  d.addEventListener("click", function(ev){ if(ev.target === d){ if(d.id === "capture") tryCloseCapture(); else d.close(); } });
 });
 
 renderAll();
