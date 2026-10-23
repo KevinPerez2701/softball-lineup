@@ -528,6 +528,7 @@ table.sheet tfoot input{
 /* selector de turno al bate */
 .pa-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px}
 #paPick .dlg-body .btn{min-height:40px;min-width:44px;justify-content:center}
+#paPick .pickitem{min-height:40px}
 .pa-lbl{margin:12px 0 5px;font-size:12.5px;color:var(--ink-3)}
 .pickitem.pa-item{grid-template-columns:minmax(0,1fr) auto auto;cursor:default}
 .pickitem.pa-item:hover{border-color:transparent;background:var(--surface-2)}
@@ -2609,7 +2610,9 @@ function paDone(){ $("paPick").close(); renderCapture(); }
 function onCellTap(rowIdx, inn){
   var row = cap.rec.rows[rowIdx];
   $("paTitle").textContent = (row.num ? row.num + " · " : "") + row.name + " · Inning " + inn;
-  if(row.pas.some(function(p){ return p.inn === inn; })) paList(rowIdx, inn); else paForm(rowIdx, inn, null);
+  var hasPa = row.pas.some(function(p){ return p.inn === inn; });
+  var hasRo = (row.ro || []).some(function(r){ return r.inn === inn; });
+  if(hasPa || hasRo) paList(rowIdx, inn); else paForm(rowIdx, inn, null);
   $("paPick").showModal();
 }
 // RF-3/27/28: turnos de la celda (1 o 2); "Otro turno" solo con 1
@@ -2622,22 +2625,47 @@ function paList(ri, inn){
     var it = el("div", "pickitem pa-item"), ed = el("button", "btn btn-sm", "Editar"), del = el("button", "btn btn-sm btn-danger", "Borrar");
     ed.type = del.type = "button";
     ed.addEventListener("click", function(){ paForm(ri, inn, idx); });
-    del.addEventListener("click", function(){ row.pas.splice(idx, 1); paDone(); });
+    del.addEventListener("click", function(){
+      row.pas.splice(idx, 1);
+      if(typeof p.ord === "number") Stats.renumberOrd(cap.rec, inn, p.ord); // RF-10: cierra el hueco
+      paDone();
+    });
     it.appendChild(el("span", "pa-code", Stats.cellLabel(p)));
     it.appendChild(ed); it.appendChild(del);
     body.appendChild(it);
   });
-  if(n === 1){
-    var more = el("button", "btn btn-key", "Otro turno en este inning");
+  (row.ro || []).forEach(function(r, idx){
+    if(r.inn !== inn) return;
+    var it = el("div", "pickitem pa-item"), del = el("button", "btn btn-sm btn-danger", "Borrar");
+    del.type = "button";
+    del.addEventListener("click", function(){
+      row.ro.splice(idx, 1);
+      if(!row.ro.length) delete row.ro;
+      paDone();
+    });
+    it.appendChild(el("span", "pa-code", Stats.roLabel(r.kind)));
+    it.appendChild(el("span")); // hueco de "Editar": los outs corriendo no se editan, se borran
+    it.appendChild(del);
+    body.appendChild(it);
+  });
+  if(n < 2){
+    var more = el("button", "btn btn-key", n ? "Otro turno en este inning" : "Anotar turno");
     more.type = "button";
     more.addEventListener("click", function(){ paForm(ri, inn, null); });
     body.appendChild(more);
   }
+  // RF-16: también con la celda llena (2 turnos) se puede anotar un out corriendo
+  var ro = el("button", "btn", "Out corriendo");
+  ro.type = "button";
+  ro.addEventListener("click", function(){ roPick(ri, inn, paDone); });
+  body.appendChild(ro);
 }
 // RF-2: idx = posición en row.pas del turno que se edita, o null para uno nuevo
-function paForm(ri, inn, idx){
+// done(pa) (opcional, por defecto paDone) recibe el turno agregado o editado (el mismo objeto, editado en sitio)
+function paForm(ri, inn, idx, done){
   var row = cap.rec.rows[ri], body = $("paBody"), src = idx === null ? null : row.pas[idx];
-  var f = {code:src ? src.code : "", run:src ? !!src.run : false, rbi:src ? +src.rbi || 0 : 0, sb:src ? +src.sb || 0 : 0};
+  var f = {code:src ? src.code : "", run:src ? !!src.run : false, rbi:src ? +src.rbi || 0 : 0, sb:src ? +src.sb || 0 : 0,
+    outs:src ? Stats.paOuts(src) : 0};
   function chip(label, on, fn){
     var b = el("button", on ? "btn btn-key" : "btn", label);
     b.type = "button";
@@ -2654,7 +2682,7 @@ function paForm(ri, inn, idx){
   function draw(){
     body.innerHTML = "";
     var grid = el("div", "pa-grid");
-    Stats.CODES.forEach(function(c){ grid.appendChild(chip(c.pick, f.code === c.code, function(){ f.code = c.code; })); });
+    Stats.CODES.forEach(function(c){ grid.appendChild(chip(c.pick, f.code === c.code, function(){ if(f.code !== c.code){ f.code = c.code; f.outs = Stats.defaultOuts(c.code); } })); });
     body.appendChild(grid);
     body.appendChild(el("div", "pa-lbl", "Carrera"));
     var run = el("div", "chips");
@@ -2662,20 +2690,68 @@ function paForm(ri, inn, idx){
     body.appendChild(run);
     nums("CI (carreras impulsadas)", "rbi", 4);
     nums("BR (bases robadas)", "sb", 3);
+    nums("Outs en la jugada", "outs", 3);
     var acts = el("div", "chips"), ok = el("button", "btn btn-key", "Listo"), no = el("button", "btn", "Cancelar");
     acts.style.marginTop = "14px";
     ok.type = no.type = "button";
     ok.disabled = !f.code;
     ok.addEventListener("click", function(){
+      var pa = src || {inn:inn, code:f.code, run:f.run, rbi:f.rbi, sb:f.sb, ord:Stats.nextOrd(cap.rec, inn)};
       if(src){ src.code = f.code; src.run = f.run; src.rbi = f.rbi; src.sb = f.sb; }
-      else row.pas.push({inn:inn, code:f.code, run:f.run, rbi:f.rbi, sb:f.sb});
-      paDone();
+      else row.pas.push(pa);
+      if(f.outs !== Stats.defaultOuts(f.code)) pa.outs = f.outs; else delete pa.outs; // RF-6/12: solo si difiere
+      (done || paDone)(pa);
     });
     no.addEventListener("click", function(){ $("paPick").close(); });
     acts.appendChild(ok); acts.appendChild(no);
+    if(!src){
+      var ro = el("button", "btn", "Out corriendo");
+      ro.type = "button";
+      ro.addEventListener("click", function(){ roPick(ri, inn, paDone); });
+      acts.appendChild(ro);
+    }
     body.appendChild(acts);
   }
   draw();
+}
+// RF-16: out corriendo. ri === null: primero se elige el corredor; luego el tipo. done() al guardar.
+function roPick(ri, inn, done){
+  var body = $("paBody");
+  $("paTitle").textContent = "Out corriendo · Inning " + inn;
+  function cancel(){
+    var c = el("button", "btn", "Cancelar");
+    c.type = "button";
+    c.addEventListener("click", function(){ $("paPick").close(); });
+    body.appendChild(c);
+  }
+  function kinds(r){
+    body.innerHTML = "";
+    Stats.RO_KINDS.forEach(function(k){
+      var b = el("button", "pickitem");
+      b.type = "button";
+      b.appendChild(el("span", "pa-code", k.cell));
+      b.appendChild(el("span", null, k.pick));
+      b.addEventListener("click", function(){
+        var row = cap.rec.rows[r];
+        if(!row.ro) row.ro = [];
+        row.ro.push({inn:inn, kind:k.kind});
+        done();
+      });
+      body.appendChild(b);
+    });
+    cancel();
+  }
+  if(ri !== null){ kinds(ri); return; }
+  body.innerHTML = "";
+  cap.rec.rows.forEach(function(r, i){
+    var b = el("button", "pickitem");
+    b.type = "button";
+    b.appendChild(el("span", "pa-code", r.num || ""));
+    b.appendChild(el("span", null, r.name));
+    b.addEventListener("click", function(){ kinds(i); });
+    body.appendChild(b);
+  });
+  cancel();
 }
 // RF-4/17/29/36: menú de fila. "Quitar fila" solo sin turnos ni outs corriendo; los sustitutos son jugadores de TEAM sin fila
 function onRowMenu(ri){
@@ -2698,7 +2774,7 @@ function onRowMenu(ri){
   }
   $("paPick").showModal();
 }
-function paSubs(ri){
+function paSubs(ri, done){ // done(nuevoRi) opcional; por defecto paDone
   var body = $("paBody"), used = {}, n = 0;
   cap.rec.rows.forEach(function(r){ used[r.pid] = true; });
   body.innerHTML = "";
@@ -2710,8 +2786,8 @@ function paSubs(ri){
     it.appendChild(el("span", "pa-code", p.num || ""));
     it.appendChild(el("span", null, p.name));
     it.addEventListener("click", function(){
-      cap.rec.rows.splice(ri + 1, 0, {pid:p.id, num:p.num, name:p.name, pos:null, pas:[]});
-      paDone();
+      cap.rec.rows.splice(ri + 1, 0, {pid:p.id, num:p.num, name:p.name, pos:null, pas:[], sub:true});
+      if(done) done(ri + 1); else paDone();
     });
     body.appendChild(it);
   });
