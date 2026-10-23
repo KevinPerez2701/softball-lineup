@@ -55,8 +55,8 @@ test("dueBatter: anchor on a sub row uses its slot", function(){
 });
 
 test("dueBatter: deleted anchor falls back to the highest ord of the latest inning with ord", function(){
-  var r = rec([row("A", [pa(1, 1), pa(2, 2)]), row("B", [pa(2, 1)]), row("C", [pa(1, 2)]), row("D")]);
-  // inning 2 is the latest with ord; highest ord (2) is on row A => next is B
+  var r = rec([row("A", [pa(1, 1), pa(2, 2)]), row("B", [pa(2, 1)]), row("C", [pa(1, 5)]), row("D")]);
+  // inning 2 is the latest with ord; its highest ord (2) is on row A => next is B (C has ord 5 in inning 1: ignored)
   assert.strictEqual(Stats.dueBatter(r, 2, pa(2, 9)), 1);
 });
 
@@ -76,6 +76,9 @@ test("dueBatter: candidate with 2 PAs in this inning is skipped", function(){
   // PAs of other innings do not count
   var r2 = rec([row("A", [a]), row("B", [pa(2), pa(3)]), row("C")]);
   assert.strictEqual(Stats.dueBatter(r2, 1, a), 1);
+  // 1 PA in this inning (batting around) is still due
+  var r3 = rec([row("A", [a]), row("B", [pa(1, 2)]), row("C")]);
+  assert.strictEqual(Stats.dueBatter(r3, 1, a), 1);
 });
 
 test("dueBatter: every slot full in this inning => null", function(){
