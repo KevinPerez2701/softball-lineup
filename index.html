@@ -508,6 +508,14 @@ table.sheet tbody th small{display:block;font-size:11px;letter-spacing:.1em;colo
   font-family:var(--cond);font-weight:700;font-size:15px;
 }
 .sheet-cell:hover{background:var(--surface-2)}
+table.sheet thead th small{display:block;min-height:13px;font-size:11px;letter-spacing:0}
+table.sheet thead th.inn-bad{color:var(--bad)}
+table.sheet tfoot th{font-size:13.5px;font-weight:600;color:var(--ink)}
+table.sheet tfoot input{
+  width:100%;min-width:38px;min-height:44px;text-align:center;background:var(--surface-2);
+  border:1px solid var(--line);border-radius:6px;padding:5px 2px;
+  font-family:var(--cond);font-weight:600;font-size:17px;font-variant-numeric:tabular-nums;
+}
 .dlg-body{padding:12px 15px 15px;overflow:auto;max-height:60vh}
 .pickitem{
   display:grid;grid-template-columns:auto minmax(0,1fr) auto;align-items:center;gap:10px;
@@ -1213,7 +1221,10 @@ body.locked .gate{
 <dialog id="capture">
   <div class="dlg-head">
     <h3 id="capTitle">Estadísticas</h3>
-    <!-- T6: fecha, +/− innings; T9: Guardar -->
+    <input class="inp" id="capDate" type="date" aria-label="Fecha del juego" style="width:auto">
+    <button class="btn btn-sm" id="capDelInn" type="button" aria-label="Quitar un inning">− Inning</button>
+    <button class="btn btn-sm" id="capAddInn" type="button" aria-label="Agregar un inning">+ Inning</button>
+    <!-- T9: Guardar -->
     <span style="margin-left:auto"></span>
     <button class="btn btn-sm" id="capClose" type="button">Cerrar</button>
   </div>
@@ -2414,6 +2425,7 @@ $("btnDelInn").addEventListener("click", function(){
 });
 
 /* ============ estadísticas: anotar ============ */
+var capHeads = []; // th de cada inning, para refreshCheck
 var cap = null; // {rec: copia que se edita, opened: JSON al abrir, fromCurrent, linkId}
 function openCapture(rec, fromCurrent){
   rec = JSON.parse(JSON.stringify(rec)); // nunca tocar el objeto de quien llama
@@ -2436,8 +2448,14 @@ function renderCapture(){
   t.innerHTML = "";
   var thead = el("thead"), hr = el("tr");
   hr.appendChild(el("th", null, "Bateador"));
-  for(var i = 1; i <= g.innings; i++) hr.appendChild(el("th", null, String(i))); // T6: rojo + diferencia (RF-6)
+  capHeads = [];
+  for(var i = 1; i <= g.innings; i++){
+    var h = el("th", null, String(i));
+    h.appendChild(el("small"));
+    hr.appendChild(h); capHeads.push(h);
+  }
   thead.appendChild(hr);
+  $("capDate").value = g.date || "";
   t.appendChild(thead);
   var tbody = el("tbody");
   cap.rec.rows.forEach(function(row, ri){
@@ -2459,8 +2477,49 @@ function renderCapture(){
     tbody.appendChild(tr);
   });
   t.appendChild(tbody);
-  t.appendChild(el("tfoot")); // T6: Nosotros / Ellos
+  var tfoot = el("tfoot");
+  [["us", g.team || "Nosotros"], ["them", g.opp || "Ellos"]].forEach(function(r){
+    var key = r[0], tr = el("tr"), th = el("th", null, r[1]);
+    th.scope = "row";
+    tr.appendChild(th);
+    for(var i = 0; i < g.innings; i++){
+      (function(idx){
+        var td = el("td"), inp = document.createElement("input");
+        inp.type = "text";
+        inp.inputMode = "numeric";
+        inp.maxLength = 2;
+        inp.value = g[key][idx] || 0;
+        inp.setAttribute("aria-label", r[1] + " inning " + (idx + 1));
+        inp.addEventListener("input", function(){
+          var v = parseInt(inp.value.replace(/[^0-9]/g, ""), 10);
+          g[key][idx] = isNaN(v) ? 0 : v;
+          refreshCheck();
+        });
+        inp.addEventListener("blur", function(){ inp.value = g[key][idx] || 0; });
+        td.appendChild(inp); tr.appendChild(td);
+      })(i);
+    }
+    tfoot.appendChild(tr);
+  });
+  t.appendChild(tfoot);
+  refreshCheck();
 }
+// RF-5/6: marca en rojo los innings donde la hoja y el marcador no cuadran. T7 la llama tras cambiar turnos.
+function refreshCheck(){
+  Stats.runCheck(cap.rec).forEach(function(c, i){
+    capHeads[i].className = c.diff ? "inn-bad" : "";
+    capHeads[i].lastChild.textContent = Stats.signed(c.diff);
+  });
+}
+$("capDate").addEventListener("input", function(){ cap.rec.game.date = $("capDate").value; });
+$("capAddInn").addEventListener("click", function(){
+  if(cap.rec.game.innings >= 12){ toast("Máximo 12 innings"); return; }
+  cap.rec.game.innings++; Stats.fit(cap.rec); renderCapture();
+});
+$("capDelInn").addEventListener("click", function(){
+  if(cap.rec.game.innings <= Stats.minInnings(cap.rec)) return; // no quitar innings con turnos anotados
+  cap.rec.game.innings--; Stats.fit(cap.rec); renderCapture();
+});
 function onCellTap(rowIdx, inn){} // T7: selector de turno
 $("btnCapture").addEventListener("click", function(){
   var rec = Stats.live(lsGet(K_STATS, [])).filter(function(e){ return e.id === S.statsId; })[0];
