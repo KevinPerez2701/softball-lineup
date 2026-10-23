@@ -102,16 +102,15 @@ Stats.byNewest = function(records){
   });
 };
 
-function round3(n, d){ return d === 0 ? null : Math.round(n * 1000 / d) / 1000; }
-
-// c: {h, ab, bb, sf, tb}. OPS usa OBP y SLG exactos, no los redondeados.
+// c: {h, ab, bb, sf, tb}. OPS = (h+bb)/od + tb/ab con enteros: sumar floats redondea mal los .xxx5.
 Stats.rates = function(c){
-  var od = c.ab + c.bb + c.sf, o = od ? (c.h + c.bb) / od : null, s = c.ab ? c.tb / c.ab : null;
+  var od = c.ab + c.bb + c.sf;
+  function round3(n, d){ return d === 0 ? null : Math.round(n * 1000 / d) / 1000; }
   return {
     avg: round3(c.h, c.ab),
     obp: round3(c.h + c.bb, od),
     slg: round3(c.tb, c.ab),
-    ops: o === null || s === null ? null : Math.round((o + s) * 1000) / 1000
+    ops: round3((c.h + c.bb) * c.ab + c.tb * od, od * c.ab)
   };
 };
 
@@ -119,21 +118,18 @@ Stats.fmt = function(x){
   return x === null ? "—" : x.toFixed(3).replace(/^0\./, ".");
 };
 
-var COUNT_KEYS = ["pa", "ab", "h", "b2", "b3", "hr", "r", "rbi", "bb", "k", "sb", "sf", "tb"];
-var TB_WEIGHT = {"1B": 1, "2B": 2, "3B": 3, "HR": 4};
-
-function withRates(o){
-  var r = Stats.rates(o);
-  o.avg = r.avg; o.obp = r.obp; o.slg = r.slg; o.ops = r.ops;
-  return o;
-}
-
-function zeroCounts(o){
-  COUNT_KEYS.forEach(function(key){ o[key] = 0; });
-  return o;
-}
-
 Stats.players = function(entries, team){
+  var COUNT_KEYS = ["pa", "ab", "h", "b2", "b3", "hr", "r", "rbi", "bb", "k", "sb", "sf", "tb"];
+  var TB_WEIGHT = {"1B": 1, "2B": 2, "3B": 3, "HR": 4};
+  function withRates(o){
+    var r = Stats.rates(o);
+    o.avg = r.avg; o.obp = r.obp; o.slg = r.slg; o.ops = r.ops;
+    return o;
+  }
+  function zeroCounts(o){
+    COUNT_KEYS.forEach(function(key){ o[key] = 0; });
+    return o;
+  }
   var recs = Stats.byNewest(Stats.live(entries)), acc = {}, rows = [], tm = {}, tot = zeroCounts({g: recs.length});
   (team || []).forEach(function(p){ tm[p.id] = p; });
   recs.forEach(function(rec){

@@ -144,3 +144,8 @@ test("label: a record where the player has no PA does not set the label", functi
   ];
   assert.strictEqual(Stats.players(recs, []).rows[0].name, "Zed Viejo");
 });
+
+test("rates: ops rounds half-up on the exact sum (no float drift)", function(){
+  // OBP 21/50 + SLG 21/48 = .8575 exacto; sumar floats daba .857
+  assert.strictEqual(Stats.rates({h: 19, ab: 48, bb: 2, sf: 0, tb: 21}).ops, 0.858);
+});
