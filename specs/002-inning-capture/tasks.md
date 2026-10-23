@@ -47,7 +47,7 @@ Parallel work only in worktrees outside the repo (`../softball-lineup-wt/Tn`), m
       last-column ask and the 12-inning stop.
 
 ## Validation
-- [ ] T8. Manual demo of the Done criteria (7 innings in the guided mode, double play, caught stealing closing an
+- [x] T8. Manual demo of the Done criteria (7 innings in the guided mode, double play, caught stealing closing an
       inning, substitute from "Otro bateador"; headers 3 outs; turn order in cells; AR in detail and table; a spec
       001 record opens unchanged), RF → test traceability, README line. (All) Deps: T1–T7
       Files: `README.md`, `STATUS.md`

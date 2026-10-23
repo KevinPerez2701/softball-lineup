@@ -1,6 +1,7 @@
 # Spec 002 — Inning-by-inning capture with outs
 
-Status: in-progress (G1 pre-approved, G2 approved by Kevin 2026-10-23). The product
+Status: done (G3: Kevin closed it 2026-10-23 after the desktop demo in prod, 21/22; the phone step 22 was not reported; G2 approved
+2026-10-23, G1 pre-approved). The product
 decisions below are the orchestrator's, recorded as assumptions.
 Created: 2026-10-23
 
