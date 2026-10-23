@@ -3,7 +3,7 @@
    señal siempre se ve la última versión) y, si no responde en unos segundos,
    se abre desde la caché. El resto de archivos sale de la caché al instante
    y se actualiza por detrás. Sube VERSION cuando cambie la lista de archivos. */
-var VERSION = "v4";
+var VERSION = "v5";
 var SHELL = "diamante10-shell-" + VERSION;
 var CDN = "diamante10-cdn";
 var ASSETS = [

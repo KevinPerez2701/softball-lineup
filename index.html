@@ -514,7 +514,10 @@ table.sheet tbody th small{display:block;font-size:11px;letter-spacing:.1em;colo
 }
 .sheet-cell:hover{background:var(--surface-2)}
 table.sheet thead th small{display:block;min-height:13px;font-size:11px;letter-spacing:0}
+table.sheet thead th small.outs{color:var(--ink-3);font-weight:400;white-space:nowrap}
+table.sheet thead th small.outs-warn{color:var(--bad);font-weight:700}
 table.sheet thead th.inn-bad{color:var(--bad)}
+.sheet-cell small.ord{display:inline;margin-right:3px;font-size:10px;font-weight:400;color:var(--ink-3)}
 table.sheet tfoot th{font-size:13.5px;font-weight:600;color:var(--ink)}
 table.sheet tfoot input{
   width:100%;min-width:38px;min-height:44px;text-align:center;background:var(--surface-2);
@@ -2488,7 +2491,7 @@ $("btnDelInn").addEventListener("click", function(){
 });
 
 /* ============ estadísticas: anotar ============ */
-var capHeads = []; // th de cada inning, para refreshCheck
+var capHeads = []; // {th, diff, outs} de cada inning, para refreshCheck
 var cap = null; // {rec: copia que se edita, opened: JSON al abrir, fromCurrent, linkId}
 function openCapture(rec, fromCurrent){
   rec = JSON.parse(JSON.stringify(rec)); // nunca tocar el objeto de quien llama
@@ -2513,9 +2516,9 @@ function renderCapture(){
   hr.appendChild(el("th", null, "Bateador"));
   capHeads = [];
   for(var i = 1; i <= g.innings; i++){
-    var h = el("th", null, String(i));
-    h.appendChild(el("small"));
-    hr.appendChild(h); capHeads.push(h);
+    var h = el("th", null, String(i)), hd = el("small"), ho = el("small", "outs");
+    h.appendChild(hd); h.appendChild(ho);
+    hr.appendChild(h); capHeads.push({th:h, diff:hd, outs:ho});
   }
   thead.appendChild(hr);
   $("capDate").value = g.date || "";
@@ -2536,8 +2539,14 @@ function renderCapture(){
       (function(n){
         var td = el("td"), b = el("button", "sheet-cell");
         b.type = "button";
-        b.textContent = row.pas.filter(function(p){ return p.inn === n; }).map(Stats.cellLabel).join("\n");
-        b.setAttribute("aria-label", row.name + ", inning " + n);
+        var lines = Stats.cellLines(row, n);
+        lines.forEach(function(l){
+          var d = el("div");
+          if(typeof l.ord === "number") d.appendChild(el("small", "ord", String(l.ord)));
+          d.appendChild(document.createTextNode(l.text));
+          b.appendChild(d);
+        });
+        b.setAttribute("aria-label", row.name + ", inning " + n + lines.map(function(l){ return ", " + l.text; }).join(""));
         b.addEventListener("click", function(){ onCellTap(ri, n); });
         td.appendChild(b); tr.appendChild(td);
       })(inn);
@@ -2576,8 +2585,14 @@ function renderCapture(){
 // RF-5/6: marca en rojo los innings donde la hoja y el marcador no cuadran. T7 la llama tras cambiar turnos.
 function refreshCheck(){
   Stats.runCheck(cap.rec).forEach(function(c, i){
-    capHeads[i].className = c.diff ? "inn-bad" : "";
-    capHeads[i].lastChild.textContent = Stats.signed(c.diff);
+    capHeads[i].th.className = c.diff ? "inn-bad" : "";
+    capHeads[i].diff.textContent = Stats.signed(c.diff);
+  });
+  // RF-8: marca de outs, independiente de la diferencia de carreras
+  Stats.outsCheck(cap.rec).forEach(function(o, i){
+    var e = capHeads[i].outs;
+    e.className = o.warn ? "outs outs-warn" : "outs";
+    e.textContent = o.warn ? "⚠ " + o.outs + " out" : (o.outs > 0 ? o.outs + " out" : "");
   });
 }
 $("capDate").addEventListener("input", function(){ cap.rec.game.date = $("capDate").value; });
@@ -2662,7 +2677,7 @@ function paForm(ri, inn, idx){
   }
   draw();
 }
-// RF-4/29/36: menú de fila. "Quitar fila" solo sin turnos; los sustitutos son jugadores de TEAM sin fila
+// RF-4/17/29/36: menú de fila. "Quitar fila" solo sin turnos ni outs corriendo; los sustitutos son jugadores de TEAM sin fila
 function onRowMenu(ri){
   var row = cap.rec.rows[ri], body = $("paBody");
   $("paTitle").textContent = (row.num ? row.num + " · " : "") + row.name;
@@ -2671,12 +2686,12 @@ function onRowMenu(ri){
   add.type = "button";
   add.addEventListener("click", function(){ paSubs(ri); });
   body.appendChild(add);
-  if(!row.pas.length){
+  if(Stats.rowEmpty(row)){
     var del = el("button", "btn btn-danger", "Quitar fila");
     del.type = "button";
     del.style.marginLeft = "8px";
     del.addEventListener("click", function(){
-      if(cap.rec.rows[ri].pas.length) return;
+      if(!Stats.rowEmpty(cap.rec.rows[ri])) return;
       cap.rec.rows.splice(ri, 1); paDone();
     });
     body.appendChild(del);
