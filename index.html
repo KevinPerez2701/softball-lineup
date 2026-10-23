@@ -1239,6 +1239,7 @@ var POS_ORDER = POS.map(function(p){return p.k;});
 var NS = "diamante10.u." + cloud.uid + ".";
 var K_CUR = NS + "current.v7";
 var K_SAVED = NS + "saved.v1";
+var K_STATS = NS + "stats.v1";
 var K_TEAM = NS + "teamRoster.v1";
 var K_MIGRATED = NS + "migrated";
 
@@ -1265,8 +1266,8 @@ var K_MIGRATED = NS + "migrated";
    el último que guarda. Nada sube hasta conocer lo que ya hay en la nube, para
    que un dispositivo vacío nunca pise los datos de la cuenta. */
 var SYNC = {};
-SYNC[K_CUR] = "current"; SYNC[K_TEAM] = "team"; SYNC[K_SAVED] = "saved";
-var KEY_OF = {current:K_CUR, team:K_TEAM, saved:K_SAVED};
+SYNC[K_CUR] = "current"; SYNC[K_TEAM] = "team"; SYNC[K_SAVED] = "saved"; SYNC[K_STATS] = "stats";
+var KEY_OF = {current:K_CUR, team:K_TEAM, saved:K_SAVED, stats:K_STATS};
 var K_DIRTY = NS + "dirty";
 var synced = {}, pending = {}, timers = {}, ready = {}, booted = false, warned = false;
 /* "Pendiente" = cambiado en este dispositivo y todavía sin confirmar por el
@@ -2460,7 +2461,7 @@ $("savedClose").addEventListener("click", function(){ $("saved").close(); });
 
 /* ============ respaldo ============ */
 $("btnBackup").addEventListener("click", function(){
-  $("backupText").value = JSON.stringify({current:S, team:TEAM, saved:lsGet(K_SAVED, [])});
+  $("backupText").value = JSON.stringify({current:S, team:TEAM, saved:lsGet(K_SAVED, []), stats:lsGet(K_STATS, [])});
   $("backup").showModal();
 });
 $("backupClose").addEventListener("click", function(){ $("backup").close(); });
@@ -2476,6 +2477,7 @@ $("btnImport").addEventListener("click", function(){
     if(data.current) S = data.current;
     if(Array.isArray(data.team)){ TEAM = data.team; saveTeam(); }
     if(Array.isArray(data.saved)) lsSet(K_SAVED, data.saved);
+    if(Array.isArray(data.stats)) lsSet(K_STATS, Stats.merge(lsGet(K_STATS, []), data.stats));
     ensureState();
     renderAll(); $("backup").close(); toast("Respaldo importado");
   }catch(e){
@@ -2994,7 +2996,7 @@ function applyRemote(name, json){
     renderAll();
     if($("teamRoster").open) renderTeamRoster();
   }else{
-    localStorage.setItem(K_SAVED, json);
+    localStorage.setItem(KEY_OF[name], json);
   }
 }
 /* Primer ingreso con datos de antes del login: se suman a los de la cuenta en
@@ -3014,6 +3016,7 @@ function mergeFirst(name, remote, local){
     r.sort(function(a, b){ return String(b.at).localeCompare(String(a.at)); });
     return JSON.stringify(r.slice(0, 60));
   }
+  if(name === "stats") return JSON.stringify(Stats.merge(r, l));
   /* partido en curso: se queda el que tenga jugadores */
   return (r.roster && r.roster.length) || !(l.roster && l.roster.length) ? remote : local;
 }
@@ -3038,7 +3041,7 @@ function firstSnapshot(name, remote, local){
   else{ synced[name] = remote; delete pending[name]; }
   setDirty(name, false);
 }
-["current", "team", "saved"].forEach(function(name){
+["current", "team", "saved", "stats"].forEach(function(name){
   cloud.watch(name, function(remote, meta){
     var local = localStorage.getItem(KEY_OF[name]);
     if(!ready[name]){
@@ -3048,6 +3051,14 @@ function firstSnapshot(name, remote, local){
       ready[name] = true;
       firstSnapshot(name, remote, local);
       if(ready.current && ready.team && ready.saved) localStorage.removeItem(K_MIGRATED);
+      return;
+    }
+    /* La mezcla de estadísticas es conmutativa e idempotente: cualquier cambio
+       remoto posterior se mezcla igual que el primero (lo local sin subir se
+       mezcla en vez de ignorarse). */
+    if(name === "stats"){
+      if(meta.pending || remote == null || remote === local || remote === synced[name]) return;
+      firstSnapshot(name, remote, local);
       return;
     }
     /* El eco de lo que este dispositivo subió, o un cambio local que aún no
