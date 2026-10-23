@@ -2692,7 +2692,7 @@ function renderStatsGames(body){
     var bo = el("button", "btn btn-sm", "Abrir");
     bo.type = "button";
     bo.addEventListener("click", function(){
-      var rec = lsGet(K_STATS, []).filter(function(r){ return r.id === x.id; })[0];
+      var rec = Stats.live(lsGet(K_STATS, [])).filter(function(r){ return r.id === x.id; })[0];
       if(!rec) return;
       $("statsView").close(); /* para no apilar la captura sobre la vista */
       openCapture(rec, rec.id === S.statsId);
@@ -2700,7 +2700,12 @@ function renderStatsGames(body){
     var bd = iconBtn("btn btn-sm btn-icon btn-danger", "x", "Borrar estadísticas del juego");
     bd.addEventListener("click", function(){
       askConfirm("¿Borrar las estadísticas de este juego?", "No se puede deshacer.", "Borrar", function(){
-        var ok = lsSet(K_STATS, Stats.merge(lsGet(K_STATS, []), [{id: x.id, deletedAt: new Date().toISOString()}]));
+        var all = lsGet(K_STATS, []);
+        var rec = Stats.live(all).filter(function(r){ return r.id === x.id; })[0];
+        var at = new Date().toISOString();
+        /* si el reloj de este teléfono va atrasado, el marcador perdería contra savedAt y el juego sobreviviría */
+        if(rec && rec.savedAt > at) at = rec.savedAt;
+        var ok = lsSet(K_STATS, Stats.merge(all, [{id: x.id, deletedAt: at}]));
         if(!ok) toast("No se pudo guardar en este navegador");
         else openStats("games");
       });
