@@ -10,7 +10,7 @@ var Stats = {};
 Stats.merge = function(a, b){
   function ts(e){ return e.deletedAt || e.savedAt; }
   a = a || []; b = b || [];
-  var out = [], at = {}, i;
+  var out = [], at = Object.create(null), i;
   for(i = 0; i < a.length; i++){ at[a[i].id] = out.length; out.push(a[i]); }
   for(i = 0; i < b.length; i++){
     var e = b[i], k = at[e.id];
