@@ -516,6 +516,14 @@ table.sheet tfoot input{
   border:1px solid var(--line);border-radius:6px;padding:5px 2px;
   font-family:var(--cond);font-weight:600;font-size:17px;font-variant-numeric:tabular-nums;
 }
+
+/* selector de turno al bate */
+.pa-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px}
+#paPick .chips .btn,#paPick .pa-item .btn,.pa-grid .btn{min-height:40px;min-width:44px;justify-content:center}
+.pa-lbl{margin:12px 0 5px;font-size:12.5px;color:var(--ink-3)}
+.pickitem.pa-item{grid-template-columns:minmax(0,1fr) auto auto;cursor:default}
+.pickitem.pa-item:hover{border-color:transparent;background:var(--surface-2)}
+.pa-item .pa-code{font-family:var(--cond);font-weight:700;font-size:17px}
 .dlg-body{padding:12px 15px 15px;overflow:auto;max-height:60vh}
 .pickitem{
   display:grid;grid-template-columns:auto minmax(0,1fr) auto;align-items:center;gap:10px;
@@ -1231,6 +1239,15 @@ body.locked .gate{
   <div class="dlg-body">
     <div class="sheet-scroll"><table class="sheet" id="capTable"></table></div>
   </div>
+</dialog>
+
+<dialog id="paPick">
+  <div class="dlg-head">
+    <h3 id="paTitle">Turno al bate</h3>
+    <span style="margin-left:auto"></span>
+    <button class="btn btn-sm" id="paClose" type="button">Cerrar</button>
+  </div>
+  <div class="dlg-body" id="paBody"></div>
 </dialog>
 
 <dialog id="backup">
@@ -2521,7 +2538,80 @@ $("capDelInn").addEventListener("click", function(){
   if(cap.rec.game.innings <= Stats.minInnings(cap.rec)) return; // no quitar innings con turnos anotados
   cap.rec.game.innings--; Stats.fit(cap.rec); renderCapture();
 });
-function onCellTap(rowIdx, inn){} // T7: selector de turno
+/* selector de turno (#paPick): no hay toast mientras está abierto (toast() se mueve al primer diálogo abierto) */
+function paDone(){ $("paPick").close(); renderCapture(); }
+function onCellTap(rowIdx, inn){
+  var row = cap.rec.rows[rowIdx];
+  $("paTitle").textContent = (row.num ? row.num + " · " : "") + row.name + " · Inning " + inn;
+  if(row.pas.some(function(p){ return p.inn === inn; })) paList(rowIdx, inn); else paForm(rowIdx, inn, null);
+  $("paPick").showModal();
+}
+// RF-3/27/28: turnos de la celda (1 o 2); "Otro turno" solo con 1
+function paList(ri, inn){
+  var row = cap.rec.rows[ri], body = $("paBody"), n = 0;
+  body.innerHTML = "";
+  row.pas.forEach(function(p, idx){
+    if(p.inn !== inn) return;
+    n++;
+    var it = el("div", "pickitem pa-item"), ed = el("button", "btn btn-sm", "Editar"), del = el("button", "btn btn-sm btn-danger", "Borrar");
+    ed.type = del.type = "button";
+    ed.addEventListener("click", function(){ paForm(ri, inn, idx); });
+    del.addEventListener("click", function(){ row.pas.splice(idx, 1); paDone(); });
+    it.appendChild(el("span", "pa-code", Stats.cellLabel(p)));
+    it.appendChild(ed); it.appendChild(del);
+    body.appendChild(it);
+  });
+  if(n === 1){
+    var more = el("button", "btn btn-key", "Otro turno en este inning");
+    more.type = "button";
+    more.addEventListener("click", function(){ paForm(ri, inn, null); });
+    body.appendChild(more);
+  }
+}
+// RF-2: idx = posición en row.pas del turno que se edita, o null para uno nuevo
+function paForm(ri, inn, idx){
+  var row = cap.rec.rows[ri], body = $("paBody"), src = idx === null ? null : row.pas[idx];
+  var f = {code:src ? src.code : "", run:src ? !!src.run : false, rbi:src ? +src.rbi || 0 : 0, sb:src ? +src.sb || 0 : 0};
+  function chip(label, on, fn){
+    var b = el("button", on ? "btn btn-key" : "btn", label);
+    b.type = "button";
+    b.setAttribute("aria-pressed", String(on));
+    b.addEventListener("click", function(){ fn(); draw(); });
+    return b;
+  }
+  function nums(title, key, max){
+    body.appendChild(el("div", "pa-lbl", title));
+    var box = el("div", "chips");
+    for(var i = 0; i <= max; i++) (function(v){ box.appendChild(chip(String(v), f[key] === v, function(){ f[key] = v; })); })(i);
+    body.appendChild(box);
+  }
+  function draw(){
+    body.innerHTML = "";
+    var grid = el("div", "pa-grid");
+    Stats.CODES.forEach(function(c){ grid.appendChild(chip(c.pick, f.code === c.code, function(){ f.code = c.code; })); });
+    body.appendChild(grid);
+    body.appendChild(el("div", "pa-lbl", "Carrera"));
+    var run = el("div", "chips");
+    run.appendChild(chip("Anotó carrera", f.run, function(){ f.run = !f.run; }));
+    body.appendChild(run);
+    nums("CI (carreras impulsadas)", "rbi", 4);
+    nums("BR (bases robadas)", "sb", 3);
+    var acts = el("div", "chips"), ok = el("button", "btn btn-key", "Listo"), no = el("button", "btn", "Cancelar");
+    acts.style.marginTop = "14px";
+    ok.type = no.type = "button";
+    ok.disabled = !f.code;
+    ok.addEventListener("click", function(){
+      if(src){ src.code = f.code; src.run = f.run; src.rbi = f.rbi; src.sb = f.sb; }
+      else row.pas.push({inn:inn, code:f.code, run:f.run, rbi:f.rbi, sb:f.sb});
+      paDone();
+    });
+    no.addEventListener("click", function(){ $("paPick").close(); });
+    acts.appendChild(ok); acts.appendChild(no);
+    body.appendChild(acts);
+  }
+  draw();
+}
+$("paClose").addEventListener("click", function(){ $("paPick").close(); });
 $("btnCapture").addEventListener("click", function(){
   var rec = Stats.live(lsGet(K_STATS, [])).filter(function(e){ return e.id === S.statsId; })[0];
   if(!rec){
