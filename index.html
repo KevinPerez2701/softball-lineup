@@ -1268,6 +1268,7 @@ body.locked .gate{
     <input class="inp" id="capDate" type="date" aria-label="Fecha del juego" style="width:auto">
     <button class="btn btn-sm" id="capDelInn" type="button" aria-label="Quitar un inning">− Inning</button>
     <button class="btn btn-sm" id="capAddInn" type="button" aria-label="Agregar un inning">+ Inning</button>
+    <button class="btn btn-sm" id="capGuide" type="button">Anotar por inning</button>
     <button class="btn btn-sm btn-key" id="capSave" type="button">Guardar</button>
     <span style="margin-left:auto"></span>
     <button class="btn btn-sm" id="capClose" type="button">Cerrar</button>
@@ -2505,7 +2506,7 @@ function openCapture(rec, fromCurrent){
     rec.rows = Stats.refreshRows(rec.rows, lineup);
   }
   var copy = Stats.fit(rec);
-  cap = {rec:copy, opened:JSON.stringify(copy), fromCurrent:fromCurrent, linkId:S.statsId || null};
+  cap = {rec:copy, opened:JSON.stringify(copy), fromCurrent:fromCurrent, linkId:S.statsId || null, anchor:null}; // anchor: último turno del modo guiado (RF-15)
   renderCapture();
   $("capture").showModal();
 }
@@ -2707,21 +2708,27 @@ function paForm(ri, inn, idx, done){
     if(!src){
       var ro = el("button", "btn", "Out corriendo");
       ro.type = "button";
-      ro.addEventListener("click", function(){ roPick(ri, inn, paDone); });
+      ro.addEventListener("click", function(){ if(guide) roPick(null, inn, guideAdvance, guideShow); else roPick(ri, inn, paDone); });
       acts.appendChild(ro);
+      if(guide){ // RF-2: en el modo guiado "Cancelar" es "Terminar" y va al final
+        no.textContent = "Terminar";
+        acts.appendChild(guideBtn("Otro bateador", "btn", guideOther));
+        acts.appendChild(no);
+      }
     }
     body.appendChild(acts);
   }
   draw();
 }
 // RF-16: out corriendo. ri === null: primero se elige el corredor; luego el tipo. done() al guardar.
-function roPick(ri, inn, done){
+// back() opcional (modo guiado): "Volver" en vez de "Cancelar", sin cerrar el selector
+function roPick(ri, inn, done, back){
   var body = $("paBody");
   $("paTitle").textContent = "Out corriendo · Inning " + inn;
   function cancel(){
-    var c = el("button", "btn", "Cancelar");
+    var c = el("button", "btn", back ? "Volver" : "Cancelar");
     c.type = "button";
-    c.addEventListener("click", function(){ $("paPick").close(); });
+    c.addEventListener("click", function(){ if(back) back(); else $("paPick").close(); });
     body.appendChild(c);
   }
   function kinds(r){
@@ -2793,6 +2800,78 @@ function paSubs(ri, done){ // done(nuevoRi) opcional; por defecto paDone
   });
   if(!n) body.appendChild(el("p", "empty-note", "Todos los jugadores del roster ya están en la hoja"));
 }
+/* modo guiado (RF-1..5/7/15/19/20): #paPick sigue el orden al bate inning por inning; cerrar #paPick lo termina.
+   guide.batter: fila elegida a mano solo para el próximo turno; cap.anchor: último turno anotado aquí (sobrevive al modo) */
+var guide = null; // {inn, batter} mientras está activo
+function guideBtn(label, cls, fn){
+  var b = el("button", cls, label);
+  b.type = "button";
+  b.addEventListener("click", fn);
+  return b;
+}
+function guidePas(ri){ return cap.rec.rows[ri].pas.filter(function(p){ return p.inn === guide.inn; }).length; }
+function guideStart(){
+  var inn = Stats.openInning(cap.rec), last = cap.rec.game.innings;
+  guide = {inn:Math.min(inn, last), batter:null};
+  if(!$("paPick").open) $("paPick").showModal();
+  if(inn > last) guideAsk(); else guideShow(); // RF-1: todos los innings con 3 outs ⇒ la pregunta del último
+}
+function guideShow(){
+  if(guide.batter !== null && guidePas(guide.batter) >= 2) guide.batter = null; // RF-19: elegido a mano pero ya lleno en este inning
+  var ri = guide.batter !== null ? guide.batter : Stats.dueBatter(cap.rec, guide.inn, cap.anchor);
+  if(ri === null){ $("paPick").close(); return; } // todos con 2 turnos en el inning: termina
+  var row = cap.rec.rows[ri];
+  paForm(ri, guide.inn, null, guideOnPA);
+  $("paTitle").textContent = "Inning " + guide.inn + " · " + Stats.inningOuts(cap.rec, guide.inn) + " out · Al bate: " +
+    (row.num ? row.num + " · " : "") + row.name;
+}
+function guideOnPA(pa){ cap.anchor = pa; guide.batter = null; guideAdvance(); } // RF-3
+// RF-4/7: tras un turno o un out corriendo; con 3 outs pasa al siguiente inning con el mismo bateador que toca
+function guideAdvance(){
+  renderCapture();
+  if(Stats.inningOuts(cap.rec, guide.inn) >= 3) guide.inn++;
+  if(guide.inn > cap.rec.game.innings) guideAsk(); else guideShow();
+}
+function guideAsk(){
+  // 12 innings: termina (RF-15); el aviso se ve porque #paPick ya está cerrado
+  if(cap.rec.game.innings >= 12){ $("paPick").close(); toast("Máximo 12 innings"); return; }
+  var body = $("paBody"), acts = el("div", "chips");
+  $("paTitle").textContent = "¿Hubo otro inning?";
+  body.innerHTML = "";
+  acts.appendChild(guideBtn("Sí", "btn btn-key", function(){
+    cap.rec.game.innings++; Stats.fit(cap.rec); renderCapture();
+    guide.inn = cap.rec.game.innings;
+    guideShow();
+  }));
+  acts.appendChild(guideBtn("No", "btn", function(){ $("paPick").close(); }));
+  body.appendChild(acts);
+}
+// RF-5: filas con menos de 2 turnos en el inning (001 RF-28) + sustituto bajo el bateador que toca
+function guideOther(){
+  var body = $("paBody"), due = Stats.dueBatter(cap.rec, guide.inn, cap.anchor), acts = el("div", "chips");
+  if(due === null) due = guide.batter !== null ? guide.batter : 0;
+  $("paTitle").textContent = "Otro bateador · Inning " + guide.inn;
+  body.innerHTML = "";
+  cap.rec.rows.forEach(function(r, i){
+    if(guidePas(i) >= 2) return;
+    var b = guideBtn("", "pickitem", function(){ guide.batter = i; guideShow(); });
+    b.appendChild(el("span", "pa-code", r.num || ""));
+    b.appendChild(el("span", null, r.name));
+    body.appendChild(b);
+  });
+  acts.style.marginTop = "14px";
+  acts.appendChild(guideBtn("Agregar sustituto", "btn", function(){
+    $("paTitle").textContent = "Agregar sustituto";
+    // la fila nueva entra en due + 1: guide.batter apunta a ella; cap.anchor es un objeto y no se corre
+    paSubs(due, function(ri){ guide.batter = ri; guideShow(); });
+    $("paBody").appendChild(guideBtn("Volver", "btn", guideOther));
+  }));
+  acts.appendChild(guideBtn("Volver", "btn", guideShow));
+  body.appendChild(acts);
+}
+$("capGuide").addEventListener("click", guideStart);
+// RF-2/15: Terminar, Cancelar, Cerrar, Esc y el fondo cierran #paPick ⇒ sale del modo y queda la hoja
+$("paPick").addEventListener("close", function(){ if(guide){ guide = null; renderCapture(); } });
 $("paClose").addEventListener("click", function(){ $("paPick").close(); });
 $("btnCapture").addEventListener("click", function(){
   var rec = Stats.live(lsGet(K_STATS, [])).filter(function(e){ return e.id === S.statsId; })[0];
@@ -2827,7 +2906,7 @@ function saveCapture(){
   if($("statsView").open) openStats(statsViewName);
   toast("Estadísticas guardadas"); // después de cerrar: toast() va dentro del primer diálogo abierto
 }
-function closeCapture(){ cap = null; $("capture").close(); }
+function closeCapture(){ guide = null; cap = null; $("capture").close(); } // RF-20
 // RF-11: si hay cambios sin guardar, confirmar antes de descartar
 function tryCloseCapture(){
   if(!cap || JSON.stringify(cap.rec) === cap.opened){ closeCapture(); return; }
