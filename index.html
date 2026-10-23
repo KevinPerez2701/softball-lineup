@@ -531,6 +531,28 @@ table.sheet tfoot input{
 .ask-msg{margin:0;font-size:14px;color:var(--ink-2);line-height:1.5}
 .ask-acts{display:flex;gap:7px;justify-content:flex-end;margin-top:14px;flex-wrap:wrap}
 
+/* estadísticas: tabla de jugadores; la columna del nombre queda fija al desplazar */
+#statsView{width:min(980px,calc(100vw - 28px))}
+table.stat{border-collapse:separate;border-spacing:0;width:100%;font-variant-numeric:tabular-nums}
+table.stat th,table.stat td{padding:0 6px;border-bottom:1px solid var(--line);text-align:right;white-space:nowrap}
+table.stat thead th{padding:0;font-family:var(--cond);font-weight:700;font-size:12.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-2)}
+table.stat thead button{
+  display:block;width:100%;min-width:40px;min-height:40px;padding:0 6px;cursor:pointer;background:transparent;
+  border:0;color:inherit;font:inherit;letter-spacing:inherit;text-transform:inherit;
+}
+table.stat thead button:hover{background:var(--surface-2)}
+table.stat th[aria-sort] button{color:var(--ink)}
+table.stat td{height:40px}
+table.stat tbody tr{cursor:pointer}
+table.stat tbody tr:hover td,table.stat tbody tr:hover th{background:var(--surface-2)}
+table.stat th:first-child{
+  position:sticky;left:0;z-index:1;background:var(--surface);border-right:1px solid var(--line);
+  text-align:left;min-width:112px;max-width:150px;font-size:13.5px;font-weight:600;color:var(--ink);
+}
+table.stat thead th:first-child button{text-align:left}
+table.stat th:first-child .nm{display:block;max-width:150px;overflow:hidden;text-overflow:ellipsis}
+table.stat tfoot th,table.stat tfoot td{font-weight:700;border-top:2px solid var(--line-2);border-bottom:0}
+
 /* ---------- entrada (login) ---------- */
 .gate{display:none}
 body.locked .topbar,body.locked main,body.locked .tabbar{display:none}
@@ -654,7 +676,7 @@ body.locked .gate{
   .toast{bottom:calc(84px + env(safe-area-inset-bottom))}
 
   /* diálogos como hojas que suben desde abajo */
-  dialog,#teamRoster,#capture{
+  dialog,#teamRoster,#capture,#statsView{
     width:100%;max-width:100%;margin:auto 0 0;
     border-radius:20px 20px 0 0;border-bottom:0;
     max-height:90vh;padding-bottom:env(safe-area-inset-bottom);
@@ -886,6 +908,7 @@ body.locked .gate{
         <button class="btn btn-ghost btn-sm" id="btnSave" type="button">Guardar</button>
         <button class="btn btn-ghost btn-sm" id="btnLoad" type="button">Guardados</button>
         <button class="btn btn-ghost btn-sm" id="btnBackup" type="button">Respaldo</button>
+        <button class="btn btn-ghost btn-sm" id="btnStats" type="button">Estadísticas</button>
         <button class="btn btn-ghost btn-sm" id="btnTeamRoster" type="button">Roster</button>
         <button class="btn btn-ghost btn-sm" id="btnLogout" type="button">Salir</button>
       </div>
@@ -1251,6 +1274,19 @@ body.locked .gate{
   </div>
 </dialog>
 
+<dialog id="statsView">
+  <div class="dlg-head">
+    <h3>Estadísticas</h3>
+    <div class="chips" role="group" aria-label="Vista">
+      <button class="btn btn-sm" id="statsTabPlayers" type="button" aria-pressed="true">Jugadores</button>
+      <button class="btn btn-sm" id="statsTabGames" type="button" aria-pressed="false">Juegos</button>
+    </div>
+    <span style="margin-left:auto"></span>
+    <button class="btn btn-sm" id="statsClose" type="button">Cerrar</button>
+  </div>
+  <div class="dlg-body" id="statsBody"></div>
+</dialog>
+
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
 <script src="stats.js"></script>
@@ -1490,6 +1526,7 @@ var ICONS = {
   folder:'<path d="M3.5 6.5A1.5 1.5 0 0 1 5 5h4.5l2 2.5H19a1.5 1.5 0 0 1 1.5 1.5v9.5A1.5 1.5 0 0 1 19 20H5a1.5 1.5 0 0 1-1.5-1.5z"/>',
   shield:'<path d="M12 3l7.5 3v5.5c0 4.6-3.2 8.2-7.5 9.5-4.3-1.3-7.5-4.9-7.5-9.5V6z"/><path d="M9 12l2 2 4-4"/>',
   logout:'<path d="M14 4.5h4A1.5 1.5 0 0 1 19.5 6v12a1.5 1.5 0 0 1-1.5 1.5h-4"/><path d="M10 16.5L5.5 12 10 7.5M5.5 12H15"/>',
+  chart:'<path d="M4 20h16M7 20v-7M12 20V5M17 20v-10"/>',
   dots:'<circle cx="5.5" cy="12" r="1.2"/><circle cx="12" cy="12" r="1.2"/><circle cx="18.5" cy="12" r="1.2"/>',
   grip:'<circle cx="9" cy="6" r="1.1"/><circle cx="15" cy="6" r="1.1"/><circle cx="9" cy="12" r="1.1"/><circle cx="15" cy="12" r="1.1"/><circle cx="9" cy="18" r="1.1"/><circle cx="15" cy="18" r="1.1"/>'
 };
@@ -2624,6 +2661,75 @@ $("btnLoad").addEventListener("click", function(){
 });
 $("savedClose").addEventListener("click", function(){ $("saved").close(); });
 
+/* ============ estadísticas: ver ============ */
+var statsViewName = "players";
+var statsSort = {key:"avg", desc:true};
+/* [clave, rótulo, entero]: las tasas salen con Stats.fmt */
+var STAT_COLS = [["g","JJ",1],["pa","AP",1],["ab","VB",1],["h","H",1],["b2","2B",1],["b3","3B",1],["hr","HR",1],
+  ["r","CA",1],["rbi","CI",1],["bb","BB",1],["k","K",1],["sb","BR",1],["avg","AVE"],["obp","OBP"],["slg","SLG"],["ops","OPS"]];
+function openPlayerDetail(pid){ /* T13 */ }
+function renderStatsGames(body){ /* T14 */ }
+function statCell(tag, o, c){
+  return el(tag, null, c[2] ? String(o[c[0]]) : Stats.fmt(o[c[0]]));
+}
+function renderStatsPlayers(body, entries){
+  var players = Stats.players(entries, TEAM);
+  var wrap = el("div", "sheet-scroll"), tb = el("table", "stat");
+  var hr = el("tr");
+  [["name", "Jugador"]].concat(STAT_COLS).forEach(function(c){
+    var th = el("th", null);
+    th.scope = "col";
+    var b = el("button", null, c[1]);
+    b.type = "button";
+    if(statsSort.key === c[0]){
+      th.setAttribute("aria-sort", statsSort.desc ? "descending" : "ascending");
+      b.textContent = c[1] + (statsSort.desc ? " ▼" : " ▲");
+    }
+    b.addEventListener("click", function(){
+      if(statsSort.key === c[0]) statsSort.desc = !statsSort.desc;
+      else { statsSort.key = c[0]; statsSort.desc = (c[0] !== "name"); }
+      openStats(statsViewName);
+    });
+    th.appendChild(b); hr.appendChild(th);
+  });
+  var th0 = el("thead"); th0.appendChild(hr); tb.appendChild(th0);
+  var tbody = el("tbody");
+  Stats.sortPlayers(players.rows, statsSort.key, statsSort.desc).forEach(function(p){
+    var tr = el("tr"), th = el("th");
+    th.scope = "row";
+    th.appendChild(el("span", "nm", (p.num ? p.num + " · " : "") + p.name));
+    tr.appendChild(th);
+    STAT_COLS.forEach(function(c){ tr.appendChild(statCell("td", p, c)); });
+    tr.addEventListener("click", function(){ openPlayerDetail(p.pid); });
+    tbody.appendChild(tr);
+  });
+  tb.appendChild(tbody);
+  var tf = el("tfoot"), tr = el("tr"), th = el("th", null, "Equipo");
+  th.scope = "row";
+  tr.appendChild(th);
+  STAT_COLS.forEach(function(c){ tr.appendChild(statCell("td", players.team, c)); });
+  tf.appendChild(tr); tb.appendChild(tf);
+  wrap.appendChild(tb); body.appendChild(wrap);
+}
+/* Dibuja la vista; showModal solo si el diálogo no está abierto. */
+function openStats(view){
+  statsViewName = view === "games" ? "games" : "players";
+  var dlg = $("statsView"), body = $("statsBody"), entries = lsGet(K_STATS, []);
+  $("statsTabPlayers").setAttribute("aria-pressed", String(statsViewName === "players"));
+  $("statsTabGames").setAttribute("aria-pressed", String(statsViewName === "games"));
+  $("statsTabPlayers").classList.toggle("btn-key", statsViewName === "players");
+  $("statsTabGames").classList.toggle("btn-key", statsViewName === "games");
+  body.innerHTML = "";
+  if(!Stats.live(entries).length) body.appendChild(el("p", "empty-note", "Todavía no hay juegos anotados"));
+  else if(statsViewName === "games") renderStatsGames(body);
+  else renderStatsPlayers(body, entries);
+  if(!dlg.open) dlg.showModal();
+}
+$("btnStats").addEventListener("click", function(){ openStats("players"); });
+$("statsTabPlayers").addEventListener("click", function(){ openStats("players"); });
+$("statsTabGames").addEventListener("click", function(){ openStats("games"); });
+$("statsClose").addEventListener("click", function(){ $("statsView").close(); });
+
 /* ============ respaldo ============ */
 $("btnBackup").addEventListener("click", function(){
   $("backupText").value = JSON.stringify({current:S, team:TEAM, saved:lsGet(K_SAVED, []), stats:lsGet(K_STATS, [])});
@@ -3098,6 +3204,7 @@ var SHEETS = {
     ["btnSave", "save", "Guardar alineación", "Para reabrirla después"],
     ["btnLoad", "folder", "Alineaciones guardadas", "Abrir o borrar"],
     ["btnBackup", "shield", "Respaldo", "Exportar o importar tus datos como texto"],
+    ["btnStats", "chart", "Estadísticas", "Jugadores y juegos"],
     "sep",
     ["btnLogout", "logout", "Cerrar sesión", cloud.email, false, true]
   ]}
@@ -3162,6 +3269,7 @@ function applyRemote(name, json){
     if($("teamRoster").open) renderTeamRoster();
   }else{
     localStorage.setItem(KEY_OF[name], json);
+    if(name === "stats" && $("statsView").open) openStats(statsViewName);
   }
 }
 /* Primer ingreso con datos de antes del login: se suman a los de la cuenta en
