@@ -1,6 +1,6 @@
 # Spec 003 — Saved lineups as games
 
-Status: clarified — G1 approved by Kevin 2026-11-05 11:00 ("apruebo la spec de una, implementa"; G2 pre-approved by
+Status: planned — G1 approved by Kevin 2026-11-05 11:00 ("apruebo la spec de una, implementa"; G2 pre-approved by
 the same words). Second clarifier pass on RF-18–34 (7 blocking + 13 minor) resolved by the orchestrator below.
 Created: 2026-11-05
 
