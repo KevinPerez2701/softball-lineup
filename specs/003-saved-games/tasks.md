@@ -30,7 +30,7 @@ left running. Everything is sequential: all logic is in `stats.js` and all UI in
       and ticket code paths call `cardNames()`.
 
 ## UI (index.html)
-- [ ] T5. `normalizeState(st)` (ensureState + dedupe + normalizeGameRoster parametrized), `linkedGame()`,
+- [x] T5. `normalizeState(st)` (ensureState + dedupe + normalizeGameRoster parametrized), `linkedGame()`,
       `hasUnsaved()`, `#askAlt` + `askChoice`; `askConfirm`/`askText` hide `#askAlt`. (RF-4, RF-14, prep RF-10/16)
       Deps: T1
       Files: `index.html`

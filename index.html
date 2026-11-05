@@ -1218,6 +1218,7 @@ body.locked .gate{
     <input class="inp" id="askInput" type="text" style="margin-top:12px" hidden>
     <div class="ask-acts">
       <button class="btn btn-sm" id="askNo" type="button">Cancelar</button>
+      <button class="btn btn-sm" id="askAlt" type="button" hidden></button>
       <button class="btn btn-sm btn-key" id="askYes" type="button">Aceptar</button>
     </div>
   </div>
@@ -1493,42 +1494,45 @@ function normalizeTeam(){
   lsSet(K_TEAM, TEAM);
 }
 
-function ensureState(){
-  if(!S || !S.assign || !Array.isArray(S.roster)) S = blankState();
-  if(!Array.isArray(S.us)) S.us = [0,0,0,0,0,0,0];
-  if(!Array.isArray(S.them)) S.them = [0,0,0,0,0,0,0];
-  if(typeof S.enabledSF !== "boolean") S.enabledSF = true;
-  if(typeof S.enabled4F !== "boolean") S.enabled4F = false;
-  if(typeof S.enabledDH !== "boolean") S.enabledDH = false;
-  if(!Object.prototype.hasOwnProperty.call(S, "dh")) S.dh = null;
-  if(S.dh && !S.roster.some(function(pl){ return pl.id === S.dh; })) S.dh = null;
-  if(S.home !== "us" && S.home !== "them") S.home = "them";
-  POS_ORDER.forEach(function(k){ if(!(k in S.assign)) S.assign[k] = null; });
+function ensureState(st){
+  if(!st || !st.assign || !Array.isArray(st.roster)) st = blankState();
+  if(!Array.isArray(st.us)) st.us = [0,0,0,0,0,0,0];
+  if(!Array.isArray(st.them)) st.them = [0,0,0,0,0,0,0];
+  if(typeof st.enabledSF !== "boolean") st.enabledSF = true;
+  if(typeof st.enabled4F !== "boolean") st.enabled4F = false;
+  if(typeof st.enabledDH !== "boolean") st.enabledDH = false;
+  if(!Object.prototype.hasOwnProperty.call(st, "dh")) st.dh = null;
+  if(st.dh && !st.roster.some(function(pl){ return pl.id === st.dh; })) st.dh = null;
+  if(st.home !== "us" && st.home !== "them") st.home = "them";
+  POS_ORDER.forEach(function(k){ if(!(k in st.assign)) st.assign[k] = null; });
+  return st;
 }
 
 /* La app arranca en blanco: cada quien carga su propio equipo. */
 if(!Array.isArray(TEAM)) TEAM = [];
 normalizeTeam();
-ensureState();
+S = ensureState(S);
 
 // Limpia duplicados que puedan existir en partidas creadas con versiones anteriores.
-function dedupeGameRoster(){
+// Devuelve true si quitó algo; no escribe en el almacenamiento (lo hace quien llama).
+function dedupeGameRoster(st){
   var seenId = {}, seenName = {}, clean = [], removed = {};
-  S.roster.forEach(function(pl){
+  st.roster.forEach(function(pl){
     var id = pl.id, name = String(pl.name || "").trim().toLowerCase();
     if((id && seenId[id]) || (name && seenName[name])){ removed[id] = 1; return; }
     if(id) seenId[id] = 1;
     if(name) seenName[name] = 1;
     clean.push(pl);
   });
-  if(clean.length !== S.roster.length){
-    S.roster = clean;
-    S.order = S.order.filter(function(id){ return !removed[id]; });
-    POS_ORDER.forEach(function(k){ if(removed[S.assign[k]]) S.assign[k] = null; });
-    lsSet(K_CUR, S);
+  if(clean.length !== st.roster.length){
+    st.roster = clean;
+    st.order = (Array.isArray(st.order) ? st.order : []).filter(function(id){ return !removed[id]; });
+    POS_ORDER.forEach(function(k){ if(removed[st.assign[k]]) st.assign[k] = null; });
+    return true;
   }
+  return false;
 }
-dedupeGameRoster();
+if(dedupeGameRoster(S)) lsSet(K_CUR, S);
 
 /* ============ helpers ============ */
 function $(id){ return document.getElementById(id); }
@@ -1574,11 +1578,11 @@ function iconBtn(cls, name, label){
   return b;
 }
 /* Sincroniza jugadores del partido con el roster permanente por ID/nombre. */
-function normalizeGameRoster(){
+function normalizeGameRoster(st){
   var byId = {}, byName = {};
   TEAM.forEach(function(tp){ byId[tp.id] = tp; byName[tp.name.trim().toLowerCase()] = tp; });
   var clean = [], seen = {};
-  (Array.isArray(S.roster) ? S.roster : []).forEach(function(pl){
+  (Array.isArray(st.roster) ? st.roster : []).forEach(function(pl){
     var tp = byId[pl.id] || byName[String(pl.name || "").trim().toLowerCase()];
     if(!tp || seen[tp.id]) return;
     seen[tp.id] = 1;
@@ -1586,11 +1590,31 @@ function normalizeGameRoster(){
   });
   var valid = {};
   clean.forEach(function(pl){ valid[pl.id] = 1; });
-  S.roster = clean;
-  S.order = (Array.isArray(S.order) ? S.order : []).filter(function(id){ return !!valid[id]; });
-  POS_ORDER.forEach(function(k){ if(S.assign[k] && !valid[S.assign[k]]) S.assign[k] = null; });
+  st.roster = clean;
+  st.order = (Array.isArray(st.order) ? st.order : []).filter(function(id){ return !!valid[id]; });
+  POS_ORDER.forEach(function(k){ if(st.assign[k] && !valid[st.assign[k]]) st.assign[k] = null; });
 }
-normalizeGameRoster();
+normalizeGameRoster(S);
+
+/* Copia normalizada de cualquier estado (el de un juego guardado, por ejemplo).
+   No toca S ni el almacenamiento. */
+function normalizeState(st){
+  var c = ensureState(JSON.parse(JSON.stringify(st || null)));
+  dedupeGameRoster(c);
+  normalizeGameRoster(c);
+  return c;
+}
+/* Juego guardado al que está ligada la alineación de trabajo, o null. */
+function linkedGame(){
+  if(!S.gameId) return null;
+  var list = lsGet(K_SAVED, []);
+  for(var i=0;i<list.length;i++) if(list[i].id === S.gameId) return list[i];
+  return null;
+}
+function hasUnsaved(){
+  var g = linkedGame();
+  return Stats.unsaved(S, g ? normalizeState(g.state) : null, blankState());
+}
 
 function player(id){
   for(var i=0;i<S.roster.length;i++) if(S.roster[i].id === id) return S.roster[i];
@@ -1649,22 +1673,38 @@ function inLineup(id){
    Los nativos abren cuadros del sistema: en el teléfono estorban y algunos
    navegadores embebidos ignoran prompt() por completo. */
 var askCb = null;
-function closeAsk(){ $("ask").close(); askCb = null; }
+var askLocked = false; // true: Esc y el fondo no cierran el diálogo
+function closeAsk(){ askLocked = false; $("ask").close(); askCb = null; }
 function askConfirm(title, msg, yesLabel, cb){
   $("askTitle").textContent = title;
   $("askMsg").textContent = msg;
   $("askInput").hidden = true;
+  $("askNo").hidden = false;
+  $("askAlt").hidden = true;
+  askLocked = false;
   $("askYes").textContent = yesLabel || "Aceptar";
   $("askYes").className = "btn btn-sm btn-key";
   askCb = cb;
   $("ask").showModal();
   $("askYes").focus();
 }
+/* Dos opciones además de Cancelar: cb("yes") o cb("alt"). Con locked no hay
+   Cancelar y tampoco se cierra con Esc ni con el fondo. */
+function askChoice(title, msg, yesLabel, altLabel, cb, locked){
+  askConfirm(title, msg, yesLabel, cb);
+  $("askAlt").textContent = altLabel;
+  $("askAlt").hidden = false;
+  askLocked = !!locked;
+  $("askNo").hidden = askLocked;
+}
 function askText(title, msg, value, cb){
   $("askTitle").textContent = title;
   $("askMsg").textContent = msg;
   var i = $("askInput");
   i.hidden = false;
+  $("askNo").hidden = false;
+  $("askAlt").hidden = true;
+  askLocked = false;
   i.value = value || "";
   $("askYes").textContent = "Guardar";
   $("askYes").className = "btn btn-sm btn-key";
@@ -3191,7 +3231,7 @@ $("btnImport").addEventListener("click", function(){
     if(Array.isArray(data.team)){ TEAM = data.team; saveTeam(); }
     if(Array.isArray(data.saved)) lsSet(K_SAVED, data.saved);
     if(Array.isArray(data.stats)) lsSet(K_STATS, Stats.merge(lsGet(K_STATS, []), data.stats));
-    ensureState();
+    S = ensureState(S);
     renderAll(); $("backup").close(); toast("Respaldo importado");
   }catch(e){
     toast("Ese texto no es un respaldo válido");
@@ -3203,8 +3243,16 @@ $("askNo").addEventListener("click", closeAsk);
 $("askYes").addEventListener("click", function(){
   var cb = askCb;
   closeAsk();
-  if(cb) cb();
+  if(cb) cb("yes");
 });
+$("askAlt").addEventListener("click", function(){
+  var cb = askCb;
+  closeAsk();
+  if(cb) cb("alt");
+});
+$("ask").addEventListener("cancel", function(ev){ if(askLocked) ev.preventDefault(); });
+/* Chromium deja pasar un segundo Esc sin cancelar: si se cerró trabado, se vuelve a abrir */
+$("ask").addEventListener("close", function(){ if(askLocked) this.showModal(); });
 $("askInput").addEventListener("keydown", function(ev){
   if(ev.key === "Enter"){ ev.preventDefault(); $("askYes").click(); }
 });
@@ -3581,7 +3629,7 @@ $("toggleDH").addEventListener("change", function(){
 
 /* ============ render ============ */
 function renderAll(){
-  ensureState();
+  S = ensureState(S);
   // Elimina asignaciones de posiciones desactivadas.
   POS_ORDER.forEach(function(k){ if(!isPosEnabled(k)) S.assign[k] = null; });
   // Sin DH, el orden al bate no puede contener más jugadores que las posiciones activas.
@@ -3690,7 +3738,7 @@ $("sheetClose").addEventListener("click", function(){ $("sheet").close(); });
 
 /* Tocar el fondo oscuro cierra cualquier hoja o diálogo, como en una app. */
 document.querySelectorAll("dialog").forEach(function(d){
-  d.addEventListener("click", function(ev){ if(ev.target === d){ if(d.id === "capture") tryCloseCapture(); else d.close(); } });
+  d.addEventListener("click", function(ev){ if(ev.target === d){ if(d.id === "capture") tryCloseCapture(); else if(d.id === "ask" && askLocked) return; else d.close(); } });
 });
 
 renderAll();
@@ -3703,12 +3751,14 @@ function applyRemote(name, json){
   if(name === "current"){
     localStorage.setItem(K_CUR, json);
     S = JSON.parse(json);
-    ensureState(); dedupeGameRoster(); normalizeGameRoster();
+    S = ensureState(S);
+    if(dedupeGameRoster(S)) lsSet(K_CUR, S);
+    normalizeGameRoster(S);
     renderAll();
   }else if(name === "team"){
     localStorage.setItem(K_TEAM, json);
     TEAM = JSON.parse(json);
-    normalizeTeam(); normalizeGameRoster();
+    normalizeTeam(); normalizeGameRoster(S);
     renderAll();
     if($("teamRoster").open) renderTeamRoster();
     if($("statsView").open) openStats(statsViewName);

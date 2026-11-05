@@ -3,17 +3,17 @@
 Single source of truth for what is in flight and what is left. Update it in the same commit as the
 work it describes. Dates come from `date`, never from memory.
 
-Last updated: 2026-11-05 11:21 UTC-4 by Claude
+Last updated: 2026-11-05 11:25 UTC-4 by Claude
 
 ## Now (one line)
-Spec 003 — T5 next (normalizeState, linkedGame, hasUnsaved, askChoice). G1 approved, G2 pre-approved by Kevin 2026-11-05. Pushed through 7290a62 (Kevin: push when I see fit).
+Spec 003 — T6 next (Guardar, Guardar como nuevo, conflict, cap, toasts). G1 approved, G2 pre-approved by Kevin 2026-11-05. Pushed through 7290a62 (Kevin: push when I see fit).
 
 ## Active specs
 | Spec | Phase | Current task | Next task | Blocked by |
 |---|---|---|---|---|
 | 001-game-stats | done | — | — | — |
 | 002-inning-capture | done | — | — | — |
-| 003-saved-games | implement | T5 | T6 | — |
+| 003-saved-games | implement | T6 | T7 | — |
 
 Phases: constitution · spec · clarify · plan · tasks · implement · validate · done
 
@@ -24,6 +24,7 @@ Phases: constitution · spec · clarify · plan · tasks · implement · validat
 - (none)
 
 ## Recently done (keep last 10)
+- 2026-11-05 · 003 · T5 done — normalizers parametrized (7 callers), normalizeState/linkedGame/hasUnsaved, askChoice with a locked mode (reopens if a second Esc closes it); reviewer APPROVE; 108/108 green. Browser boot check deferred to T16
 - 2026-11-05 · 003 · T4 done — Stats.shortName/shortNames + cardNames() in field, image and ticket (BD included whenever set); review BLOCK (initial-word test gap) fixed by the orchestrator + cross-group collision fix; 108/108 green. Browser check of the field deferred to T16
 - 2026-11-05 · 003 · T1–T3 done — saved-games pure logic in stats.js (11 functions), 24 tests, 101/101 green; reviewer APPROVE (dead POS line and sameInts→diffInts fixed by the orchestrator)
 - 2026-11-05 · 003 · plan.md (fable planner + orchestrator review R1–R4) and tasks.md (T1–T16)
