@@ -1,6 +1,7 @@
 # Spec 003 — Saved lineups as games
 
-Status: clarify — RF-1–17 clarified (7 blocking + 9 minor resolved); design RF-18–34 added 2026-11-05 after the impeccable critique, clarifier pass on them pending; then G1
+Status: clarified — G1 approved by Kevin 2026-11-05 11:00 ("apruebo la spec de una, implementa"; G2 pre-approved by
+the same words). Second clarifier pass on RF-18–34 (7 blocking + 13 minor) resolved by the orchestrator below.
 Created: 2026-11-05
 
 ## Context and goal
@@ -39,9 +40,9 @@ saved entry one game that is opened, edited and saved in place, and makes the ap
 ## Functional requirements (acceptance criteria in EARS)
 - RF-1: WHEN the user taps "Guardar" and the working lineup has a linked game, THE SYSTEM SHALL replace that saved
   game's `state` with the working lineup and set its `at` to now, keeping its `id` and `name`, without asking for a
-  name, change no other saved game, and show "Juego actualizado".
-- RF-2: WHEN the user taps "Guardar" and the working lineup has no linked game, THE SYSTEM SHALL ask for a name as
-  today, add a new saved game and make it the linked game.
+  name, change no other saved game, and show the RF-21 toast.
+- RF-2: WHEN the user taps "Guardar" and the working lineup has no linked game, THE SYSTEM SHALL ask for a name
+  (proposed by RF-20), add a new saved game, make it the linked game and show the RF-21 toast.
 - RF-3: THE SYSTEM SHALL offer "Guardar como nuevo" while the working lineup has a linked game; WHEN it is used,
   THE SYSTEM SHALL ask for a name and add a new saved game whose state keeps `team`, `opp`, `home`, the players of
   the game, positions, batting order, `dh` and the SF/4F/DH flags, with no `statsId`, `innings` 7, scoreboard all
@@ -54,7 +55,7 @@ saved entry one game that is opened, edited and saved in place, and makes the ap
 - RF-6: WHEN stats are saved and the save updates the working lineup (the capture's stats link equals the working
   lineup's, from "Anotar estadísticas" or from Estadísticas → Juegos) and the working lineup has a linked game,
   THE SYSTEM SHALL also update that saved game with the whole working lineup as RF-1 does (lineup edits not yet
-  saved go with it) and show "Estadísticas guardadas".
+  saved go with it) and show the RF-26 toast.
 - RF-7: IF updating the linked saved game fails during RF-6, THEN THE SYSTEM SHALL restore the stats and the
   working lineup to their previous values, keep the capture sheet open and show "No se pudo guardar en este
   navegador".
@@ -71,12 +72,12 @@ saved entry one game that is opened, edited and saved in place, and makes the ap
 - RF-11: THE SYSTEM SHALL keep up to 200 saved games (today 60).
 - RF-12: IF adding a saved game (RF-2, RF-3) would leave more than 200, THEN THE SYSTEM SHALL ask to confirm naming
   the least recently saved game(s) that will be deleted, and save nothing if the user cancels.
-- RF-13: WHEN the user deletes the linked game from "Alineaciones guardadas", THE SYSTEM SHALL keep the working
+- RF-13: WHEN the user deletes the linked game from the saved games list ("Abrir juego"), THE SYSTEM SHALL keep the working
   lineup on screen with no linked game (a later "Guardar" follows RF-2).
 - RF-14: THE SYSTEM SHALL keep saved games, the working lineup and backups of earlier versions valid: an entry or a
   working lineup without the new fields opens as today, with no linked game.
 - RF-15: THE SYSTEM SHALL show which saved game is open: its name on the main screen while it is linked, and a
-  marker on its row in "Alineaciones guardadas".
+  marker on its row in the saved games list (detailed by RF-18 and RF-19).
 - RF-16: IF the user taps "Guardar" on a linked game whose saved `at` differs from the one the link holds (it was
   saved on another device meanwhile), THEN THE SYSTEM SHALL say "Este juego cambió en otro dispositivo" and offer
   "Reemplazar" (RF-1), "Guardar como nuevo" (RF-3) or "Cancelar".
@@ -84,62 +85,85 @@ saved entry one game that is opened, edited and saved in place, and makes the ap
   entry (no 60/200 cut) and, for an `id` present in both, the one with the newer `at`.
 
 ### Design (from the impeccable critique of 2026-11-05, 25/40; Kevin chose all four groups)
-Refinement of the incumbent look (colors, fonts, field drawings stay); "phone" = 360–430 px wide, "desktop" ≥ 1024 px.
+Refinement of the incumbent look (colors, fonts, field drawings stay). "Phone" = the ≤ 680 px layout (checked at 360
+and 375 px); "desktop" = the > 680 px layout (checked at 800 and 1440 px). Empty team / opponent fall back to
+today's words: "Nosotros" / "Ellos" in scoreboards, "Equipo" / "rival" in names and titles.
 
 Open game and save loop
-- RF-18: WHILE the working lineup has a linked game, THE SYSTEM SHALL show the game's name in the header on desktop
-  (where "Softball · Lineups" is today) and on phone (a line under the brand), with a "●" marker and the accessible
-  text "cambios sin guardar" while there are unsaved changes; with no linked game it SHALL show "Juego sin guardar"
-  only when the working lineup is not empty. (Implements RF-15's main-screen part.)
-- RF-19: THE SYSTEM SHALL show each row of the saved games list with its name, the final score and result ("Ganado
-  6–5", "Perdido 3–4", "Empate 2–2"; nothing when both totals are 0), a "Estadísticas" pill when its state has a
-  stats link, an "Abierto" pill on the linked game (RF-15's list part), and the save time as "29/10 · 7:32 p. m."
-  (no seconds).
-- RF-20: THE SYSTEM SHALL propose "<team> vs <opponent> · dd/mm/aaaa" as the name when saving a new game (today
-  the date is ISO).
-- RF-21: THE SYSTEM SHALL end RF-1 with the toast "Juego actualizado: «<name>»" and RF-2/RF-3 with "Juego guardado:
-  «<name>»", and clear the RF-18 marker.
+- RF-18: WHILE the working lineup has a linked game, THE SYSTEM SHALL show the game's name in the header: on desktop
+  in place of "Softball · Lineups", on phone as a second line under the brand; cut with an ellipsis when it does not
+  fit, with the full name as the element's title and accessible name. (Main-screen part of RF-15.)
+- RF-35: WHILE there are unsaved changes, THE SYSTEM SHALL put a "●" before the RF-18 name (never cut) with the
+  accessible text "cambios sin guardar"; with no linked game it SHALL show "● Juego sin guardar". WHILE the working
+  lineup is empty and has no linked game, the desktop SHALL show "Softball · Lineups" and the phone no second line.
+- RF-19: THE SYSTEM SHALL show each row of the saved games list with its name and its save time as
+  "dd/mm/aaaa · h:mm a. m./p. m." (no seconds, built by hand, not `toLocaleString`).
+- RF-36: THE SYSTEM SHALL show in each saved row the result from our side, our runs first: "Ganado 6–5", "Perdido
+  3–4" or "Empate 2–2", and nothing when both totals are 0.
+- RF-37: THE SYSTEM SHALL show an "Estadísticas" pill on a saved row whose state links to a live (not deleted) stats
+  record, and an "Abierto" pill on the linked game's row (list part of RF-15).
+- RF-38: WHEN the saved games list is empty, THE SYSTEM SHALL show "Todavía no hay juegos guardados. Usa «Guardar»."
+- RF-20: WHEN the system asks for the name of a new saved game (RF-2, RF-3), THE SYSTEM SHALL propose
+  "<team> vs <opponent> · dd/mm/aaaa" with the date of the state being saved (today's local date for RF-3), and
+  leave out " · date" when the date is empty.
+- RF-21: WHEN a game is saved, THE SYSTEM SHALL show the toast "Juego actualizado: «<name>»" (RF-1) or "Juego
+  guardado: «<name>»" (RF-2, RF-3).
+- RF-39: IF writing the saved games list fails in RF-1, RF-2 or RF-3, THEN THE SYSTEM SHALL show "No se pudo guardar
+  en este navegador", add no entry and leave the link and the RF-35 marker unchanged.
+- RF-40: THE SYSTEM SHALL word the saved-games texts as games: dialog title "Abrir juego"; "Borrar juego" /
+  "Juego borrado"; "Juego abierto" when one is opened; "Nuevo juego" for the "Nuevo" confirm title and toast.
 
 Header
-- RF-22: THE SYSTEM SHALL show on desktop, in this order: "Nuevo", "Guardar" (the accent/key style), "Guardar como
-  nuevo" (only while there is a linked game), "Abrir" (opens the saved games list, titled "Abrir juego"),
-  "Estadísticas", a "Compartir" menu (Copiar imagen, Térmica, Imprimir / PDF) and a "Más" menu (Roster, Respaldo,
-  Instalar when available, Cerrar sesión). No other header button keeps the key style.
-- RF-23: THE SYSTEM SHALL make "Guardar" the key button of the phone header, move "Compartir" into a header icon
-  button that opens the same share sheet, and keep the rest in the options sheet with the RF-22 labels.
-- RF-24: THE SYSTEM SHALL use the same label for the same action on phone and desktop: "Abrir" / "Abrir juego",
-  "Roster", "Respaldo", "Cerrar sesión".
+- RF-22: THE SYSTEM SHALL show on desktop, in this order: "Nuevo", "Guardar" (key style), "Guardar como nuevo" (only
+  while there is a linked game), "Abrir", "Estadísticas", "Compartir" and "Más"; no other header button keeps the
+  key style.
+- RF-41: WHEN the user taps "Compartir" or "Más" on desktop, THE SYSTEM SHALL open the same sheets the phone uses
+  (Compartir: Copiar imagen, Térmica, Imprimir / PDF; Más: Roster, Respaldo, Instalar while available, Cerrar sesión),
+  so no new dropdown component is built and an unavailable "Instalar" leaves no empty slot.
+- RF-23: THE SYSTEM SHALL make "Guardar" the key button of the phone header and "Compartir" an icon button with
+  `aria-label="Compartir"` that opens the share sheet; the options sheet SHALL hold, in order: Nuevo, Guardar como
+  nuevo (while linked), Abrir, Estadísticas, Roster, Respaldo, Instalar (while available), Cerrar sesión.
+- RF-24: THE SYSTEM SHALL use one label per action on phone and desktop: "Abrir", "Roster", "Respaldo", "Térmica",
+  "Cerrar sesión", "Más" (sheet title and accessible name).
 
 One meaning of "Guardar" in stats
 - RF-25: THE SYSTEM SHALL label the capture sheet's save button "Guardar estadísticas" and title the sheet
-  "<team> vs <opponent> · dd/mm" (today "Estadísticas · <opponent>").
+  "<team> vs <opponent> · dd/mm", following the sheet's own date field as it is edited.
 - RF-26: WHEN stats are saved, THE SYSTEM SHALL show "Estadísticas guardadas en «<name>»" if RF-6 updated a linked
   game, else "Estadísticas guardadas".
 
 Plate-appearance picker and field
 - RF-27: WHEN the result picker opens, THE SYSTEM SHALL show the result codes, "Anotó carrera" and the actions, with
-  CI, BR and Outs inside a collapsed "Más detalles" section; the section SHALL start open when the PA being edited
-  has CI, BR or outs different from the default, and open by itself when the user picks HR, SF or BO.
-- RF-28: THE SYSTEM SHALL draw a chip that holds its default value outlined (not filled) and keep the filled style
-  for the chosen result code and for values the user changed.
-- RF-29: THE SYSTEM SHALL render the field cards' position key, jersey and name at 10 px or more on a 360 px wide
-  phone.
-- RF-30: IF two players on the field would show the same short name (e.g. "K. Perez"), THEN THE SYSTEM SHALL show
-  both as first name + last-name initial ("Kevin P.", "Keven P."), and IF those still collide, the full name.
+  CI, BR and Outs inside a native `<details>` "Más detalles", closed unless the PA being edited has CI, BR or outs
+  different from the default.
+- RF-42: WHEN the user picks HR, SF or BO, THE SYSTEM SHALL open "Más detalles"; once open it SHALL stay open until
+  the picker closes, also across redraws and code changes.
+- RF-28: THE SYSTEM SHALL draw the chip holding the default value with a 2 px accent border, no fill and
+  `aria-pressed="true"` (distinct from unselected chips), and the filled style for the chosen result code and for
+  chips holding a value different from the default.
+- RF-29: THE SYSTEM SHALL render the field cards' badge, position key, jersey and name (`.slot-num`, `.slot-key`,
+  `.slot-jersey`, `.slot-name`) at 10 px or more on a 360 px wide phone, with SF, 4F and DH all on, with no two cards
+  overlapping, and a name of "Kevin P." length shown without ellipsis.
+- RF-30: IF two players on the field cards (BD included) get the same short name, THEN THE SYSTEM SHALL show each
+  as "<first word> <initial of the word the short name used>." ("Kevin P.", "Keven P."), and IF those are still
+  equal, the full name; the image and the thermal ticket SHALL use the same names. The rule is a pure function with
+  a Node test.
 
 Small fixes found by the critique
-- RF-31: WHEN the capture sheet opens, THE SYSTEM SHALL not put the focus in the date input (no keyboard pops on
-  phone).
-- RF-32: THE SYSTEM SHALL show the team names with "Visita" / "Casa" in the phone scoreboard.
-- RF-33: THE SYSTEM SHALL show under the capture grid a one-line legend: "• anotó carrera · número pequeño: orden
-  del turno · rojo: no cuadra con la pizarra · ⚠: outs del inning".
-- RF-34: WHEN the user taps "Importar" in Respaldo, THE SYSTEM SHALL ask to confirm ("Se reemplaza todo lo de esta
-  cuenta…") before replacing anything (constitution principle 5).
+- RF-31: WHEN the capture sheet opens, THE SYSTEM SHALL put the focus on the sheet's "Cerrar" button, not on the
+  date input.
+- RF-32: THE SYSTEM SHALL show each team's name before "Visita" / "Casa" in the final scoreboard ("MSO · Casa"), on
+  phone and desktop, cut with an ellipsis when long, and include it in the scoreboard's accessible labels.
+- RF-33: THE SYSTEM SHALL show under the capture grid a legend (it may wrap): "• anotó carrera · número pequeño: orden
+  del turno · rojo: no cuadra con el marcador · ⚠: outs del inning".
+- RF-34: WHEN the user taps "Importar" in Respaldo with a valid backup, THE SYSTEM SHALL ask to confirm "Se
+  reemplazan el roster, la alineación en pantalla y los juegos guardados; las estadísticas se suman. ¿Importar?"
+  before changing anything; an invalid text SHALL show "Ese texto no es un respaldo válido" without asking.
 
 ## Non-functional requirements
 - Constitution applies: vanilla JS in `index.html` style; the "compared fields", "empty", "unsaved changes" and
-  cap/merge logic are pure functions in `stats.js` (or a pure file listed in `sw.js`) with Node tests; no new
-  dependency; `sw.js` `VERSION` bumped.
+  cap/merge logic, the RF-36 result, the RF-19/RF-20 date formats and the RF-30 name rule are pure functions in
+  `stats.js` (or a pure file listed in `sw.js`) with Node tests; no new dependency; `sw.js` `VERSION` bumped.
 - User-facing text in Latin American Spanish.
 
 ## Edge cases
@@ -151,7 +175,7 @@ Small fixes found by the critique
   (the working lineup is shared live; only the start is empty).
 - A device still on the old version cuts the list to 60 when it saves; it updates on its next launch. Only matters
   past 60 games.
-- Backup import ("Importar") keeps today's behavior (replaces everything without RF-5); RF-17 does not apply to it.
+- Backup import ("Importar") is not covered by RF-5 (it has its own confirm, RF-34); RF-17 does not apply to it.
 - A saved game whose players left the permanent roster opens as today.
 
 ## Out of scope
@@ -171,13 +195,20 @@ Small fixes found by the critique
 - Orchestrator (confirm at G1): "Empty" ignores the players of the game, so a lineup with only attendance chosen is
   not offered for recovery; "Guardar como nuevo" is a header button (RF-22); the field card's big badge keeps the
   position number (the critique suggested the jersey; not chosen); "lo menor" was read as RF-31–RF-34 only.
+  Kevin approved at G1 with these.
+- Orchestrator, after the second clarifier pass (Kevin said "de una"; he can overturn any of these): the name rule
+  (RF-30) also applies to the image and the thermal ticket; "Guardar como nuevo" proposes today's date; saved rows
+  show the year; team names go on the scoreboard on phone and desktop ("MSO · Casa"); a long game name in the phone
+  header is cut with "…" (the "●" stays visible). Desktop "Compartir"/"Más" reuse the phone sheets instead of a
+  new dropdown. New RF numbers (RF-35–RF-42) come from splitting RF-18/19/22/27 and from missing states; no RF was
+  renumbered.
 
 ## Done criteria
 - Every RF has a green test where it is logic, and the main flow is demoed in the browser: build a lineup, save,
   reload (empty + recover offer), open the game, change a player, save (one entry), save stats (entry updated),
   "Guardar como nuevo" (two entries, old one and its stats intact), conflict prompt with two tabs.
-- Design RFs checked by hand at 375 px and 1440 px; `impeccable detect` shows no slot-jersey/slot-key under 10 px;
-  a re-run of the impeccable critique scores heuristics 1, 4, 5 and 6 at 3 or more.
+- Design RFs checked by hand at 360, 375, 800 and 1440 px; at 360 px `impeccable detect` shows no field-card text
+  under 10 px; a re-run of the impeccable critique scores heuristics 1, 4, 5 and 6 at 3 or more.
 - `node --test 'tests/*.test.js'` green.
 
 ## Open questions
