@@ -1474,6 +1474,10 @@ function blankState(){
 
 var S = lsGet(K_CUR, null);
 var TEAM = lsGet(K_TEAM, null);
+/* RF-8: la app abre con una alineación vacía (fresh) y no la escribe hasta el
+   primer cambio; stored es la última alineación de trabajo, que sigue en K_CUR. */
+var fresh = false, freshState = null, stored = null;
+function freshLineup(){ var st = blankState(); st.date = todayLocal(); return st; }
 
 /* Normaliza el roster permanente: cada jugador debe tener un ID único.
    Esto evita que una selección de asistencia afecte a varios jugadores. */
@@ -1750,7 +1754,16 @@ function inlineEdit(li, cur, onSave, onCancel){
   inName.focus(); inName.select();
 }
 
-function save(){ lsSet(K_CUR, S); }
+/* Mientras la alineación vacía del arranque no cambie (ni se ligue a un juego), no se escribe: K_CUR y la nube conservan la anterior. */
+function save(){
+  if(fresh){
+    if(!S.gameId && !Stats.differs(S, freshState)) return true;
+    touched();
+  }
+  return lsSet(K_CUR, S);
+}
+/* primer cambio sobre la alineación vacía */
+function touched(){ fresh = false; }
 function saveTeam(){ lsSet(K_TEAM, TEAM); }
 
 var toastT;
@@ -2950,7 +2963,7 @@ function saveCapture(){
     // RF-7: devuelve estadísticas y alineación a lo anterior; curWritten: K_CUR ya se escribió y hay que reescribirlo
     var rollback = function(curWritten){
       S.date = old.date; S.innings = old.innings; S.us = old.us; S.them = old.them; S.statsId = old.statsId; S.gameAt = old.gameAt;
-      if(curWritten && !lsSet(K_CUR, S)) curDirty = true; // no se pudo restaurar: la marca debe quedarse
+      if(curWritten && !save()) curDirty = true; // no se pudo restaurar: la marca debe quedarse
       if(!curDirty) setDirty("current", false);
       if(!lsSet(K_STATS, prev)) wasDirty = true;
       if(!wasDirty) setDirty("stats", false); // lo restaurado es lo ya sincronizado: que no frene el cierre de sesión
@@ -2959,7 +2972,7 @@ function saveCapture(){
     S.date = rec.game.date; S.innings = rec.game.innings;
     S.us = rec.game.us.slice(); S.them = rec.game.them.slice(); S.statsId = rec.id;
     if(g) S.gameAt = at;
-    if(!lsSet(K_CUR, S)){ rollback(false); return; }
+    if(!save()){ rollback(false); return; }
     if(g){ // RF-6: el juego ligado recibe la alineación de trabajo completa (RF-1)
       var game = {id:g.id, name:g.name, at:at, state:JSON.parse(JSON.stringify(S))};
       game.state.gameId = g.id; game.state.gameAt = at;
@@ -3292,7 +3305,7 @@ $("statsClose").addEventListener("click", function(){ statsDetail = null; $("sta
 
 /* ============ respaldo ============ */
 $("btnBackup").addEventListener("click", function(){
-  $("backupText").value = JSON.stringify({current:S, team:TEAM, saved:lsGet(K_SAVED, []), stats:lsGet(K_STATS, [])});
+  $("backupText").value = JSON.stringify({current:(fresh && stored) ? stored : S, team:TEAM, saved:lsGet(K_SAVED, []), stats:lsGet(K_STATS, [])});
   $("backup").showModal();
 });
 $("backupClose").addEventListener("click", function(){ $("backup").close(); });
@@ -3820,6 +3833,11 @@ document.querySelectorAll("dialog").forEach(function(d){
   d.addEventListener("click", function(ev){ if(ev.target === d){ if(d.id === "capture") tryCloseCapture(); else if(d.id === "ask" && askLocked) return; else d.close(); } });
 });
 
+// RF-8: S ya normalizada es la última alineación (stored); se abre una vacía sin escribirla
+stored = S;
+S = freshLineup();
+freshState = JSON.parse(JSON.stringify(S));
+fresh = true;
 renderAll();
 booted = true;
 
@@ -3827,7 +3845,12 @@ booted = true;
 function applyRemote(name, json){
   synced[name] = json;
   delete pending[name];
-  if(name === "current"){
+  if(name === "current" && fresh){
+    /* RF-8: con la alineación vacía del arranque, lo que llega reemplaza a stored, no a S */
+    localStorage.setItem(K_CUR, json);
+    stored = normalizeState(JSON.parse(json));
+    if(typeof renderOffer === "function") renderOffer();
+  }else if(name === "current"){
     localStorage.setItem(K_CUR, json);
     S = JSON.parse(json);
     S = ensureState(S);

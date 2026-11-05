@@ -55,7 +55,7 @@ left running. Everything is sequential: all logic is in `stats.js` and all UI in
       Done when: in the browser: saving stats of the open game updates its saved entry (`at`, scoreboard,
       `statsId`); a forced `K_SAVED` write failure restores stats and lineup and keeps the sheet open; focus lands on
       Cerrar; the legend shows under the grid.
-- [ ] T9. Start empty: `fresh`/`stored`, `save()` guard, `applyRemote("current")` branch; fresh lineup per plan R2.
+- [x] T9. Start empty: `fresh`/`stored`, `save()` guard, `applyRemote("current")` branch; fresh lineup per plan R2.
       (RF-8) Deps: T5
       Files: `index.html`
       Done when: reload ⇒ empty lineup (team name empty, no game players, permanent roster intact), and `K_CUR` in
