@@ -2557,7 +2557,10 @@ function renderCapture(){
   });
   t.appendChild(tbody);
   var tfoot = el("tfoot");
-  [["us", g.team || "Nosotros"], ["them", g.opp || "Ellos"]].forEach(function(r){
+  // visitante arriba, home club abajo (igual que el marcador de la alineación)
+  var sides = [["us", g.team || "Nosotros"], ["them", g.opp || "Ellos"]];
+  if(g.home === "us") sides.reverse();
+  sides.forEach(function(r){
     var key = r[0], tr = el("tr"), th = el("th");
     th.appendChild(el("span", "nm", r[1]));
     th.scope = "row";
