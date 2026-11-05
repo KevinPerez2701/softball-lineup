@@ -151,19 +151,24 @@ input,textarea{caret-color:var(--accent-text)}
   padding:9px max(18px,env(safe-area-inset-right)) 9px max(18px,env(safe-area-inset-left));
   display:flex;align-items:center;gap:14px;flex-wrap:wrap;
 }
-.brand{display:flex;align-items:baseline;gap:9px;margin-right:auto}
+/* base de 280 px: con un nombre largo la marca recorta con … antes de mandar los botones a otra fila */
+.brand{display:flex;align-items:baseline;gap:9px;margin-right:auto;flex:1 1 280px;min-width:0}
 .brand b{
   font-family:var(--cond);font-weight:700;font-size:24px;letter-spacing:.02em;
-  text-transform:uppercase;line-height:1;
+  text-transform:uppercase;line-height:1;flex:none;
 }
-.brand span{
+.brand-sub{
+  display:flex;gap:5px;min-width:0;
   font-family:var(--cond);font-weight:600;font-size:12px;letter-spacing:.14em;
   text-transform:uppercase;color:var(--accent);
 }
+/* el punto de cambios sin guardar nunca se recorta; el nombre sí */
+.brand-sub .unsaved{flex:none}
+.brand-sub .gname{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .tools{display:flex;gap:7px;flex-wrap:wrap;align-items:center}
 .tgroup{display:flex;gap:7px;flex-wrap:wrap}
 .tgroup + .tgroup{padding-left:14px;border-left:1px solid rgba(255,255,255,.18)}
-.mtools,.tabbar{display:none}
+.offstage,.tabbar{display:none}
 
 /* ---------- buttons ---------- */
 .btn{
@@ -658,14 +663,18 @@ body.locked .gate{
      de compartir viven en dos menús de la cabecera. */
   .wrap{padding:0 10px calc(84px + env(safe-area-inset-bottom))}
   .topbar-in{padding:8px max(12px,env(safe-area-inset-right)) 8px max(12px,env(safe-area-inset-left));gap:8px;flex-wrap:nowrap}
-  .brand{margin-right:auto;flex:0 1 auto;min-width:0}
+  /* marca arriba y, si hay juego ligado o cambios, su nombre como segunda línea */
+  .brand{margin-right:auto;flex:0 1 auto;min-width:0;flex-direction:column;align-items:flex-start;gap:2px}
   .brand b{font-size:21px}
-  .brand span{display:none}
-  .tools{display:none}
-  .mtools{display:flex;gap:8px;align-items:center}
-  .mtools .btn{min-height:38px}
-  .mtools .btn-key{padding:6px 12px;font-size:14px}
-  .mtools .btn-icon{min-width:40px}
+  .brand-sub{max-width:100%;font-size:11px;letter-spacing:.1em}
+  .brand-sub.is-default{display:none}
+  /* en el teléfono la barra deja Guardar, Compartir y Más; lo demás va en la hoja Más */
+  .tools,.tgroup{flex:none;flex-wrap:nowrap;gap:8px}
+  .tgroup + .tgroup{padding-left:0;border-left:0}
+  #btnNew,#btnSaveNew,#btnLoad,#btnStats{display:none}
+  .tools .btn{min-height:38px}
+  .tools .btn-key{padding:6px 12px;font-size:14px}
+  #btnShareMenu,#btnMoreMenu{min-width:40px;justify-content:center}
 
   .work{margin-top:12px !important}
   .innings{margin-top:0}
@@ -778,8 +787,8 @@ body.locked .gate{
   .row.lineup-row .btn-remove-order,.row.lineup-row .btn-add-order,.row.lineup-row .row-edit{display:none}
   .row-more{display:inline-flex}
   html{scroll-padding-top:72px;scroll-padding-bottom:calc(96px + env(safe-area-inset-bottom))}
-  .mtools .btn{min-height:44px}
-  .mtools .btn-icon{min-width:44px}
+  .tools .btn{min-height:44px}
+  #btnShareMenu,#btnMoreMenu{min-width:44px}
   .posbadge{padding:2px 6px}
 }
 /* solo en pantalla: al imprimir desde el teléfono sale la hoja completa */
@@ -923,29 +932,31 @@ body.locked .gate{
   <div class="topbar-in">
     <div class="brand">
       <b>Diamante 10</b>
-      <span>Softball · Lineups</span>
+      <span class="brand-sub" id="hdrGame">Softball · Lineups</span>
     </div>
     <div class="tools">
-      <div class="tgroup" role="group" aria-label="Alineación">
+      <div class="tgroup" role="group" aria-label="Juego">
         <button class="btn btn-ghost btn-sm" id="btnNew" type="button">Nuevo</button>
-        <button class="btn btn-ghost btn-sm" id="btnSave" type="button">Guardar</button>
+        <button class="btn btn-key btn-sm" id="btnSave" type="button">Guardar</button>
         <button class="btn btn-ghost btn-sm" id="btnSaveNew" type="button" hidden>Guardar como nuevo</button>
-        <button class="btn btn-ghost btn-sm" id="btnLoad" type="button">Guardados</button>
-        <button class="btn btn-ghost btn-sm" id="btnBackup" type="button">Respaldo</button>
+        <button class="btn btn-ghost btn-sm" id="btnLoad" type="button">Abrir</button>
         <button class="btn btn-ghost btn-sm" id="btnStats" type="button">Estadísticas</button>
-        <button class="btn btn-ghost btn-sm" id="btnTeamRoster" type="button">Roster</button>
-        <button class="btn btn-ghost btn-sm" id="btnLogout" type="button">Salir</button>
       </div>
-      <div class="tgroup" role="group" aria-label="Compartir">
-        <button class="btn btn-ghost btn-sm" id="btnInstall" type="button" title="Instalar Diamante 10 como app en este dispositivo" hidden>Instalar</button>
-        <button class="btn btn-ghost btn-sm" id="btnCopyImg" type="button">Copiar imagen</button>
-        <button class="btn btn-ghost btn-sm" id="btnTicket" type="button" title="Generar la imagen para el rollo térmico de 55 mm">Térmica</button>
-        <button class="btn btn-key btn-sm" id="btnPrint" type="button">Imprimir / PDF</button>
+      <div class="tgroup">
+        <button class="btn btn-ghost btn-sm" id="btnShareMenu" type="button" aria-haspopup="dialog" aria-label="Compartir"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 15V3M7.5 7.5L12 3l4.5 4.5"/><path d="M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-7"/></svg><span class="t-opt">Compartir</span></button>
+        <button class="btn btn-ghost btn-sm" id="btnMoreMenu" type="button" aria-haspopup="dialog" aria-label="Más"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg><span class="t-opt">Más</span></button>
       </div>
     </div>
-    <div class="mtools">
-      <button class="btn btn-key btn-sm" id="btnShareMenu" type="button" aria-haspopup="dialog"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 15V3M7.5 7.5L12 3l4.5 4.5"/><path d="M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-7"/></svg>Compartir</button>
-      <button class="btn btn-ghost btn-sm btn-icon" id="btnMoreMenu" type="button" aria-haspopup="dialog" aria-label="Más opciones" title="Más opciones"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button>
+    <!-- Acciones sin botón propio en la barra: las hojas Compartir y Más les reenvían el toque.
+         Se ocultan con CSS, nunca con el atributo hidden (openSheet lo usa para saber si están disponibles). -->
+    <div class="offstage">
+      <button class="btn btn-ghost btn-sm" id="btnInstall" type="button" title="Instalar Diamante 10 como app en este dispositivo" hidden>Instalar</button>
+      <button class="btn btn-ghost btn-sm" id="btnCopyImg" type="button">Copiar imagen</button>
+      <button class="btn btn-ghost btn-sm" id="btnTicket" type="button" title="Generar la imagen para el rollo térmico de 55 mm">Térmica</button>
+      <button class="btn btn-ghost btn-sm" id="btnPrint" type="button">Imprimir / PDF</button>
+      <button class="btn btn-ghost btn-sm" id="btnTeamRoster" type="button">Roster</button>
+      <button class="btn btn-ghost btn-sm" id="btnBackup" type="button">Respaldo</button>
+      <button class="btn btn-ghost btn-sm" id="btnLogout" type="button">Cerrar sesión</button>
     </div>
   </div>
 </header>
@@ -1211,7 +1222,7 @@ body.locked .gate{
 
 <dialog id="sheet" class="sheet">
   <div class="dlg-head">
-    <h3 id="sheetTitle">Opciones</h3>
+    <h3 id="sheetTitle">Más</h3>
     <span style="margin-left:auto"></span>
     <button class="btn btn-sm" id="sheetClose" type="button">Cerrar</button>
   </div>
@@ -1629,6 +1640,25 @@ function hasUnsaved(){
   var g = linkedGame();
   return Stats.unsaved(S, g ? normalizeState(g.state) : null, blankState());
 }
+/* RF-18/35: nombre del juego abierto en la cabecera, con ● si hay cambios sin guardar.
+   Sin juego ligado y sin cambios: "Softball · Lineups" en escritorio, nada en el teléfono. */
+function renderHeader(){
+  var g = linkedGame(); // una sola lectura de K_SAVED
+  var dirty = Stats.unsaved(S, g ? normalizeState(g.state) : null, blankState());
+  var box = $("hdrGame"), text = g ? g.name : dirty ? "Juego sin guardar" : "Softball · Lineups";
+  box.innerHTML = "";
+  box.classList.toggle("is-default", !g && !dirty);
+  if(dirty){
+    var dot = el("span", "unsaved", "●");
+    dot.setAttribute("role", "img");
+    dot.setAttribute("aria-label", "cambios sin guardar");
+    box.appendChild(dot);
+  }
+  var name = el("span", "gname", text);
+  name.title = text;
+  box.appendChild(name);
+  $("btnSaveNew").hidden = !g;
+}
 
 function player(id){
   for(var i=0;i<S.roster.length;i++) if(S.roster[i].id === id) return S.roster[i];
@@ -1764,6 +1794,7 @@ function inlineEdit(li, cur, onSave, onCancel){
 
 /* Mientras la alineación vacía del arranque no cambie (ni se ligue a un juego), no se escribe: K_CUR y la nube conservan la anterior. */
 function save(){
+  renderHeader(); // todo cambio pasa por aquí: el ● aparece con el primero
   if(fresh){
     if(!S.gameId && !Stats.differs(S, freshState)) return true;
     if(!touched()) return true; // se espera la respuesta de RF-10; todavía no hay nada que escribir
@@ -3006,6 +3037,7 @@ function saveCapture(){
       if(!curDirty) setDirty("current", false);
       if(!lsSet(K_STATS, prev)) wasDirty = true;
       if(!wasDirty) setDirty("stats", false); // lo restaurado es lo ya sincronizado: que no frene el cierre de sesión
+      renderHeader();
       toast("No se pudo guardar en este navegador");
     };
     S.date = rec.game.date; S.innings = rec.game.innings;
@@ -3785,8 +3817,7 @@ function renderAll(){
   $("toggle4F").parentElement.classList.toggle("off", S.enabled4F !== true);
   $("toggleDH").checked = S.enabledDH === true;
   $("toggleDH").parentElement.classList.toggle("off", S.enabledDH !== true);
-  $("btnSaveNew").hidden = !linkedGame();
-  save();
+  save(); // también pinta la cabecera
 }
 /* ============ teléfono: pestañas y menús ============ */
 var K_TAB = "diamante10.tab.v1";
@@ -3812,22 +3843,22 @@ document.querySelectorAll(".tab").forEach(function(b){
   setTab(/^(juego|campo|orden)$/.test(t) ? t : "campo");
 })();
 
-/* Los menús solo reenvían el toque al botón de escritorio correspondiente:
-   una sola implementación por acción. */
+/* Las hojas solo reenvían el toque al botón correspondiente (en la barra o
+   en el grupo .offstage): una sola implementación por acción. */
 var SHEETS = {
   share: {title:"Compartir", items:[
     ["btnCopyImg", "image", "Copiar imagen", "Diamante y orden al bate, para WhatsApp"],
-    ["btnTicket", "receipt", "Imagen para térmica", "Rollo de 55 mm, en blanco y negro"],
+    ["btnTicket", "receipt", "Térmica", "Rollo de 55 mm, en blanco y negro"],
     ["btnPrint", "printer", "Imprimir / PDF", "Hoja carta para el anotador", true]
   ]},
-  more: {title:"Opciones", items:[
-    ["btnInstall", "download", "Instalar la app", "Ábrela desde tu pantalla de inicio, sin señal", true],
-    ["btnTeamRoster", "users", "Roster del equipo", "Jugadores y asistencia al partido"],
-    ["btnNew", "file", "Alineación nueva", "Limpia campo, orden y marcador"],
-    ["btnSave", "save", "Guardar alineación", "Para reabrirla después"],
-    ["btnLoad", "folder", "Alineaciones guardadas", "Abrir o borrar"],
-    ["btnBackup", "shield", "Respaldo", "Exportar o importar tus datos como texto"],
+  more: {title:"Más", items:[
+    ["btnNew", "file", "Nuevo", "Limpia campo, orden y marcador"],
+    ["btnSaveNew", "save", "Guardar como nuevo", "Copia de este juego con la fecha de hoy"],
+    ["btnLoad", "folder", "Abrir", "Abrir o borrar juegos guardados"],
     ["btnStats", "chart", "Estadísticas", "Jugadores y juegos"],
+    ["btnTeamRoster", "users", "Roster", "Jugadores y asistencia al partido"],
+    ["btnBackup", "shield", "Respaldo", "Exportar o importar tus datos como texto"],
+    ["btnInstall", "download", "Instalar", "Ábrela desde tu pantalla de inicio, sin señal", true],
     "sep",
     ["btnLogout", "logout", "Cerrar sesión", cloud.email, false, true]
   ]}
@@ -3856,7 +3887,10 @@ function openActions(title, items){
 function openSheet(key){
   var cfg = SHEETS[key];
   openActions(cfg.title, cfg.items.filter(function(it){
-    return it === "sep" || !$(it[0]).hidden;
+    if(it === "sep") return true;
+    var b = $(it[0]);
+    // fuera: lo no disponible (hidden) y lo que ya se ve en la barra en este diseño (RF-23/41)
+    return !b.hidden && (b.closest(".offstage") || getComputedStyle(b).display === "none");
   }).map(function(it){
     if(it === "sep") return it;
     return {icon:it[1], label:it[2], sub:it[3], key:it[4], danger:it[5],
@@ -3907,6 +3941,7 @@ function applyRemote(name, json){
   }else{
     localStorage.setItem(KEY_OF[name], json);
     if(name === "saved" && fresh) renderOffer(); // la guardada pudo quedar al día en otro dispositivo
+    if(name === "saved") renderHeader(); // el juego abierto pudo cambiar de nombre, de versión o borrarse
     if(name === "stats" && $("statsView").open) openStats(statsViewName);
   }
 }

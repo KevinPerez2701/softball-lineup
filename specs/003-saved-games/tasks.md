@@ -65,13 +65,13 @@ left running. Everything is sequential: all logic is in `stats.js` and all UI in
       Done when: after reload with unsaved work the offer shows its name and date; Recuperar restores it with its
       link; Descartar asks then drops; changing the empty lineup while offered asks Descartar/Recuperar and Esc
       does not close that dialog; a second tab writing `current` updates the offer.
-- [ ] T11. `renderHeader()`: game name, ●, "Juego sin guardar", ellipsis, phone second line. (RF-15, RF-18, RF-35)
+- [x] T11. `renderHeader()`: game name, ●, "Juego sin guardar", ellipsis, phone second line. (RF-15, RF-18, RF-35)
       Deps: T6, T9
       Files: `index.html`
       Done when: in the browser at 360 and 1440 px: the name shows with ellipsis and full title; ● appears on the
       first change and disappears on Guardar; empty + unlinked shows "Softball · Lineups" on desktop and nothing on
       phone.
-- [ ] T12. Header restructure: one `.tools`, offstage action group, `SHEETS.more`/`share` used as desktop menus,
+- [x] T12. Header restructure: one `.tools`, offstage action group, `SHEETS.more`/`share` used as desktop menus,
       labels, key style on Guardar. (RF-22, RF-23, RF-24, RF-41) Deps: T6, T11
       Files: `index.html`
       Done when: at 1440 px the header shows exactly Nuevo · Guardar · (Guardar como nuevo) · Abrir · Estadísticas ·
