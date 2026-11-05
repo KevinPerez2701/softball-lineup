@@ -3292,7 +3292,7 @@ function renderStatsGames(body){
     info.style.minWidth = "0";
     var t = el("div", null, (x.date || "").split("-").reverse().join("/") + " · vs " + (x.opp || "rival"));
     t.style.fontWeight = "600";
-    var d = el("div", "where", x.us + "–" + x.them + " · " + {W:"G", L:"P", T:"E"}[x.result]);
+    var d = el("div", "where", x.text);
     info.appendChild(t); info.appendChild(d);
     var acts = el("span", "rowacts");
     var bo = el("button", "btn btn-sm", "Abrir");
@@ -3314,7 +3314,7 @@ function renderStatsGames(body){
         var ok = lsSet(K_STATS, Stats.merge(all, [{id: x.id, deletedAt: at}]));
         if(!ok) toast("No se pudo guardar en este navegador");
         else openStats("games");
-      });
+      }, true);
     });
     acts.appendChild(bo); acts.appendChild(bd);
     it.appendChild(info); it.appendChild(el("span")); it.appendChild(acts);
@@ -3331,6 +3331,7 @@ function renderStatsPlayers(body, entries){
   [["name", "Jugador"]].concat(STAT_COLS).forEach(function(c){
     var th = el("th", null);
     th.scope = "col";
+    if(Stats.COL_TITLES[c[1]]) th.title = Stats.COL_TITLES[c[1]];
     var b = el("button", null, c[1]);
     b.type = "button";
     if(statsSort.key === c[0]){
@@ -3362,6 +3363,10 @@ function renderStatsPlayers(body, entries){
   STAT_COLS.forEach(function(c){ tr.appendChild(statCell("td", players.team, c)); });
   tf.appendChild(tr); tb.appendChild(tf);
   wrap.appendChild(tb); body.appendChild(wrap);
+  var key = el("details", "hint");
+  key.appendChild(el("summary", null, "Qué significa cada columna"));
+  STAT_COLS.forEach(function(c){ key.appendChild(el("p", null, c[1] + ": " + Stats.COL_TITLES[c[1]])); });
+  body.appendChild(key);
 }
 /* Detalle de un jugador (RF-22); false si ya no tiene líneas (borrado remoto) */
 function renderPlayerDetail(body, entries, pid){
