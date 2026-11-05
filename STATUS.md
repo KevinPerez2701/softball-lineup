@@ -3,10 +3,10 @@
 Single source of truth for what is in flight and what is left. Update it in the same commit as the
 work it describes. Dates come from `date`, never from memory.
 
-Last updated: 2026-11-05 12:42 UTC-4 by Claude
+Last updated: 2026-11-05 14:20 UTC-4 by Claude
 
 ## Now (one line)
-Idle — spec 003 done and pushed (G3 by Kevin 2026-11-05). Known gap: impeccable critique re-run not completed (Kevin closed before it finished).
+Idle — spec 003 done and pushed. Impeccable critique re-run: 27/40 (was 25); heuristics 1 and 6 reached 3, 4 and 5 still 2 → candidate spec 004 (Kevin to choose).
 
 ## Active specs
 | Spec | Phase | Current task | Next task | Blocked by |
@@ -21,7 +21,7 @@ Phases: constitution · spec · clarify · plan · tasks · implement · validat
 - (none)
 
 ## Known gaps (not blocking)
-- Spec 003: the impeccable critique re-run (Done criteria: heuristics 1, 4, 5, 6 ≥ 3) was stopped when Kevin closed the spec; run `/impeccable critique` later to confirm.
+- Spec 003 Done criteria: critique re-run 2026-11-05 scored heuristics 1=3, 4=2, 5=2, 6=3 (27/40). Open P1s: destructive confirms styled and focused as primary; HR saved without run/RBI and 0–0 counted as a tie. Snapshot in .impeccable/critique/ (git-excluded).
 
 ## Recently done (keep last 10)
 - 2026-11-05 · 003 · Browser checks closed: RF-39 (Guardar with the saved-list write failing: error toast, list and link unchanged) ✔, RF-7 (stats save with the saved-list write failing: stats, lineup and list unchanged, sheet stays open, error toast) ✔, 375 px (no horizontal scroll, header Guardar/Compartir/Más, 10 cards ≥ 10 px without overlaps, "Call · Visita"/"MSO · Casa") ✔
