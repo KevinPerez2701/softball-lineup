@@ -3,10 +3,10 @@
 Single source of truth for what is in flight and what is left. Update it in the same commit as the
 work it describes. Dates come from `date`, never from memory.
 
-Last updated: 2026-11-05 14:34 UTC-4 by Claude
+Last updated: 2026-11-05 14:37 UTC-4 by Claude
 
 ## Now (one line)
-Spec 004 clarified (18 RFs), awaiting G1; planner started in parallel.
+Spec 004: G1 approved, G2 pre-approved by Kevin (2026-11-05 14:37, "implementa de una"); plan in progress (fable).
 
 ## Active specs
 | Spec | Phase | Current task | Next task | Blocked by |
@@ -14,7 +14,7 @@ Spec 004 clarified (18 RFs), awaiting G1; planner started in parallel.
 | 001-game-stats | done | — | — | — |
 | 002-inning-capture | done | — | — | — |
 | 003-saved-games | done | — | — | — |
-| 004-critique-fixes | clarify | — | G1 → plan (in progress) | Kevin G1 |
+| 004-critique-fixes | plan | — | plan → tasks → parallel T1.. | — |
 
 Phases: constitution · spec · clarify · plan · tasks · implement · validate · done
 
