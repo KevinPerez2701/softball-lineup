@@ -60,7 +60,7 @@ left running. Everything is sequential: all logic is in `stats.js` and all UI in
       Files: `index.html`
       Done when: reload ⇒ empty lineup (team name empty, no game players, permanent roster intact), and `K_CUR` in
       localStorage is byte-identical until the first change; the first change writes it.
-- [ ] T10. `#recover` offer + RF-10 prompt (not dismissable, plan R1). (RF-9, RF-10) Deps: T9
+- [x] T10. `#recover` offer + RF-10 prompt (not dismissable, plan R1). (RF-9, RF-10) Deps: T9
       Files: `index.html`
       Done when: after reload with unsaved work the offer shows its name and date; Recuperar restores it with its
       link; Descartar asks then drops; changing the empty lineup while offered asks Descartar/Recuperar and Esc

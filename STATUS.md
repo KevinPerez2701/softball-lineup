@@ -3,17 +3,17 @@
 Single source of truth for what is in flight and what is left. Update it in the same commit as the
 work it describes. Dates come from `date`, never from memory.
 
-Last updated: 2026-11-05 11:41 UTC-4 by Claude
+Last updated: 2026-11-05 11:48 UTC-4 by Claude
 
 ## Now (one line)
-Spec 003 — T10 next (Recuperar lo último offer + RF-10 prompt). DO NOT PUSH until T10 is in (T9 alone can drop the stored lineup on the first change). G1 approved, G2 pre-approved by Kevin 2026-11-05. Pushed through 7290a62.
+Spec 003 — T11 next (header: game name, ●, phone second line). Not pushed since 7290a62: push after the T16 demo. G1 approved, G2 pre-approved by Kevin 2026-11-05.
 
 ## Active specs
 | Spec | Phase | Current task | Next task | Blocked by |
 |---|---|---|---|---|
 | 001-game-stats | done | — | — | — |
 | 002-inning-capture | done | — | — | — |
-| 003-saved-games | implement | T10 | T11 | — |
+| 003-saved-games | implement | T11 | T12 | — |
 
 Phases: constitution · spec · clarify · plan · tasks · implement · validate · done
 
@@ -24,6 +24,7 @@ Phases: constitution · spec · clarify · plan · tasks · implement · validat
 - (none)
 
 ## Recently done (keep last 10)
+- 2026-11-05 · 003 · T10 done — Recuperar lo último offer + locked RF-10 question; review BLOCK (focus landed on Descartar: a stray space would drop the stored lineup) fixed by the orchestrator with the reviewer's one-line fix (focus on Recuperar) + offer refresh when saved arrives while fresh
 - 2026-11-05 · 003 · T9 done — app starts empty (fresh/stored), nothing written until the first change, remote current while fresh only updates stored; reviewer APPROVE; orchestrator: backup export uses the stored lineup while fresh
 - 2026-11-05 · 003 · T8 done — stats save also updates the open game (K_STATS → K_CUR → K_SAVED, full rollback on failure), "Guardar estadísticas", title "<team> vs <opp> · dd/mm", focus on Cerrar, legend; reviewer APPROVE (rare double-failure pending-put note accepted, same as HEAD)
 - 2026-11-05 · 003 · T7 done — Abrir juego list (time, result, Estadísticas/Abierto pills, empty text), open + Nuevo guards, delete of the open game, game wording; reviewer APPROVE; orchestrator: failed delete write now toasts instead of claiming success
@@ -33,7 +34,6 @@ Phases: constitution · spec · clarify · plan · tasks · implement · validat
 - 2026-11-05 · 003 · T1–T3 done — saved-games pure logic in stats.js (11 functions), 24 tests, 101/101 green; reviewer APPROVE (dead POS line and sameInts→diffInts fixed by the orchestrator)
 - 2026-11-05 · 003 · plan.md (fable planner + orchestrator review R1–R4) and tasks.md (T1–T16)
 - 2026-11-05 · 003 · G1 approved by Kevin; clarifier pass 2 on the design RFs (7 blocking, 13 minor) resolved: 42 RFs
-- 2026-11-05 · 003 · Impeccable critique (dual-agent): 25/40, 3 P1 + 2 P2; Kevin chose all four design groups → RF-18–34 added to spec 003
 - 2026-10-23 · 002 · T8 desktop demo in prod: steps 1–21 ✔. Found and fixed (quick fix): first load after a deploy paired the new index.html with the cached old stats.js (sheet crashed, "Stats.cellLines is not a function"); sw.js now fetches stats.js network-first like the page
 
 ## Backlog (ideas not yet specified)
