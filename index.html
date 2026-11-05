@@ -1596,17 +1596,16 @@ function player(id){
   for(var i=0;i<S.roster.length;i++) if(S.roster[i].id === id) return S.roster[i];
   return null;
 }
-/* Nombre para el recuadro del campo: siempre inicial + apellido cuando hay
-   más de una palabra, para que todas las posiciones se lean igual y quepan. */
-function shortName(n){
-  n = (n || "").trim();
-  if(!n) return "";
-  var parts = n.split(/\s+/);
-  if(parts.length === 1) return n;
-  var ini = parts[0].charAt(0).toUpperCase() + ". ";
-  var rest = parts.slice(1).join(" ");
-  if((ini + rest).length <= 13) return ini + rest;
-  return ini + (parts.length >= 4 ? parts[2] : parts[1]);
+/* Nombres para los recuadros (campo, imagen y ticket): {idJugador: nombre}
+   de los jugadores en el campo, con la regla de Stats.shortNames. */
+function cardNames(){
+  var ids = [];
+  POS_ORDER.forEach(function(k){ if(S.assign[k] && ids.indexOf(S.assign[k]) < 0) ids.push(S.assign[k]); });
+  if(S.dh && ids.indexOf(S.dh) < 0) ids.push(S.dh); // la imagen y el ticket muestran el BD aunque esté apagado
+  var names = ids.map(function(id){ var p = player(id); return p ? p.name : ""; });
+  var short = Stats.shortNames(names), map = {};
+  ids.forEach(function(id, i){ map[id] = short[i]; });
+  return map;
 }
 function posOf(id){
   if(S.dh === id && S.enabledDH) return "DH";
@@ -1765,11 +1764,12 @@ function renderField(){
     stage.appendChild(dhb);
   }
   dhb.style.display = (S.enabledDH || S.dh) ? "" : "none";
+  var cn = cardNames();
   var dhpl = S.enabledDH ? player(S.dh) : null;
   if(dhpl){
     dhb.className = "slot dh-slot filled";
     dhb.querySelector(".slot-key").textContent = "BD";
-    dhb.querySelector(".slot-name").textContent = shortName(dhpl.name);
+    dhb.querySelector(".slot-name").textContent = cn[S.dh];
     dhb.setAttribute("aria-label", "Bateador designado: " + dhpl.name);
     dhb.title = "Bateador designado · " + dhpl.name;
   }else{
@@ -1796,7 +1796,7 @@ function renderField(){
       filled++;
       b.className = "slot filled";
       if(pl.num) key.appendChild(el("span", "slot-jersey", "#" + pl.num));
-      nm.textContent = shortName(pl.name);
+      nm.textContent = cn[pl.id];
       b.setAttribute("aria-label", p.es + " (" + p.k + "): " + pl.name);
       b.title = p.es + " · " + pl.name + (pl.num ? " · #" + pl.num : "");
     }else{
@@ -3286,15 +3286,16 @@ function buildLineupSvg(){
     return g.join("");
   }
 
+  var cn = cardNames();
   POS.forEach(function(pp){
     if(!isPosEnabled(pp.k)) return;
     var pl = player(S.assign[pp.k]);
     o.push(card(pp.x/100*900, pp.y/100*820, displayPosNumber(pp), pp.k,
-                pl ? shortName(pl.name) : "—", !!pl));
+                pl ? cn[pl.id] : "—", !!pl));
   });
   if(S.enabledDH || S.dh){
     var dpl = player(S.dh);
-    o.push(card(0.50*900, 0.84*820, "BD", "BD", dpl ? shortName(dpl.name) : "—", !!dpl));
+    o.push(card(0.50*900, 0.84*820, "BD", "BD", dpl ? cn[dpl.id] : "—", !!dpl));
   }
   o.push('</g>');
 
@@ -3433,6 +3434,7 @@ function buildTicketSvg(){
     return g.join("");
   }
   var conBD = S.enabledDH || S.dh;
+  var cn = cardNames();
   POS.forEach(function(pp){
     if(!isPosEnabled(pp.k)) return;
     var pl = player(S.assign[pp.k]);
@@ -3440,12 +3442,12 @@ function buildTicketSvg(){
        con BD en el home, el receptor baja un poco y lleva el nombre al lado. */
     var my = pp.ty, donde = pp.k === "SS" || pp.k === "2B" ? "arriba" : "abajo";
     if(pp.k === "C" && conBD){ my = 95; donde = "derecha"; }
-    o.push(marca(pp.tx, my, displayPosNumber(pp), pl ? shortName(pl.name) : "", donde));
+    o.push(marca(pp.tx, my, displayPosNumber(pp), pl ? cn[pl.id] : "", donde));
   });
   if(conBD){
     /* el BD va sobre el home, con el nombre al lado */
     var d = player(S.dh);
-    o.push(marca(50, 690/820*100, "BD", d ? shortName(d.name) : "", "derecha"));
+    o.push(marca(50, 690/820*100, "BD", d ? cn[d.id] : "", "derecha"));
   }
   o.push('</g>');
   y = top + FH;

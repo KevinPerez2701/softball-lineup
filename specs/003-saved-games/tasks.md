@@ -22,7 +22,7 @@ left running. Everything is sequential: all logic is in `stats.js` and all UI in
       Files: `stats.js`, `tests/games.test.js`
       Done when: tests green, incl. `new Date(2026,10,5,14,5)` ⇒ "05/11/2026 · 2:05 p. m.", midnight ⇒ "12:00 a. m.",
       0–0 ⇒ "", string scores, name fallbacks "Equipo"/"rival" and no " · " without date.
-- [ ] T4. `shortName` moved to `stats.js` + `shortNames`; `index.html` uses them through `cardNames()` in the field,
+- [x] T4. `shortName` moved to `stats.js` + `shortNames`; `index.html` uses them through `cardNames()` in the field,
       the image and the thermal ticket. Tests first. (RF-30) Deps: —
       Files: `stats.js`, `tests/names.test.js` (new), `index.html`
       Done when: tests green (today's outputs unchanged; "Kevin Pérez"/"Keven Pérez" ⇒ "Kevin P."/"Keven P."; still

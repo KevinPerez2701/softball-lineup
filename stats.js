@@ -473,5 +473,49 @@ Stats.result = function(st){
   return (us > them ? "Ganado " : us < them ? "Perdido " : "Empate ") + us + "–" + them;
 };
 
+// ---------- nombres ----------
+
+// Nombre para el recuadro del campo: siempre inicial + apellido cuando hay
+// más de una palabra, para que todas las posiciones se lean igual y quepan.
+Stats.shortName = function(n){
+  n = (n || "").trim();
+  if(!n) return "";
+  var parts = n.split(/\s+/);
+  if(parts.length === 1) return n;
+  var ini = parts[0].charAt(0).toUpperCase() + ". ";
+  var rest = parts.slice(1).join(" ");
+  if((ini + rest).length <= 13) return ini + rest;
+  return ini + (parts.length >= 4 ? parts[2] : parts[1]);
+};
+
+// Nombres cortos alineados con names. Si dos o más coinciden: "Kevin P.";
+// si aun así coinciden, el nombre completo.
+Stats.shortNames = function(names){
+  var out = names.map(Stats.shortName);
+  var groups = {};
+  out.forEach(function(s, i){
+    if(!s) return;
+    (groups[s] = groups[s] || []).push(i);
+  });
+  // primero todas las formas nuevas, contadas entre todos los grupos: dos parejas distintas no pueden quedar iguales
+  var forms = {}, seen = {};
+  Object.keys(groups).forEach(function(s){
+    var idx = groups[s];
+    if(idx.length < 2) return;
+    idx.forEach(function(i){
+      var parts = names[i].trim().split(/\s+/);
+      if(parts.length === 1) return;
+      // parte del apellido que usó shortName (sin la inicial y el ". ")
+      var surname = s.slice(parts[0].charAt(0).toUpperCase().length + 2);
+      var f = parts[0] + " " + surname.charAt(0).toUpperCase() + ".";
+      forms[i] = f;
+      seen[f] = (seen[f] || 0) + 1;
+    });
+  });
+  Object.keys(forms).forEach(function(i){
+    out[i] = seen[forms[i]] > 1 ? names[i].trim() : forms[i];
+  });
+  return out;
+};
 
 if(typeof module !== "undefined") module.exports = Stats;
