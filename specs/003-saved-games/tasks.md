@@ -9,15 +9,15 @@ Test command: `node --test 'tests/*.test.js'`. UI tasks: syntax check of the ext
 left running. Everything is sequential: all logic is in `stats.js` and all UI in `index.html`.
 
 ## Logic (stats.js)
-- [ ] T1. `differs`, `isEmpty`, `unsaved`. Tests first. (RF-5, RF-8, RF-9, RF-35) Deps: —
+- [x] T1. `differs`, `isEmpty`, `unsaved`. Tests first. (RF-5, RF-8, RF-9, RF-35) Deps: —
       Files: `stats.js`, `tests/games.test.js` (new)
       Done when: tests green, incl. each compared field flips `differs`; `at`, key order, roster names, `gameId`
       do not; `us` "3" equals 3; `isEmpty` ignores date/roster and counts `statsId`; both `unsaved` branches.
-- [ ] T2. `upsertGame`, `trimGames`, `mergeGames`. Tests first. (RF-1, RF-2, RF-3, RF-11, RF-12, RF-17) Deps: T1
+- [x] T2. `upsertGame`, `trimGames`, `mergeGames`. Tests first. (RF-1, RF-2, RF-3, RF-11, RF-12, RF-17) Deps: T1
       Files: `stats.js`, `tests/games.test.js`
       Done when: tests green, incl. input lists untouched; 201 entries ⇒ the lowest `at` dropped (not the last
       position); merge keeps 300 entries, newer `at` wins, result independent of argument order.
-- [ ] T3. `asNew`, `gameName`, `result`, `fmtDate`, `fmtDateTime`. Tests first. (RF-3, RF-9, RF-19, RF-20, RF-25,
+- [x] T3. `asNew`, `gameName`, `result`, `fmtDate`, `fmtDateTime`. Tests first. (RF-3, RF-9, RF-19, RF-20, RF-25,
       RF-36) Deps: T1
       Files: `stats.js`, `tests/games.test.js`
       Done when: tests green, incl. `new Date(2026,10,5,14,5)` ⇒ "05/11/2026 · 2:05 p. m.", midnight ⇒ "12:00 a. m.",

@@ -3,17 +3,17 @@
 Single source of truth for what is in flight and what is left. Update it in the same commit as the
 work it describes. Dates come from `date`, never from memory.
 
-Last updated: 2026-11-05 11:13 UTC-4 by Claude
+Last updated: 2026-11-05 11:17 UTC-4 by Claude
 
 ## Now (one line)
-Spec 003 implementing: plan + 16 tasks written (G1 approved, G2 pre-approved by Kevin 2026-11-05: "apruebo la spec de una, implementa"). Current: T1. Commits since 44cfd5a not pushed yet: ask Kevin.
+Spec 003 — T4 next (shortName/shortNames + cardNames). G1 approved, G2 pre-approved by Kevin 2026-11-05. Pushed through 7290a62 (Kevin: push when I see fit).
 
 ## Active specs
 | Spec | Phase | Current task | Next task | Blocked by |
 |---|---|---|---|---|
 | 001-game-stats | done | — | — | — |
 | 002-inning-capture | done | — | — | — |
-| 003-saved-games | implement | T1 | T2 | — |
+| 003-saved-games | implement | T4 | T5 | — |
 
 Phases: constitution · spec · clarify · plan · tasks · implement · validate · done
 
@@ -24,6 +24,7 @@ Phases: constitution · spec · clarify · plan · tasks · implement · validat
 - (none)
 
 ## Recently done (keep last 10)
+- 2026-11-05 · 003 · T1–T3 done — saved-games pure logic in stats.js (11 functions), 24 tests, 101/101 green; reviewer APPROVE (dead POS line and sameInts→diffInts fixed by the orchestrator)
 - 2026-11-05 · 003 · plan.md (fable planner + orchestrator review R1–R4) and tasks.md (T1–T16)
 - 2026-11-05 · 003 · G1 approved by Kevin; clarifier pass 2 on the design RFs (7 blocking, 13 minor) resolved: 42 RFs
 - 2026-11-05 · 003 · Impeccable critique (dual-agent): 25/40, 3 P1 + 2 P2; Kevin chose all four design groups → RF-18–34 added to spec 003
@@ -32,7 +33,6 @@ Phases: constitution · spec · clarify · plan · tasks · implement · validat
 - 2026-10-23 · — · Backlog closed by Kevin: pitching, opponent and defensive stats, spray chart and CSV export will not be built; the inning-by-inning entry was already shipped as spec 002. Demo gaps accepted: 002 step 22 (phone) approved, he reports if it fails; 001 offline save and two-devices-offline (steps 33–37) closed as not a real use case; 001 steps 18–19 closed with them
 - 2026-10-23 · 002 · Spec done — Kevin closed it (G3) after the desktop demo in prod (21/22 ✔, sw.js stats.js fix b2f3d19); 21/21 RFs, 77 tests green
 - 2026-10-23 · 002 · T8 desktop demo in prod: steps 1–21 ✔. Found and fixed (quick fix): first load after a deploy paired the new index.html with the cached old stats.js (sheet crashed, "Stats.cellLines is not a function"); sw.js now fetches stats.js network-first like the page
-- 2026-10-23 · 002 · T4 done — outs chips, ord, renumber, runner outs list + roPick, sub flag; reviewer APPROVE. Orchestrator: merge conflict resolved, re-tapping the same result keeps outs, "Out corriendo" also in a full cell (RF-16 amended)
 - 2026-10-23 · 002 · T5 + T7 done — grid shows turn order, runner outs, inning outs + ⚠; AR column; sw v5; reviewer APPROVE. RF-8 amended: blank at 0 outs, ⚠ above 3 in the last inning too (+test)
 
 ## Backlog (ideas not yet specified)

@@ -353,5 +353,125 @@ Stats.playerGames = function(entries, pid){
   return out;
 };
 
+/* ============ juegos guardados (spec 003) ============ */
+/* ---- cambios sin guardar ---- */
+// Compara solo los campos de la alineación; at, gameId, gameAt, start, end y nombres/números del roster no cuentan.
+Stats.differs = function(a, b, ignore){
+  var SIMPLE = ["team", "opp", "home", "date", "dh", "enabledSF", "enabled4F", "enabledDH", "innings"];
+  var ARRAYS = ["order"];
+  ignore = ignore || [];
+  function skip(k){ return ignore.indexOf(k) >= 0; }
+  function nul(v){ return v === undefined ? null : v; }
+  function sameList(x, y){
+    var i;
+    x = x || []; y = y || [];
+    if(x.length !== y.length) return false;
+    for(i = 0; i < x.length; i++) if(x[i] !== y[i]) return false;
+    return true;
+  }
+  function diffInts(x, y){
+    var i, n;
+    x = x || []; y = y || [];
+    n = Math.max(x.length, y.length);
+    for(i = 0; i < n; i++) if((parseInt(x[i], 10) || 0) !== (parseInt(y[i], 10) || 0)) return true;
+    return false;
+  }
+  function ids(st){ return (st.roster || []).map(function(p){ return p.id; }); }
+  var i, k, x, y;
+  for(i = 0; i < SIMPLE.length; i++){
+    k = SIMPLE[i];
+    if(!skip(k) && nul(a[k]) !== nul(b[k])) return true;
+  }
+  if(!skip("statsId") && nul(a.statsId) !== nul(b.statsId)) return true;
+  if(!skip("roster") && !sameList(ids(a), ids(b))) return true;
+  for(i = 0; i < ARRAYS.length; i++) if(!skip(ARRAYS[i]) && !sameList(a[ARRAYS[i]], b[ARRAYS[i]])) return true;
+  if(!skip("assign")){
+    x = a.assign || {}; y = b.assign || {};
+    // unión de claves: una posición ausente equivale a null
+    for(k in x) if(nul(x[k]) !== nul(y[k])) return true;
+    for(k in y) if(nul(x[k]) !== nul(y[k])) return true;
+  }
+  if(!skip("us") && diffInts(a.us, b.us)) return true;
+  if(!skip("them") && diffInts(a.them, b.them)) return true;
+  return false;
+};
+
+Stats.isEmpty = function(st, blank){
+  return !Stats.differs(st, blank, ["date", "roster"]);
+};
+
+Stats.unsaved = function(st, linkedState, blank){
+  return linkedState ? Stats.differs(st, linkedState) : !Stats.isEmpty(st, blank);
+};
+
+/* ---- lista de juegos {id, name, at, state}; nunca muta las entradas ---- */
+Stats.upsertGame = function(list, game){
+  return [game].concat((list || []).filter(function(e){ return e.id !== game.id; }));
+};
+
+// Si sobran, descarta los de menor at (en empate, el de posición posterior); kept conserva el orden.
+Stats.trimGames = function(list, max){
+  var idx = list.map(function(e, i){ return i; }), cut = {}, kept = [], dropped = [];
+  if(list.length > max){
+    idx.sort(function(i, j){
+      return list[i].at < list[j].at ? -1 : list[i].at > list[j].at ? 1 : j - i;
+    });
+    idx.slice(0, list.length - max).forEach(function(i){ cut[i] = true; });
+  }
+  list.forEach(function(e, i){ (cut[i] ? dropped : kept).push(e); });
+  return {kept: kept, dropped: dropped};
+};
+
+// Unión por id: gana el at más nuevo (empate: a); at desc, y el id desempata para no depender del orden.
+Stats.mergeGames = function(a, b){
+  var by = Object.create(null), out = [], k;
+  (a || []).concat(b || []).forEach(function(e){
+    if(!by[e.id] || e.at > by[e.id].at) by[e.id] = e;
+  });
+  for(k in by) out.push(by[k]);
+  return out.sort(function(x, y){
+    return x.at < y.at ? 1 : x.at > y.at ? -1 : x.id < y.id ? -1 : x.id > y.id ? 1 : 0;
+  });
+};
+
+/* ---- nombres, fechas y resultado ---- */
+Stats.asNew = function(st, today){
+  var out = JSON.parse(JSON.stringify({
+    team: st.team, opp: st.opp, home: st.home, roster: st.roster, assign: st.assign, order: st.order,
+    dh: st.dh, enabledSF: st.enabledSF, enabled4F: st.enabled4F, enabledDH: st.enabledDH
+  }));
+  out.date = today; out.innings = 7; out.start = ""; out.end = "";
+  out.us = [0, 0, 0, 0, 0, 0, 0]; out.them = [0, 0, 0, 0, 0, 0, 0];
+  return out;
+};
+
+// "aaaa-mm-dd" -> "dd/mm/aaaa"
+Stats.fmtDate = function(iso){
+  if(!iso) return "";
+  var p = iso.split("-");
+  return p[2] + "/" + p[1] + "/" + p[0];
+};
+
+// Date -> "dd/mm/aaaa · h:mm a. m." con getters locales y reloj de 12 horas
+Stats.fmtDateTime = function(d){
+  var h = d.getHours();
+  function pad2(n){ return (n < 10 ? "0" : "") + n; }
+  return pad2(d.getDate()) + "/" + pad2(d.getMonth() + 1) + "/" + d.getFullYear() + " · " +
+    (h % 12 || 12) + ":" + pad2(d.getMinutes()) + (h < 12 ? " a. m." : " p. m.");
+};
+
+Stats.gameName = function(st){
+  return ((st.team || "").trim() || "Equipo") + " vs " + ((st.opp || "").trim() || "rival") +
+    (st.date ? " · " + Stats.fmtDate(st.date) : "");
+};
+
+// "" si el marcador está 0–0; us son nuestras carreras y them las del rival
+Stats.result = function(st){
+  function sum(a){ return (a || []).reduce(function(s, v){ return s + (parseInt(v, 10) || 0); }, 0); }
+  var us = sum(st.us), them = sum(st.them);
+  if(!us && !them) return "";
+  return (us > them ? "Ganado " : us < them ? "Perdido " : "Empate ") + us + "–" + them;
+};
+
 
 if(typeof module !== "undefined") module.exports = Stats;
