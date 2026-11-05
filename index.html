@@ -194,6 +194,7 @@ dialog .btn-ghost:hover{background:var(--surface-2);border-color:var(--ink-3)}
 .btn-sm{padding:3px 8px;font-size:12.5px;border-radius:6px}
 .btn-icon{padding:3px 7px;font-family:var(--cond);font-weight:700;font-size:15px}
 .btn-icon.btn-sm{padding:4px 6px}
+.btn-danger{color:var(--bad);border-color:var(--bad)}
 .btn-danger:hover{background:var(--bad);color:#fff;border-color:transparent}
 .btn-add-order,.btn-remove-order{padding:3px 8px}
 
@@ -1734,27 +1735,37 @@ function inLineup(id){
 var askCb = null;
 var askLocked = false; // true: Esc y el fondo no cierran el diálogo
 function closeAsk(){ askLocked = false; $("ask").close(); askCb = null; }
-function askConfirm(title, msg, yesLabel, cb){
+/* danger: acción destructiva ⇒ botón rojo y el foco en Cancelar. */
+function askConfirm(title, msg, yesLabel, cb, danger){
   $("askTitle").textContent = title;
   $("askMsg").textContent = msg;
   $("askInput").hidden = true;
   $("askNo").hidden = false;
   $("askAlt").hidden = true;
+  $("askAlt").className = "btn btn-sm";
   askLocked = false;
   $("askYes").textContent = yesLabel || "Aceptar";
-  $("askYes").className = "btn btn-sm btn-key";
+  $("askYes").className = "btn btn-sm " + (danger ? "btn-danger" : "btn-key");
   askCb = cb;
   $("ask").showModal();
-  $("askYes").focus();
+  (danger ? $("askNo") : $("askYes")).focus();
 }
 /* Dos opciones además de Cancelar: cb("yes") o cb("alt"). Con locked no hay
-   Cancelar y tampoco se cierra con Esc ni con el fondo. */
-function askChoice(title, msg, yesLabel, altLabel, cb, locked){
+   Cancelar y tampoco se cierra con Esc ni con el fondo.
+   Argumentos: título, mensaje, texto de "yes", texto de "alt", cb, locked,
+   danger ("yes" | "alt" | nada): ese botón va en rojo y el otro en btn-key;
+   el foco va en Cancelar, o en el botón no rojo si Cancelar está oculto. */
+function askChoice(title, msg, yesLabel, altLabel, cb, locked, danger){
   askConfirm(title, msg, yesLabel, cb);
   $("askAlt").textContent = altLabel;
   $("askAlt").hidden = false;
   askLocked = !!locked;
   $("askNo").hidden = askLocked;
+  if(danger){
+    $("askYes").className = "btn btn-sm " + (danger === "yes" ? "btn-danger" : "btn-key");
+    $("askAlt").className = "btn btn-sm " + (danger === "alt" ? "btn-danger" : "btn-key");
+    (askLocked ? $(danger === "yes" ? "askAlt" : "askYes") : $("askNo")).focus();
+  }
 }
 function askText(title, msg, value, cb){
   $("askTitle").textContent = title;
@@ -1840,14 +1851,13 @@ function touched(){
     askChoice("¿Descartar lo último sin guardar?", "«" + Stats.gameName(stored) + "» no se guardó.", "Descartar", "Recuperar", function(c){
       recoverAsking = false;
       if(c === "yes") dropStored(); else recoverStored();
-    }, true);
-    $("askAlt").focus(); // el foco en Recuperar: una tecla suelta no debe borrar lo guardado
+    }, true, "yes"); // Descartar en rojo; el foco queda en Recuperar: una tecla suelta no debe borrar lo guardado
   }
   return false;
 }
 $("recoverYes").addEventListener("click", function(){ recoverStored(); toast("Juego recuperado"); });
 $("recoverNo").addEventListener("click", function(){
-  askConfirm("Descartar lo último", "Se pierde «" + Stats.gameName(stored) + "», que no se guardó. No se puede deshacer.", "Descartar", dropStored);
+  askConfirm("Descartar lo último", "Se pierde «" + Stats.gameName(stored) + "», que no se guardó. No se puede deshacer.", "Descartar", dropStored, true);
 });
 function saveTeam(){ lsSet(K_TEAM, TEAM); }
 
@@ -2375,7 +2385,7 @@ function renderTeamRoster(){
           removePlayerEverywhere(tp.id);
           saveTeam(); renderTeamRoster(); renderAll();
           toast(tp.name + " eliminado del equipo");
-        });
+        }, true);
     });
     acts.appendChild(ed); acts.appendChild(del); li.appendChild(acts);
     ul.appendChild(li);
@@ -2411,7 +2421,7 @@ $("teamRosterClear").addEventListener("click", function(){
       POS_ORDER.forEach(function(k){ S.assign[k] = null; });
       renderAll(); renderTeamRoster();
       toast("Asistencia vaciada");
-    });
+    }, true);
 });
 
 
@@ -3095,7 +3105,9 @@ function closeCapture(){ guide = null; cap = null; $("capture").close(); } // RF
 // RF-11: si hay cambios sin guardar, confirmar antes de descartar
 function tryCloseCapture(){
   if(!cap || JSON.stringify(cap.rec) === cap.opened){ closeCapture(); return; }
-  askConfirm("¿Salir sin guardar?", "Se pierden los cambios.", "Salir", closeCapture);
+  askChoice("¿Guardar las estadísticas?", "Hay cambios sin guardar.", "Guardar y salir", "Salir sin guardar", function(c){
+    if(c === "yes") saveCapture(); else closeCapture(); // saveCapture solo cierra si guarda; si no, avisa y se queda (RF-12)
+  }, false, "alt");
 }
 $("capSave").addEventListener("click", saveCapture);
 $("capClose").addEventListener("click", tryCloseCapture);
@@ -3142,7 +3154,7 @@ $("btnNew").addEventListener("click", function(){
       S.date = todayLocal();
       renderAll();
       toast("Nuevo juego");
-    });
+    }, hasUnsaved());
 });
 
 var MAX_GAMES = 200;
@@ -3168,7 +3180,7 @@ function saveGame(id, name, st){
   if(!t.dropped.length){ commit(); return; }
   askConfirm("Límite de " + MAX_GAMES + " juegos",
     "Para guardar se " + (t.dropped.length > 1 ? "borran " : "borra ") + t.dropped.map(function(e){ return "«" + e.name + "»"; }).join(", ") + ". ¿Continuar?",
-    "Guardar", commit);
+    "Guardar", commit, true);
 }
 /* Guardar como nuevo: copia la alineación (sin marcador ni estadísticas) con la fecha de hoy. */
 function saveAsNew(){
@@ -3233,7 +3245,7 @@ $("btnLoad").addEventListener("click", function(){
       renderAll(); $("saved").close(); toast("Juego abierto");
     }
     bl.addEventListener("click", function(){
-      if(hasUnsaved()) askConfirm("Hay cambios sin guardar", "Se pierden al abrir «" + item.name + "».", "Abrir", load);
+      if(hasUnsaved()) askConfirm("Hay cambios sin guardar", "Se pierden al abrir «" + item.name + "».", "Abrir", load, true);
       else load();
     });
     var bd = iconBtn("btn btn-sm btn-icon btn-danger", "x", "Borrar " + item.name);
@@ -3246,7 +3258,7 @@ $("btnLoad").addEventListener("click", function(){
           if(!l2.length) body.appendChild(el("p", "empty-note", "Todavía no hay juegos guardados. Usa «Guardar»."));
           if(item.id === S.gameId) renderAll(); // RF-13: la alineación sigue, sin juego ligado
           toast("Juego borrado");
-        });
+        }, true);
     });
     acts.appendChild(bl); acts.appendChild(bd);
     it.appendChild(info); it.appendChild(spacer); it.appendChild(acts);
@@ -3441,7 +3453,7 @@ $("btnImport").addEventListener("click", function(){
     }catch(e){
       toast("Ese texto no es un respaldo válido");
     }
-  });
+  }, true);
 });
 
 /* ============ diálogo ask ============ */
