@@ -3,10 +3,10 @@
 Single source of truth for what is in flight and what is left. Update it in the same commit as the
 work it describes. Dates come from `date`, never from memory.
 
-Last updated: 2026-11-05 14:20 UTC-4 by Claude
+Last updated: 2026-11-05 14:25 UTC-4 by Claude
 
 ## Now (one line)
-Idle — spec 003 done and pushed. Impeccable critique re-run: 27/40 (was 25); heuristics 1 and 6 reached 3, 4 and 5 still 2 → candidate spec 004 (Kevin to choose).
+Spec 004 (critique fixes) drafted, in clarify; 1 open question (what BO means).
 
 ## Active specs
 | Spec | Phase | Current task | Next task | Blocked by |
@@ -14,11 +14,12 @@ Idle — spec 003 done and pushed. Impeccable critique re-run: 27/40 (was 25); h
 | 001-game-stats | done | — | — | — |
 | 002-inning-capture | done | — | — | — |
 | 003-saved-games | done | — | — | — |
+| 004-critique-fixes | clarify | — | answer BO → /sdd:clarify 004 | Kevin (BO) |
 
 Phases: constitution · spec · clarify · plan · tasks · implement · validate · done
 
 ## Open questions (block work until answered)
-- (none)
+- 004 RF-6: what does "BO" stand for in the scorebook (counts as 1 out)?
 
 ## Known gaps (not blocking)
 - Spec 003 Done criteria: critique re-run 2026-11-05 scored heuristics 1=3, 4=2, 5=2, 6=3 (27/40). Open P1s: destructive confirms styled and focused as primary; HR saved without run/RBI and 0–0 counted as a tie. Snapshot in .impeccable/critique/ (git-excluded).
