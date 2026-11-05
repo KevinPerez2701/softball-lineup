@@ -188,6 +188,9 @@ dialog .btn-ghost{color:var(--ink);border-color:var(--line-2)}
 dialog .btn-ghost:hover{background:var(--surface-2);border-color:var(--ink-3)}
 .btn-key{background:var(--accent);color:var(--accent-ink);border-color:transparent}
 .btn-key:hover{background:var(--accent);filter:brightness(1.06)}
+/* chip con el valor por defecto: borde de 2 px sin relleno (el borde extra sale del padding, no cambia el tamaño) */
+.btn-default{background:transparent;border:2px solid var(--accent);padding:5px 10px}
+.btn-default:hover{background:var(--surface-2);border-color:var(--accent)}
 .btn-sm{padding:3px 8px;font-size:12.5px;border-radius:6px}
 .btn-icon{padding:3px 7px;font-family:var(--cond);font-weight:700;font-size:15px}
 .btn-icon.btn-sm{padding:4px 6px}
@@ -231,7 +234,10 @@ dialog .btn-ghost:hover{background:var(--surface-2);border-color:var(--ink-3)}
 .score small{
   font-family:var(--cond);font-weight:600;font-size:11px;letter-spacing:.1em;
   text-transform:uppercase;opacity:.62;line-height:1;
+  display:flex;max-width:100%;white-space:nowrap;
 }
+/* nombre del equipo: se corta con "…" y deja visible "· Visita" / "· Casa" */
+.score .sc-name{min-width:0;max-width:8em;overflow:hidden;text-overflow:ellipsis}
 .score i{font-style:normal;opacity:.5;font-size:20px;align-self:flex-start;margin-top:5px}
 .score .tag{
   font-family:var(--cond);font-size:11px;letter-spacing:.13em;text-transform:uppercase;
@@ -537,6 +543,8 @@ table.sheet tfoot input{
 #paPick .dlg-body .btn{min-height:40px;min-width:44px;justify-content:center}
 #paPick .pickitem{min-height:40px}
 .pa-lbl{margin:12px 0 5px;font-size:12.5px;color:var(--ink-3)}
+.pa-more{margin:12px 0 0}
+.pa-more summary{min-height:40px}
 .pickitem.pa-item{grid-template-columns:minmax(0,1fr) auto auto;cursor:default}
 .pickitem.pa-item:hover{border-color:transparent;background:var(--surface-2)}
 .pa-item .pa-code{font-family:var(--cond);font-weight:700;font-size:17px}
@@ -993,9 +1001,9 @@ body.locked .gate{
       <span class="lbl">Marcador</span>
       <div class="score" aria-label="Marcador final: visitante - casa">
         <span class="tag">Final</span>
-        <span class="sc"><b id="scUs">0</b><small>Visita</small></span>
+        <span class="sc"><b id="scUs">0</b><small><span class="sc-name" id="scVisName"></span>&nbsp;·&nbsp;Visita</small></span>
         <i aria-hidden="true">–</i>
-        <span class="sc"><b id="scThem">0</b><small>Casa</small></span>
+        <span class="sc"><b id="scThem">0</b><small><span class="sc-name" id="scHomeName"></span>&nbsp;·&nbsp;Casa</small></span>
       </div>
     </div>
   </section>
@@ -2596,10 +2604,18 @@ function updateScore(){
   var visitante = S.home === "us" ? th : u;
   var casa = S.home === "us" ? u : th;
 
+  // RF-32: nombre del equipo de cada lado antes de "Visita" / "Casa"
+  var nUs = S.team || "Nosotros", nThem = S.opp || "Ellos";
+  var nVis = S.home === "us" ? nThem : nUs, nCasa = S.home === "us" ? nUs : nThem;
+
   $("scUs").textContent = visitante;
   $("scThem").textContent = casa;
-  $("scUs").setAttribute("aria-label", "Carreras del visitante: " + visitante);
-  $("scThem").setAttribute("aria-label", "Carreras del equipo local: " + casa);
+  $("scVisName").textContent = nVis;
+  $("scHomeName").textContent = nCasa;
+  $("scUs").setAttribute("aria-label", "Visita, " + nVis + ": " + visitante);
+  $("scThem").setAttribute("aria-label", "Casa, " + nCasa + ": " + casa);
+  $("scUs").parentNode.parentNode.setAttribute("aria-label",
+    "Marcador final: " + nVis + " (visita) " + visitante + ", " + nCasa + " (casa) " + casa);
 
   $("tabScore").textContent = visitante + "–" + casa;
   $("tabScore").parentNode.setAttribute("aria-label", "Juego: visita " + visitante + ", casa " + casa);
@@ -2802,31 +2818,43 @@ function paForm(ri, inn, idx, done){
   var row = cap.rec.rows[ri], body = $("paBody"), src = idx === null ? null : row.pas[idx];
   var f = {code:src ? src.code : "", run:src ? !!src.run : false, rbi:src ? +src.rbi || 0 : 0, sb:src ? +src.sb || 0 : 0,
     outs:src ? Stats.paOuts(src) : 0};
-  function chip(label, on, fn){
-    var b = el("button", on ? "btn btn-key" : "btn", label);
+  // RF-27/42: "Más detalles" abierto si el turno ya trae CI, BR u outs distintos del defecto; luego sigue a f.more
+  f.more = !!(f.rbi || f.sb || f.outs !== Stats.defaultOuts(f.code));
+  // RF-28: isDefault ⇒ el chip elegido con el valor por defecto lleva borde, no relleno
+  function chip(label, on, fn, isDefault){
+    var b = el("button", on ? (isDefault ? "btn btn-default" : "btn btn-key") : "btn", label);
     b.type = "button";
     b.setAttribute("aria-pressed", String(on));
     b.addEventListener("click", function(){ fn(); draw(); });
     return b;
   }
-  function nums(title, key, max){
-    body.appendChild(el("div", "pa-lbl", title));
+  function nums(box0, title, key, max, def){
+    box0.appendChild(el("div", "pa-lbl", title));
     var box = el("div", "chips");
-    for(var i = 0; i <= max; i++) (function(v){ box.appendChild(chip(String(v), f[key] === v, function(){ f[key] = v; })); })(i);
-    body.appendChild(box);
+    for(var i = 0; i <= max; i++) (function(v){ box.appendChild(chip(String(v), f[key] === v, function(){ f[key] = v; }, v === def)); })(i);
+    box0.appendChild(box);
   }
   function draw(){
     body.innerHTML = "";
     var grid = el("div", "pa-grid");
-    Stats.CODES.forEach(function(c){ grid.appendChild(chip(c.pick, f.code === c.code, function(){ if(f.code !== c.code){ f.code = c.code; f.outs = Stats.defaultOuts(c.code); } })); });
+    Stats.CODES.forEach(function(c){ grid.appendChild(chip(c.pick, f.code === c.code, function(){
+      if(f.code !== c.code){ f.code = c.code; f.outs = Stats.defaultOuts(c.code); }
+      if(c.code === "HR" || c.code === "SF" || c.code === "BO") f.more = true; // RF-42
+    })); });
     body.appendChild(grid);
     body.appendChild(el("div", "pa-lbl", "Carrera"));
     var run = el("div", "chips");
     run.appendChild(chip("Anotó carrera", f.run, function(){ f.run = !f.run; }));
     body.appendChild(run);
-    nums("CI (carreras impulsadas)", "rbi", 4);
-    nums("BR (bases robadas)", "sb", 3);
-    nums("Outs en la jugada", "outs", 3);
+    var more = el("details", "hint pa-more");
+    more.appendChild(el("summary", null, "Más detalles"));
+    more.open = f.more;
+    // un <details> ya reemplazado por draw() no cuenta
+    more.addEventListener("toggle", function(){ if(more.isConnected) f.more = more.open; });
+    nums(more, "CI (carreras impulsadas)", "rbi", 4, 0);
+    nums(more, "BR (bases robadas)", "sb", 3, 0);
+    nums(more, "Outs en la jugada", "outs", 3, Stats.defaultOuts(f.code));
+    body.appendChild(more);
     var acts = el("div", "chips"), ok = el("button", "btn btn-key", "Listo"), no = el("button", "btn", "Cancelar");
     acts.style.marginTop = "14px";
     ok.type = no.type = "button";
@@ -3386,18 +3414,26 @@ $("btnCopyBackup").addEventListener("click", function(){
   try{ document.execCommand("copy"); toast("Copiado"); }
   catch(e){ toast("Selecciona y copia manualmente"); }
 });
+// RF-34: primero se valida; con un respaldo válido se pregunta antes de cambiar nada
 $("btnImport").addEventListener("click", function(){
-  try{
-    var data = JSON.parse($("backupText").value);
-    if(data.current) S = data.current;
-    if(Array.isArray(data.team)){ TEAM = data.team; saveTeam(); }
-    if(Array.isArray(data.saved)) lsSet(K_SAVED, data.saved);
-    if(Array.isArray(data.stats)) lsSet(K_STATS, Stats.merge(lsGet(K_STATS, []), data.stats));
-    S = ensureState(S);
-    renderAll(); $("backup").close(); toast("Respaldo importado");
-  }catch(e){
+  var data = null;
+  try{ data = JSON.parse($("backupText").value); }catch(e){}
+  if(!data || typeof data !== "object" || !(data.current || data.team || data.saved || data.stats)){
     toast("Ese texto no es un respaldo válido");
+    return;
   }
+  askConfirm("Importar respaldo", "Se reemplazan el roster, la alineación en pantalla y los juegos guardados; las estadísticas se suman. ¿Importar?", "Importar", function(){
+    try{
+      if(data.current) S = data.current;
+      if(Array.isArray(data.team)){ TEAM = data.team; saveTeam(); }
+      if(Array.isArray(data.saved)) lsSet(K_SAVED, data.saved);
+      if(Array.isArray(data.stats)) lsSet(K_STATS, Stats.merge(lsGet(K_STATS, []), data.stats));
+      S = ensureState(S);
+      renderAll(); $("backup").close(); toast("Respaldo importado");
+    }catch(e){
+      toast("Ese texto no es un respaldo válido");
+    }
+  });
 });
 
 /* ============ diálogo ask ============ */

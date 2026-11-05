@@ -77,13 +77,13 @@ left running. Everything is sequential: all logic is in `stats.js` and all UI in
       Done when: at 1440 px the header shows exactly Nuevo · Guardar · (Guardar como nuevo) · Abrir · Estadísticas ·
       Compartir · Más and both open their sheets; at 360 px Guardar is the key button, Compartir an icon with
       aria-label, the Más sheet order matches RF-23; Instalar hidden leaves no slot; the phone tab bar still works.
-- [ ] T13. Picker: `<details>` "Más detalles", auto-open on HR/SF/BO, stays open across redraws; default chips
+- [x] T13. Picker: `<details>` "Más detalles", auto-open on HR/SF/BO, stays open across redraws; default chips
       outlined with `aria-pressed`. (RF-27, RF-28, RF-42) Deps: —
       Files: `index.html`
       Done when: in the browser: a new PA opens with details closed; picking HR opens it and changing to 1B keeps
       it open; editing a PA with CI 2 opens it; a default 0 chip shows the 2 px accent border, distinct from
       unselected and from chosen chips.
-- [ ] T14. Scoreboard team names; Respaldo import confirm and invalid-text toast. (RF-32, RF-34) Deps: —
+- [x] T14. Scoreboard team names; Respaldo import confirm and invalid-text toast. (RF-32, RF-34) Deps: —
       Files: `index.html`
       Done when: "MSO · Casa" / "Call · Visita" on phone and desktop with ellipsis on long names; importing a valid
       backup asks first and Cancel changes nothing; invalid text shows the toast without asking.
