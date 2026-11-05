@@ -681,7 +681,7 @@ body.locked .gate{
   .tgroup + .tgroup{padding-left:0;border-left:0}
   #btnNew,#btnSaveNew,#btnLoad,#btnStats{display:none}
   .tools .btn{min-height:38px}
-  .tools .btn-key{padding:6px 12px;font-size:14px}
+  .tools .btn-key,#btnSave{padding:6px 12px;font-size:14px}
   #btnShareMenu,#btnMoreMenu{min-width:40px;justify-content:center}
 
   .work{margin-top:12px !important}
@@ -1667,6 +1667,12 @@ function renderHeader(){
   name.title = text;
   box.appendChild(name);
   $("btnSaveNew").hidden = !g;
+  // RF-9/18: con juego ligado y sin cambios el botón dice "Guardado ✓" (sin estilo de llave); si no, "Guardar"
+  var bs = $("btnSave"), saved = !!g && !dirty;
+  bs.textContent = saved ? "Guardado ✓" : "Guardar";
+  bs.className = saved ? "btn btn-ghost btn-sm" : "btn btn-key btn-sm";
+  if(saved) bs.setAttribute("aria-label", "Guardado");
+  else bs.removeAttribute("aria-label");
 }
 
 function player(id){
