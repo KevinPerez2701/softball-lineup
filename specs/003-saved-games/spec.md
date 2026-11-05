@@ -1,6 +1,6 @@
 # Spec 003 — Saved lineups as games
 
-Status: clarified (clarifier review 2026-11-05: 7 blocking + 9 minor, all resolved below; awaiting G1)
+Status: clarify — RF-1–17 clarified (7 blocking + 9 minor resolved); design RF-18–34 added 2026-11-05 after the impeccable critique, clarifier pass on them pending; then G1
 Created: 2026-11-05
 
 ## Context and goal
@@ -83,6 +83,59 @@ saved entry one game that is opened, edited and saved in place, and makes the ap
 - RF-17: WHEN the list of saved games of this device is merged with the account's, THE SYSTEM SHALL keep every
   entry (no 60/200 cut) and, for an `id` present in both, the one with the newer `at`.
 
+### Design (from the impeccable critique of 2026-11-05, 25/40; Kevin chose all four groups)
+Refinement of the incumbent look (colors, fonts, field drawings stay); "phone" = 360–430 px wide, "desktop" ≥ 1024 px.
+
+Open game and save loop
+- RF-18: WHILE the working lineup has a linked game, THE SYSTEM SHALL show the game's name in the header on desktop
+  (where "Softball · Lineups" is today) and on phone (a line under the brand), with a "●" marker and the accessible
+  text "cambios sin guardar" while there are unsaved changes; with no linked game it SHALL show "Juego sin guardar"
+  only when the working lineup is not empty. (Implements RF-15's main-screen part.)
+- RF-19: THE SYSTEM SHALL show each row of the saved games list with its name, the final score and result ("Ganado
+  6–5", "Perdido 3–4", "Empate 2–2"; nothing when both totals are 0), a "Estadísticas" pill when its state has a
+  stats link, an "Abierto" pill on the linked game (RF-15's list part), and the save time as "29/10 · 7:32 p. m."
+  (no seconds).
+- RF-20: THE SYSTEM SHALL propose "<team> vs <opponent> · dd/mm/aaaa" as the name when saving a new game (today
+  the date is ISO).
+- RF-21: THE SYSTEM SHALL end RF-1 with the toast "Juego actualizado: «<name>»" and RF-2/RF-3 with "Juego guardado:
+  «<name>»", and clear the RF-18 marker.
+
+Header
+- RF-22: THE SYSTEM SHALL show on desktop, in this order: "Nuevo", "Guardar" (the accent/key style), "Guardar como
+  nuevo" (only while there is a linked game), "Abrir" (opens the saved games list, titled "Abrir juego"),
+  "Estadísticas", a "Compartir" menu (Copiar imagen, Térmica, Imprimir / PDF) and a "Más" menu (Roster, Respaldo,
+  Instalar when available, Cerrar sesión). No other header button keeps the key style.
+- RF-23: THE SYSTEM SHALL make "Guardar" the key button of the phone header, move "Compartir" into a header icon
+  button that opens the same share sheet, and keep the rest in the options sheet with the RF-22 labels.
+- RF-24: THE SYSTEM SHALL use the same label for the same action on phone and desktop: "Abrir" / "Abrir juego",
+  "Roster", "Respaldo", "Cerrar sesión".
+
+One meaning of "Guardar" in stats
+- RF-25: THE SYSTEM SHALL label the capture sheet's save button "Guardar estadísticas" and title the sheet
+  "<team> vs <opponent> · dd/mm" (today "Estadísticas · <opponent>").
+- RF-26: WHEN stats are saved, THE SYSTEM SHALL show "Estadísticas guardadas en «<name>»" if RF-6 updated a linked
+  game, else "Estadísticas guardadas".
+
+Plate-appearance picker and field
+- RF-27: WHEN the result picker opens, THE SYSTEM SHALL show the result codes, "Anotó carrera" and the actions, with
+  CI, BR and Outs inside a collapsed "Más detalles" section; the section SHALL start open when the PA being edited
+  has CI, BR or outs different from the default, and open by itself when the user picks HR, SF or BO.
+- RF-28: THE SYSTEM SHALL draw a chip that holds its default value outlined (not filled) and keep the filled style
+  for the chosen result code and for values the user changed.
+- RF-29: THE SYSTEM SHALL render the field cards' position key, jersey and name at 10 px or more on a 360 px wide
+  phone.
+- RF-30: IF two players on the field would show the same short name (e.g. "K. Perez"), THEN THE SYSTEM SHALL show
+  both as first name + last-name initial ("Kevin P.", "Keven P."), and IF those still collide, the full name.
+
+Small fixes found by the critique
+- RF-31: WHEN the capture sheet opens, THE SYSTEM SHALL not put the focus in the date input (no keyboard pops on
+  phone).
+- RF-32: THE SYSTEM SHALL show the team names with "Visita" / "Casa" in the phone scoreboard.
+- RF-33: THE SYSTEM SHALL show under the capture grid a one-line legend: "• anotó carrera · número pequeño: orden
+  del turno · rojo: no cuadra con la pizarra · ⚠: outs del inning".
+- RF-34: WHEN the user taps "Importar" in Respaldo, THE SYSTEM SHALL ask to confirm ("Se reemplaza todo lo de esta
+  cuenta…") before replacing anything (constitution principle 5).
+
 ## Non-functional requirements
 - Constitution applies: vanilla JS in `index.html` style; the "compared fields", "empty", "unsaved changes" and
   cap/merge logic are pure functions in `stats.js` (or a pure file listed in `sw.js`) with Node tests; no new
@@ -105,20 +158,26 @@ saved entry one game that is opened, edited and saved in place, and makes the ap
 - Renaming a saved game; sorting or searching the list (most recently saved first, as today).
 - Merging the two existing duplicates automatically.
 - Linking a stats record that has no working-lineup link to a saved game from Estadísticas → Juegos.
-- Any design change to the screens (a separate spec after this one, with the impeccable audit).
+- Critique items not chosen: one merged "Juegos" list, an end-of-game card, keyboard shortcuts, opening the capture
+  sheet in guided mode, the bench "—" badge semantics, the G/P/E wording in Estadísticas → Juegos, footer copy, a
+  type-scale change (detector's flat-type-hierarchy), the field drawings themselves.
 
 ## Decisions
 - Kevin, 2026-11-05: start empty with recovery; stats save updates the game; "Guardar como nuevo" copies only the
   lineup; limit 200 with a warning; the start does not touch the cloud copy; ask once before dropping the
   recoverable lineup; ask on a cross-device conflict.
+- Kevin, 2026-11-05 (after the critique): all four design groups go into this spec (open game visible, header with
+  Guardar first, one meaning of Guardar, picker + field); saving ends on a toast with the game's name.
 - Orchestrator (confirm at G1): "Empty" ignores the players of the game, so a lineup with only attendance chosen is
-  not offered for recovery; "Guardar como nuevo" is a second button next to "Guardar" or a choice after it,
-  whichever is the smaller change.
+  not offered for recovery; "Guardar como nuevo" is a header button (RF-22); the field card's big badge keeps the
+  position number (the critique suggested the jersey; not chosen); "lo menor" was read as RF-31–RF-34 only.
 
 ## Done criteria
 - Every RF has a green test where it is logic, and the main flow is demoed in the browser: build a lineup, save,
   reload (empty + recover offer), open the game, change a player, save (one entry), save stats (entry updated),
   "Guardar como nuevo" (two entries, old one and its stats intact), conflict prompt with two tabs.
+- Design RFs checked by hand at 375 px and 1440 px; `impeccable detect` shows no slot-jersey/slot-key under 10 px;
+  a re-run of the impeccable critique scores heuristics 1, 4, 5 and 6 at 3 or more.
 - `node --test 'tests/*.test.js'` green.
 
 ## Open questions
