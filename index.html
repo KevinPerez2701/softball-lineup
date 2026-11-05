@@ -927,6 +927,7 @@ body.locked .gate{
       <div class="tgroup" role="group" aria-label="Alineación">
         <button class="btn btn-ghost btn-sm" id="btnNew" type="button">Nuevo</button>
         <button class="btn btn-ghost btn-sm" id="btnSave" type="button">Guardar</button>
+        <button class="btn btn-ghost btn-sm" id="btnSaveNew" type="button" hidden>Guardar como nuevo</button>
         <button class="btn btn-ghost btn-sm" id="btnLoad" type="button">Guardados</button>
         <button class="btn btn-ghost btn-sm" id="btnBackup" type="button">Respaldo</button>
         <button class="btn btn-ghost btn-sm" id="btnStats" type="button">Estadísticas</button>
@@ -2987,6 +2988,10 @@ $("fHome").addEventListener("change", function(){
 });
 
 /* ============ guardar / cargar ============ */
+/* fecha local: toISOString es UTC y de noche ya marca el día siguiente */
+function todayLocal(){
+  return new Date(Date.now() - new Date().getTimezoneOffset()*60000).toISOString().slice(0,10);
+}
 $("btnNew").addEventListener("click", function(){
   askConfirm("Alineación nueva",
     "Se limpia el campo, el orden al bate y el marcador. Los jugadores del partido se conservan.",
@@ -2994,21 +2999,60 @@ $("btnNew").addEventListener("click", function(){
       var roster = S.roster;
       S = blankState();
       S.roster = roster;
-      /* fecha local: toISOString es UTC y de noche ya marca el día siguiente */
-      S.date = new Date(Date.now() - new Date().getTimezoneOffset()*60000).toISOString().slice(0,10);
+      S.date = todayLocal();
       renderAll();
       toast("Alineación nueva");
     });
 });
 
-$("btnSave").addEventListener("click", function(){
-  var def = (S.team || "Equipo") + " vs " + (S.opp || "rival") + (S.date ? " · " + S.date : "");
-  askText("Guardar alineación", "Ponle un nombre para reconocerla después.", def, function(name){
-    var list = lsGet(K_SAVED, []);
-    list.unshift({id:nid(), name:String(name).trim() || def, at:new Date().toISOString(), state:JSON.parse(JSON.stringify(S))});
-    if(lsSet(K_SAVED, list.slice(0,60))) toast("Alineación guardada");
-    else toast("No se pudo guardar en este navegador");
+var MAX_GAMES = 200;
+/* Escribe el juego en la lista y deja `st` como alineación de trabajo ligada
+   a él. id: la entrada a reemplazar (sin tope), o null para añadir una nueva
+   (con tope de MAX_GAMES: si sobran, se confirma qué juegos se borran). */
+function saveGame(id, name, st){
+  var at = new Date().toISOString();
+  var game = {id:id || nid(), name:name, at:at, state:JSON.parse(JSON.stringify(st))};
+  game.state.gameId = game.id; game.state.gameAt = at; // la copia guardada queda ligada a sí misma
+  var t = id ? {kept:Stats.upsertGame(lsGet(K_SAVED, []), game), dropped:[]}
+             : Stats.trimGames(Stats.upsertGame(lsGet(K_SAVED, []), game), MAX_GAMES);
+  function commit(){
+    // se relee la lista: pudo llegar otra versión mientras se confirmaba el tope
+    var gone = {};
+    t.dropped.forEach(function(e){ gone[e.id] = 1; });
+    var kept = Stats.upsertGame(lsGet(K_SAVED, []), game).filter(function(e){ return !gone[e.id]; });
+    if(!lsSet(K_SAVED, kept)){ toast("No se pudo guardar en este navegador"); return; }
+    S = st; S.gameId = game.id; S.gameAt = at;
+    renderAll();
+    toast((id ? "Juego actualizado: «" : "Juego guardado: «") + name + "»");
+  }
+  if(!t.dropped.length){ commit(); return; }
+  askConfirm("Límite de " + MAX_GAMES + " juegos",
+    "Para guardar se " + (t.dropped.length > 1 ? "borran " : "borra ") + t.dropped.map(function(e){ return "«" + e.name + "»"; }).join(", ") + ". ¿Continuar?",
+    "Guardar", commit);
+}
+/* Guardar como nuevo: copia la alineación (sin marcador ni estadísticas) con la fecha de hoy. */
+function saveAsNew(){
+  var st = Stats.asNew(S, todayLocal());
+  var def = Stats.gameName(st);
+  askText("Guardar como nuevo", "Ponle un nombre al juego nuevo.", def, function(name){
+    saveGame(null, String(name).trim() || def, st);
   });
+}
+$("btnSaveNew").addEventListener("click", saveAsNew);
+
+$("btnSave").addEventListener("click", function(){
+  var g = linkedGame();
+  if(!g){
+    var def = Stats.gameName(S);
+    askText("Guardar juego", "Ponle un nombre para reconocerlo después.", def, function(name){
+      saveGame(null, String(name).trim() || def, S);
+    });
+  }else if(g.at !== S.gameAt){
+    askChoice("Este juego cambió en otro dispositivo", "Se guardó en otro dispositivo después de que lo abriste aquí.",
+      "Reemplazar", "Guardar como nuevo", function(c){
+        if(c === "yes") saveGame(g.id, g.name, S); else saveAsNew();
+      });
+  }else saveGame(g.id, g.name, S);
 });
 
 $("btnLoad").addEventListener("click", function(){
@@ -3655,6 +3699,7 @@ function renderAll(){
   $("toggle4F").parentElement.classList.toggle("off", S.enabled4F !== true);
   $("toggleDH").checked = S.enabledDH === true;
   $("toggleDH").parentElement.classList.toggle("off", S.enabledDH !== true);
+  $("btnSaveNew").hidden = !linkedGame();
   save();
 }
 /* ============ teléfono: pestañas y menús ============ */
@@ -3778,11 +3823,7 @@ function mergeFirst(name, remote, local){
     return JSON.stringify(r);
   }
   if(name === "saved"){
-    var ids = {};
-    r.forEach(function(x){ ids[x.id] = 1; });
-    l.forEach(function(x){ if(!ids[x.id]) r.push(x); });
-    r.sort(function(a, b){ return String(b.at).localeCompare(String(a.at)); });
-    return JSON.stringify(r.slice(0, 60));
+    return JSON.stringify(Stats.mergeGames(r, l));
   }
   if(name === "stats") return JSON.stringify(Stats.merge(r, l));
   /* partido en curso: se queda el que tenga jugadores */

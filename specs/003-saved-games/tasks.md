@@ -36,7 +36,7 @@ left running. Everything is sequential: all logic is in `stats.js` and all UI in
       Files: `index.html`
       Done when: tests green; `node --check` OK; the app boots with the seed's old `current`/`saved` (no link
       fields) and Nuevo/Guardar/Borrar dialogs look and work as before.
-- [ ] T6. Guardar / "Guardar como nuevo" / conflict prompt / 200 cap / toasts / write failure; `mergeFirst` uses
+- [x] T6. Guardar / "Guardar como nuevo" / conflict prompt / 200 cap / toasts / write failure; `mergeFirst` uses
       `mergeGames`. (RF-1, RF-2, RF-3, RF-11, RF-12, RF-16, RF-17, RF-20, RF-21, RF-39) Deps: T2, T3, T5
       Files: `index.html`
       Done when: in the browser: saving twice leaves one entry with a new `at`; "Guardar como nuevo" adds a second
