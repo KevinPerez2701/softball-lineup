@@ -87,7 +87,7 @@ left running. Everything is sequential: all logic is in `stats.js` and all UI in
       Files: `index.html`
       Done when: "MSO · Casa" / "Call · Visita" on phone and desktop with ellipsis on long names; importing a valid
       backup asks first and Cancel changes nothing; invalid text shows the toast without asking.
-- [ ] T15. Field cards ≥ 10 px at 360 px, phone slots re-placed. (RF-29) Deps: T4
+- [x] T15. Field cards ≥ 10 px at 360 px, phone slots re-placed. (RF-29) Deps: T4
       Files: `index.html`
       Done when: at 360 px with SF, 4F and DH on, `impeccable detect` shows no field-card text under 10 px, no two
       cards overlap (screenshot), "Kevin P." shows without ellipsis.

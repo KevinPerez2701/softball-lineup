@@ -273,7 +273,7 @@ dialog .btn-ghost:hover{background:var(--surface-2);border-color:var(--ink-3)}
 .dh-slot .slot-key{color:var(--accent-text)}
 @media (max-width:700px){
   .field-options{width:100%;}
-  .dh-slot{--mx:50%;--my:82.7%}
+  .dh-slot{--mx:50%;--my:83.6%}
 }
 
 .field-scroll{overflow-x:auto;padding:12px}
@@ -752,16 +752,17 @@ body.locked .gate{
   .slot{
     left:var(--mx);top:var(--my);
     /* angostas y bajas para que las 10-12 quepan dentro del terreno */
-    width:24cqw;padding:.6cqw 1cqw;border-radius:1.4cqw;
+    width:24cqw;padding:.4cqw 1cqw;border-radius:1.4cqw;
     border-width:.3cqw;column-gap:1cqw;
   }
   .slot:hover{transform:translate(-50%,-50%)}
   .slot.filled{box-shadow:var(--shadow-2),inset .5cqw 0 0 var(--accent)}
   .slot.drop{box-shadow:0 0 0 .6cqw var(--accent-soft),var(--shadow-2)}
-  .slot-num{width:4.2cqw;height:4.2cqw;border-radius:.8cqw;font-size:2.7cqw}
-  .slot-key{font-size:2.1cqw;gap:.8cqw;letter-spacing:.06em;line-height:1.05}
-  .slot-jersey{font-size:1.9cqw}
-  .slot-name{font-size:3cqw;line-height:1.12}
+  /* 10 px como mínimo: en un teléfono de 360 px el cqw solo daba 6-9 px */
+  .slot-num{width:4.2cqw;height:4.2cqw;border-radius:.8cqw;font-size:max(10px,2.7cqw)}
+  .slot-key{font-size:max(10px,2.1cqw);gap:.8cqw;letter-spacing:.06em;line-height:1.05}
+  .slot-jersey{font-size:max(10px,1.9cqw)}
+  .slot-name{font-size:max(10px,3cqw);line-height:1.12}
 
   .innings{padding:10px 11px 12px}
   table.inn{min-width:0;border-spacing:2px}
@@ -810,7 +811,7 @@ body.locked .gate{
 
 @media (max-width:420px){
   .brand b{font-size:18px}
-  .slot-name{font-size:3.1cqw}
+  .slot-name{font-size:max(10px,3.1cqw)}
 }
 /* dedos, no cursor: 44 px por control y 8 px entre controles vecinos */
 @media (pointer:coarse){
@@ -1365,7 +1366,7 @@ window.D10.started = true;
    tx/ty: ticket térmico. */
 var POS = [
   {k:"P",   n:1,  es:"Lanzador",                 x:50, y:70,   mx:50,   my:73.2, tx:50, ty:68},
-  {k:"C",   n:2,  es:"Receptor",                 x:50, y:92.5, mx:50,   my:91.7, tx:50, ty:91},
+  {k:"C",   n:2,  es:"Receptor",                 x:50, y:92.5, mx:50,   my:94,   tx:50, ty:91},
   {k:"1B",  n:3,  es:"Primera base",             x:63, y:61.5, mx:64.4, my:63.4, tx:79, ty:63.5},
   {k:"2B",  n:4,  es:"Segunda base",             x:63, y:53.5, mx:66.7, my:53.7, tx:68, ty:53.5},
   {k:"3B",  n:5,  es:"Tercera base",             x:37, y:61.5, mx:35.6, my:63.4, tx:21, ty:63.5},
