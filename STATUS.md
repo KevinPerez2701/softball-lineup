@@ -3,10 +3,10 @@
 Single source of truth for what is in flight and what is left. Update it in the same commit as the
 work it describes. Dates come from `date`, never from memory.
 
-Last updated: 2026-11-05 14:47 UTC-4 by Claude
+Last updated: 2026-11-05 15:00 UTC-4 by Claude
 
 ## Now (one line)
-Spec 004 — T1, T2, T3, T5, T6 merged (reviewed, APPROVE each); T4 (field cards) in progress; then T7 demo. Not pushed: push after T7. G1 approved, G2 pre-approved by Kevin 2026-11-05.
+Idle — spec 004 done and pushed (7/7 tasks, browser demo 9/9 ✔ on 127.0.0.1).
 
 ## Active specs
 | Spec | Phase | Current task | Next task | Blocked by |
@@ -14,7 +14,7 @@ Spec 004 — T1, T2, T3, T5, T6 merged (reviewed, APPROVE each); T4 (field cards
 | 001-game-stats | done | — | — | — |
 | 002-inning-capture | done | — | — | — |
 | 003-saved-games | done | — | — | — |
-| 004-critique-fixes | implement | T4 | T7 | — |
+| 004-critique-fixes | done | — | — | — |
 
 Phases: constitution · spec · clarify · plan · tasks · implement · validate · done
 
@@ -22,9 +22,10 @@ Phases: constitution · spec · clarify · plan · tasks · implement · validat
 - (none)
 
 ## Known gaps (not blocking)
-- Spec 003 Done criteria: critique re-run 2026-11-05 scored heuristics 1=3, 4=2, 5=2, 6=3 (27/40). Open P1s: destructive confirms styled and focused as primary; HR saved without run/RBI and 0–0 counted as a tie. Snapshot in .impeccable/critique/ (git-excluded).
+- Re-run `/impeccable critique` after spec 004 to measure heuristics 4 and 5 (were 2/4 before 004). Not covered by the 004 demo: RF-13 backdrop tap and back button, RF-2 storage-failure toast.
 
 ## Recently done (keep last 10)
+- 2026-11-05 · 004 · T4 + T7 done — field cards fit names 11.5→10 px without jersey; sw.js v7; browser demo on 127.0.0.1: 9/9 checklist steps ✔ (all closed-list confirms red with focus on Cancelar, RF-10 still locked, Guardar y salir, HR run/CI and undo, Sin marcador, column titles, Guardado ✓, cards no overlap); spec closed
 - 2026-11-05 · 004 · T1, T2, T3, T5, T6 done in parallel worktrees, each reviewed (APPROVE) and merged; 112/112 green on main
 - 2026-11-05 · 004 · plan.md (fable + review D1: red resting .btn-danger app-wide) and tasks.md in 3 parallel waves (T1–T7)
 - 2026-11-05 · 004 · Spec drafted and clarified (clarifier NEEDS WORK: 4 blocking, 9 minor; Kevin answered BO, extra confirms, HR undo, long names) → 18 RFs
@@ -37,7 +38,6 @@ Phases: constitution · spec · clarify · plan · tasks · implement · validat
 - 2026-11-05 · 003 · T9 done — app starts empty (fresh/stored), nothing written until the first change, remote current while fresh only updates stored; reviewer APPROVE; orchestrator: backup export uses the stored lineup while fresh
 - 2026-11-05 · 003 · T8 done — stats save also updates the open game (K_STATS → K_CUR → K_SAVED, full rollback on failure), "Guardar estadísticas", title "<team> vs <opp> · dd/mm", focus on Cerrar, legend; reviewer APPROVE (rare double-failure pending-put note accepted, same as HEAD)
 - 2026-11-05 · 003 · T7 done — Abrir juego list (time, result, Estadísticas/Abierto pills, empty text), open + Nuevo guards, delete of the open game, game wording; reviewer APPROVE; orchestrator: failed delete write now toasts instead of claiming success
-- 2026-11-05 · 003 · T6 done — saveGame (replace/add, 200 cap confirm, write failure), Guardar como nuevo, cross-device conflict prompt, mergeFirst without the 60 cut; reviewer APPROVE; orchestrator: saved copy carries its own link, list re-read at commit, plural "se borran"
 - 2026-10-23 · 002 · T8 desktop demo in prod: steps 1–21 ✔. Found and fixed (quick fix): first load after a deploy paired the new index.html with the cached old stats.js (sheet crashed, "Stats.cellLines is not a function"); sw.js now fetches stats.js network-first like the page
 
 ## Backlog (ideas not yet specified)

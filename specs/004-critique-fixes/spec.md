@@ -1,6 +1,6 @@
 # Spec 004 — Fixes from the impeccable critique re-run
 
-Status: in-progress — G1 approved by Kevin 2026-11-05 14:37 ("si apruebo la spec 004 e implementa de una"; G2 pre-approved by the same words)
+Status: done — G3 under Kevin's "implementa de una" + standing push permission; G1 approved by Kevin 2026-11-05 14:37 ("si apruebo la spec 004 e implementa de una"; G2 pre-approved by the same words)
 Created: 2026-11-05
 
 ## Context and goal

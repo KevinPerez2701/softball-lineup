@@ -21,7 +21,7 @@ http://127.0.0.1:8000 (never localhost) at the end.
 - [x] T3. [parallel-ok] Header save state: "Guardado ✓"/"Guardar". (RF-9, RF-18) Deps: —
       Files: `index.html` (renderHeader ~1654-1670, phone CSS ~684)
       Done when: tests green; `node --check` OK; trace of both states.
-- [ ] T4. [parallel-ok] Field cards: no jersey on cards/titles, names 11.5 px with per-name shrink to 10 px,
+- [x] T4. [parallel-ok] Field cards: no jersey on cards/titles, names 11.5 px with per-name shrink to 10 px,
       `fitSlotNames()`. (RF-10, RF-11) Deps: —
       Files: `index.html` (slot CSS ~320-328, ~762-765, ~814; renderField ~1916-1942; setTab ~3862)
       Done when: tests green; `node --check` OK; browser measurement at 360 px on 127.0.0.1 (names ≥ 10 px, no
@@ -38,7 +38,7 @@ http://127.0.0.1:8000 (never localhost) at the end.
       Done when: tests green; `node --check` OK; trace.
 
 ## Wave 3 — orchestrator
-- [ ] T7. `sw.js` VERSION v7; merged suite green; browser demo at 360 and 1440 px on 127.0.0.1 of every RF; STATUS.
+- [x] T7. `sw.js` VERSION v7; merged suite green; browser demo at 360 and 1440 px on 127.0.0.1 of every RF; STATUS.
       (NFR, Done criteria) Deps: T1–T6
       Files: `sw.js`, `STATUS.md`
       Done when: checklist ✔/✘ per RF recorded in STATUS.
