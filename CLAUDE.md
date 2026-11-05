@@ -8,6 +8,8 @@ GitHub Pages (branch `main`, root): everything committed here is served on the w
 
 ## Commands
 - Run: from the repo root `python3 -m http.server 8000 < /dev/null`, then open http://localhost:8000 (kill it after).
+- Demos/QA by agents: open **http://127.0.0.1:8000**, never localhost. Kevin's real Firebase session can live on
+  localhost:8000; there a demo seed or a click acts on his real account and syncs to Firestore (2026-11-05).
 - Tests: `node --test 'tests/*.test.js'` (Node stdlib, no npm).
 - Lint/build: none.
 
@@ -19,6 +21,8 @@ GitHub Pages (branch `main`, root): everything committed here is served on the w
 - Read `STATUS.md` first, then `docs/constitution.md` and the active spec in `specs/`, before touching code.
 - Follow the constitution; if a spec, plan or request conflicts with it, stop and ask.
 - One task at a time from `specs/<NNN>/tasks.md`; update `tasks.md` and `STATUS.md` in the same commit as the code.
+- Parallel where possible (Kevin, 2026-11-05): tasks with disjoint files run at the same time in worktrees outside
+  the repo (`../softball-lineup-wt/Tn`), and independent agents (review, clarify, plan) run together.
 - New behavior not in the spec → `/sdd:change` first.
 - "What's left?" is answered by `/sdd:status`, from the files, not from memory.
 
