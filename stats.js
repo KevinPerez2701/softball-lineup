@@ -10,8 +10,19 @@ Stats.CODES = [
   {code:"BB", pick:"BB", cell:"BB"}, {code:"K", pick:"K", cell:"K"},
   {code:"RO", pick:"Rolling", cell:"Rol"}, {code:"FL", pick:"Fly", cell:"Fly"},
   {code:"LI", pick:"Línea", cell:"Lín"}, {code:"E", pick:"E", cell:"E"},
-  {code:"BO", pick:"BO", cell:"BO"}, {code:"SF", pick:"SF", cell:"SF"}
+  {code:"BO", pick:"BO", cell:"BO", legacy:true}, {code:"SF", pick:"Fly sac.", cell:"FS"}
 ];
+
+// Lo que ofrece el selector: BO sigue existiendo en datos viejos pero ya no se elige.
+Stats.PICK_CODES = Stats.CODES.filter(function(c){ return !c.legacy; });
+
+// Nombre completo de cada columna de la tabla de estadísticas (clave = etiqueta de la columna).
+Stats.COL_TITLES = {
+  JJ: "Juegos jugados", AP: "Apariciones al plato", VB: "Veces al bate", H: "Hits", "2B": "Dobles",
+  "3B": "Triples", HR: "Jonrones", CA: "Carreras anotadas", CI: "Carreras impulsadas", BB: "Bases por bolas",
+  K: "Ponches", BR: "Bases robadas", AR: "Atrapado robando", AVE: "Promedio de bateo (H ÷ VB)",
+  OBP: "Promedio de embasado", SLG: "Slugging (bases totales ÷ VB)", OPS: "OBP + SLG"
+};
 
 Stats.cellLabel = function(pa){
   var i, c = pa.code;
@@ -91,6 +102,24 @@ Stats.roLabel = function(kind){
 
 Stats.defaultOuts = function(code){
   return ["K", "RO", "FL", "LI", "SF", "BO"].indexOf(code) >= 0 ? 1 : 0;
+};
+
+// Muta y devuelve f (formulario del selector). Elegir HR marca carrera y CI (recordando lo previo en
+// hrPrev); salir de HR los restaura. Un formulario abierto ya como HR no trae hrPrev y no toca nada.
+Stats.pickResult = function(f, code){
+  var prev = f.code;
+  if(prev === code) return f;
+  f.code = code;
+  f.outs = Stats.defaultOuts(code);
+  if(code === "HR"){
+    f.hrPrev = {run: f.run, rbi: f.rbi};
+    f.run = true;
+    if(!f.rbi) f.rbi = 1;
+  } else if(prev === "HR" && f.hrPrev){
+    f.run = f.hrPrev.run; f.rbi = f.hrPrev.rbi;
+    delete f.hrPrev;
+  }
+  return f;
 };
 
 Stats.paOuts = function(pa){
@@ -316,9 +345,12 @@ Stats.games = function(entries){
   function sum(a){ return a.reduce(function(s, n){ return s + n; }, 0); }
   var out = {list: [], w: 0, l: 0, t: 0, runsFor: 0, runsAgainst: 0};
   Stats.byNewest(Stats.live(entries)).forEach(function(rec){
-    var g = rec.game, us = sum(g.us), them = sum(g.them), res = us > them ? "W" : us < them ? "L" : "T";
-    out.list.push({id: rec.id, date: g.date, opp: g.opp, savedAt: rec.savedAt, us: us, them: them, result: res});
-    out[res.toLowerCase()]++;
+    var g = rec.game, us = sum(g.us), them = sum(g.them), none = !us && !them,
+        res = none ? "" : us > them ? "W" : us < them ? "L" : "T";
+    out.list.push({id: rec.id, date: g.date, opp: g.opp, savedAt: rec.savedAt, us: us, them: them, result: res,
+      text: none ? "Sin marcador" : Stats.result(g)});
+    // un 0–0 sin marcador se lista pero no entra al récord
+    if(res) out[res.toLowerCase()]++;
     out.runsFor += us; out.runsAgainst += them;
   });
   return out;

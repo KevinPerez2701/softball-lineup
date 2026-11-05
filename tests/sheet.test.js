@@ -18,9 +18,12 @@ test("RF-2 CODES: 12 entries, textos de picker y celda", function(){
   var by = {};
   Stats.CODES.forEach(function(c){ by[c.code] = c; });
   assert.strictEqual(Object.keys(by).length, 12);
-  ["1B","2B","3B","HR","BB","K","E","BO","SF"].forEach(function(k){
+  ["1B","2B","3B","HR","BB","K","E","BO"].forEach(function(k){
     assert.strictEqual(by[k].pick, k); assert.strictEqual(by[k].cell, k);
   });
+  assert.deepStrictEqual([by.SF.pick, by.SF.cell], ["Fly sac.", "FS"]);
+  assert.strictEqual(by.BO.legacy, true);
+  assert.strictEqual(Stats.CODES.filter(function(c){ return c.legacy; }).length, 1);
   assert.deepStrictEqual([by.RO.pick, by.RO.cell], ["Rolling", "Rol"]);
   assert.deepStrictEqual([by.FL.pick, by.FL.cell], ["Fly", "Fly"]);
   assert.deepStrictEqual([by.LI.pick, by.LI.cell], ["Línea", "Lín"]);
@@ -31,6 +34,50 @@ test("RF-2 cellLabel: etiqueta de celda y marca de carrera", function(){
   assert.strictEqual(Stats.cellLabel(pa(1, "LI")), "Lín");
   assert.strictEqual(Stats.cellLabel(pa(1, "1B", true)), "1B•");
   assert.strictEqual(Stats.cellLabel(pa(1, "K", false)), "K");
+  assert.strictEqual(Stats.cellLabel(pa(1, "SF", true)), "FS•");
+});
+
+test("RF-6 PICK_CODES: 11 entries, sin BO, mismo orden", function(){
+  assert.deepStrictEqual(Stats.PICK_CODES.map(function(c){ return c.code; }),
+    ["1B","2B","3B","HR","BB","K","RO","FL","LI","E","SF"]);
+  assert.strictEqual(Stats.PICK_CODES.length, 11);
+});
+
+test("RF-8 COL_TITLES: los 17 nombres", function(){
+  assert.deepStrictEqual(Stats.COL_TITLES, {
+    JJ: "Juegos jugados", AP: "Apariciones al plato", VB: "Veces al bate", H: "Hits", "2B": "Dobles",
+    "3B": "Triples", HR: "Jonrones", CA: "Carreras anotadas", CI: "Carreras impulsadas", BB: "Bases por bolas",
+    K: "Ponches", BR: "Bases robadas", AR: "Atrapado robando", AVE: "Promedio de bateo (H ÷ VB)",
+    OBP: "Promedio de embasado", SLG: "Slugging (bases totales ÷ VB)", OPS: "OBP + SLG"});
+  assert.strictEqual(Object.keys(Stats.COL_TITLES).length, 17);
+});
+
+test("RF-14/15 pickResult: HR marca carrera y CI, y al salir restaura", function(){
+  var f = Stats.pickResult({code: "1B", run: false, rbi: 0, outs: 0}, "HR");
+  assert.deepStrictEqual([f.code, f.run, f.rbi, f.outs], ["HR", true, 1, 0]);
+  // CI ya puesto se conserva
+  f = Stats.pickResult({code: "1B", run: false, rbi: 3, outs: 0}, "HR");
+  assert.deepStrictEqual([f.run, f.rbi], [true, 3]);
+  // HR -> K restaura y vuelven los outs de K
+  f = Stats.pickResult({code: "1B", run: false, rbi: 0, outs: 0}, "HR");
+  Stats.pickResult(f, "K");
+  assert.deepStrictEqual([f.code, f.run, f.rbi, f.outs, "hrPrev" in f], ["K", false, 0, 1, false]);
+  // lo editado mientras es HR se pierde al salir: valen los previos al HR
+  f = Stats.pickResult({code: "1B", run: true, rbi: 2, outs: 0}, "HR");
+  f.run = false; f.rbi = 4;
+  Stats.pickResult(f, "2B");
+  assert.deepStrictEqual([f.code, f.run, f.rbi, "hrPrev" in f], ["2B", true, 2, false]);
+  // abierto como HR (sin hrPrev): salir no toca carrera ni CI
+  f = Stats.pickResult({code: "HR", run: true, rbi: 2, outs: 0}, "1B");
+  assert.deepStrictEqual([f.code, f.run, f.rbi], ["1B", true, 2]);
+  // HR -> HR no hace nada
+  f = Stats.pickResult({code: "1B", run: false, rbi: 0, outs: 0}, "HR");
+  var snap = JSON.stringify(f);
+  assert.strictEqual(Stats.pickResult(f, "HR"), f);
+  assert.strictEqual(JSON.stringify(f), snap);
+  // cambio sin HR reinicia outs
+  f = Stats.pickResult({code: "K", run: false, rbi: 0, outs: 1}, "1B");
+  assert.deepStrictEqual([f.code, f.outs, f.run, f.rbi], ["1B", 0, false, 0]);
 });
 
 test("RF-1/8/36 refreshRows: vacío copia la alineación", function(){
