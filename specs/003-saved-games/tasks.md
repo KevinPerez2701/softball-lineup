@@ -49,7 +49,7 @@ left running. Everything is sequential: all logic is in `stats.js` and all UI in
       Done when: in the browser: rows show "dd/mm/aaaa · h:mm p. m.", "Ganado 6–5" and the pills; opening another
       game with changes asks first; deleting the open game leaves the lineup unlinked; an empty list shows the RF-38
       text.
-- [ ] T8. Capture: RF-6 update of the linked game with RF-7 rollback, RF-26 toast, "Guardar estadísticas", title,
+- [x] T8. Capture: RF-6 update of the linked game with RF-7 rollback, RF-26 toast, "Guardar estadísticas", title,
       focus on Cerrar, legend. (RF-6, RF-7, RF-25, RF-26, RF-31, RF-33) Deps: T6
       Files: `index.html`
       Done when: in the browser: saving stats of the open game updates its saved entry (`at`, scoreboard,
