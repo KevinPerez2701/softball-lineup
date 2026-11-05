@@ -3,10 +3,10 @@
 Single source of truth for what is in flight and what is left. Update it in the same commit as the
 work it describes. Dates come from `date`, never from memory.
 
-Last updated: 2026-11-05 14:25 UTC-4 by Claude
+Last updated: 2026-11-05 14:34 UTC-4 by Claude
 
 ## Now (one line)
-Spec 004 (critique fixes) drafted, in clarify; 1 open question (what BO means).
+Spec 004 clarified (18 RFs), awaiting G1; planner started in parallel.
 
 ## Active specs
 | Spec | Phase | Current task | Next task | Blocked by |
@@ -14,17 +14,18 @@ Spec 004 (critique fixes) drafted, in clarify; 1 open question (what BO means).
 | 001-game-stats | done | — | — | — |
 | 002-inning-capture | done | — | — | — |
 | 003-saved-games | done | — | — | — |
-| 004-critique-fixes | clarify | — | answer BO → /sdd:clarify 004 | Kevin (BO) |
+| 004-critique-fixes | clarify | — | G1 → plan (in progress) | Kevin G1 |
 
 Phases: constitution · spec · clarify · plan · tasks · implement · validate · done
 
 ## Open questions (block work until answered)
-- 004 RF-6: what does "BO" stand for in the scorebook (counts as 1 out)?
+- (none)
 
 ## Known gaps (not blocking)
 - Spec 003 Done criteria: critique re-run 2026-11-05 scored heuristics 1=3, 4=2, 5=2, 6=3 (27/40). Open P1s: destructive confirms styled and focused as primary; HR saved without run/RBI and 0–0 counted as a tie. Snapshot in .impeccable/critique/ (git-excluded).
 
 ## Recently done (keep last 10)
+- 2026-11-05 · 004 · Spec drafted and clarified (clarifier NEEDS WORK: 4 blocking, 9 minor; Kevin answered BO, extra confirms, HR undo, long names) → 18 RFs
 - 2026-11-05 · 003 · Browser checks closed: RF-39 (Guardar with the saved-list write failing: error toast, list and link unchanged) ✔, RF-7 (stats save with the saved-list write failing: stats, lineup and list unchanged, sheet stays open, error toast) ✔, 375 px (no horizontal scroll, header Guardar/Compartir/Más, 10 cards ≥ 10 px without overlaps, "Call · Visita"/"MSO · Casa") ✔
 - 2026-11-05 · 003 · T16 done — sw.js v6 + network-first fetch with cache no-cache (fixes new page + stale stats.js after a deploy); browser demo 15/16 ✔ at 360/800/1440, the ✘ (RF-38 empty text after deleting the last game) fixed; detector: no new findings; 108/108 green. Spec closed by Kevin (G3)
 - 2026-11-05 · 003 · T15 done (orchestrator, measured in the browser at 360 px with SF+4F+DH, 12 cards): every field-card text ≥ 10 px via max(10px, …cqw), padding .4cqw, BD 83.6% and C 94% → no overlaps, "Kevin P."/"Keven P." uncut. Found: the SW network-first fetch goes through the HTTP cache, so a deploy can pair a new index.html with an old stats.js (Stats.unsaved missing) → fix in T16
