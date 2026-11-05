@@ -1257,7 +1257,7 @@ body.locked .gate{
 
 <dialog id="saved">
   <div class="dlg-head">
-    <h3>Alineaciones guardadas</h3>
+    <h3>Abrir juego</h3>
     <span style="margin-left:auto"></span>
     <button class="btn btn-sm" id="savedClose" type="button">Cerrar</button>
   </div>
@@ -2993,7 +2993,8 @@ function todayLocal(){
   return new Date(Date.now() - new Date().getTimezoneOffset()*60000).toISOString().slice(0,10);
 }
 $("btnNew").addEventListener("click", function(){
-  askConfirm("Alineación nueva",
+  askConfirm("Nuevo juego",
+    (hasUnsaved() ? "Hay cambios sin guardar. " : "") +
     "Se limpia el campo, el orden al bate y el marcador. Los jugadores del partido se conservan.",
     "Empezar", function(){
       var roster = S.roster;
@@ -3001,7 +3002,7 @@ $("btnNew").addEventListener("click", function(){
       S.roster = roster;
       S.date = todayLocal();
       renderAll();
-      toast("Alineación nueva");
+      toast("Nuevo juego");
     });
 });
 
@@ -3060,10 +3061,14 @@ $("btnLoad").addEventListener("click", function(){
   var body = $("savedBody");
   body.innerHTML = "";
   if(!list.length){
-    body.appendChild(el("p", "empty-note", 'No hay alineaciones guardadas todavía. Usa "Guardar".'));
+    body.appendChild(el("p", "empty-note", "Todavía no hay juegos guardados. Usa «Guardar»."));
   }
+  var liveStats = {};
+  Stats.live(lsGet(K_STATS, [])).forEach(function(e){ liveStats[e.id] = 1; });
   list.forEach(function(item){
+    var isOpen = item.id === S.gameId;
     var it = el("div", "pickitem");
+    if(isOpen) it.setAttribute("aria-current", "true");
     it.style.cursor = "default";
     var info = el("span");
     info.style.minWidth = "0";
@@ -3072,26 +3077,35 @@ $("btnLoad").addEventListener("click", function(){
     t.style.whiteSpace = "nowrap";
     t.style.overflow = "hidden";
     t.style.textOverflow = "ellipsis";
-    var d = el("div", "where", new Date(item.at).toLocaleString("es-VE"));
+    var res = Stats.result(item.state || {});
+    var d = el("div", "where", Stats.fmtDateTime(new Date(item.at)) + (res ? " · " + res : ""));
+    if(item.state && item.state.statsId && liveStats[item.state.statsId]){
+      d.appendChild(document.createTextNode(" ")); d.appendChild(el("span", "pill", "Estadísticas"));
+    }
+    if(isOpen){ d.appendChild(document.createTextNode(" ")); d.appendChild(el("span", "pill ok", "Abierto")); }
     info.appendChild(t); info.appendChild(d);
     var spacer = el("span");
     var acts = el("span", "rowacts");
     var bl = el("button", "btn btn-sm", "Abrir");
     bl.type = "button";
+    function load(){
+      S = normalizeState(item.state);
+      S.gameId = item.id; S.gameAt = item.at;
+      renderAll(); $("saved").close(); toast("Juego abierto");
+    }
     bl.addEventListener("click", function(){
-      S = item.state;
-      if(!Array.isArray(S.us)) S.us = [0,0,0,0,0,0,0];
-      if(!Array.isArray(S.them)) S.them = [0,0,0,0,0,0,0];
-      renderAll(); $("saved").close(); toast("Alineación cargada");
+      if(hasUnsaved()) askConfirm("Hay cambios sin guardar", "Se pierden al abrir «" + item.name + "».", "Abrir", load);
+      else load();
     });
     var bd = iconBtn("btn btn-sm btn-icon btn-danger", "x", "Borrar " + item.name);
     bd.addEventListener("click", function(){
-      askConfirm("Borrar alineación", "Se borra «" + item.name + "» de las guardadas. No se puede deshacer.",
+      askConfirm("Borrar juego", "Se borra «" + item.name + "» de los juegos guardados. No se puede deshacer.",
         "Borrar", function(){
           var l2 = lsGet(K_SAVED, []).filter(function(x){ return x.id !== item.id; });
-          lsSet(K_SAVED, l2);
+          if(!lsSet(K_SAVED, l2)){ toast("No se pudo guardar en este navegador"); return; }
           it.remove();
-          toast("Alineación borrada");
+          if(item.id === S.gameId) renderAll(); // RF-13: la alineación sigue, sin juego ligado
+          toast("Juego borrado");
         });
     });
     acts.appendChild(bl); acts.appendChild(bd);

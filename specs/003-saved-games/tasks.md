@@ -42,7 +42,7 @@ left running. Everything is sequential: all logic is in `stats.js` and all UI in
       Done when: in the browser: saving twice leaves one entry with a new `at`; "Guardar como nuevo" adds a second
       entry with today's date and no stats link, the old one unchanged; a second tab saving the same game makes the
       first tab's Guardar show the three-way prompt; a forced `lsSet` failure shows the error and adds nothing.
-- [ ] T7. "Abrir juego" list (time, result, Estadísticas/Abierto pills, empty text), open with the RF-5 guard, delete
+- [x] T7. "Abrir juego" list (time, result, Estadísticas/Abierto pills, empty text), open with the RF-5 guard, delete
       of the linked game, Nuevo texts and guard. (RF-4, RF-5, RF-13, RF-15, RF-19, RF-36, RF-37, RF-38, RF-40)
       Deps: T6
       Files: `index.html`
