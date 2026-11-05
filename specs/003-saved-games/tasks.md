@@ -91,7 +91,7 @@ left running. Everything is sequential: all logic is in `stats.js` and all UI in
       Files: `index.html`
       Done when: at 360 px with SF, 4F and DH on, `impeccable detect` shows no field-card text under 10 px, no two
       cards overlap (screenshot), "Kevin P." shows without ellipsis.
-- [ ] T16. `sw.js` `VERSION` bump; full Done-criteria demo at 360/375/800/1440 px; impeccable critique re-run.
+- [x] T16. `sw.js` `VERSION` bump; full Done-criteria demo at 360/375/800/1440 px; impeccable critique re-run.
       (NFR, Done criteria) Deps: T1–T15
       Files: `sw.js`, `STATUS.md`
       Done when: tests green; the demo checklist is recorded in STATUS with ✔/✘ per step; critique heuristics 1, 4,

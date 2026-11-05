@@ -3,7 +3,7 @@
    señal siempre se ve la última versión) y, si no responde en unos segundos,
    se abre desde la caché. El resto de archivos sale de la caché al instante
    y se actualiza por detrás. Sube VERSION cuando cambie la lista de archivos. */
-var VERSION = "v5";
+var VERSION = "v6";
 var SHELL = "diamante10-shell-" + VERSION;
 var CDN = "diamante10-cdn";
 var ASSETS = [
@@ -39,7 +39,8 @@ self.addEventListener("activate", function(ev){
 /* Red primero, con límite de tiempo; si falla o tarda, lo guardado. */
 function networkFirst(req, cacheName, key, ms){
   return caches.open(cacheName).then(function(cache){
-    var net = fetch(req).then(function(res){
+    // no-cache: revalida con el servidor; sin esto la caché HTTP podía dar un stats.js viejo con la página nueva
+    var net = fetch(req.url, {cache: "no-cache"}).then(function(res){ // por URL: una petición "navigate" no acepta opciones
       if(res && res.ok) cache.put(key, res.clone());
       return res;
     });

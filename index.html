@@ -3237,6 +3237,7 @@ $("btnLoad").addEventListener("click", function(){
           var l2 = lsGet(K_SAVED, []).filter(function(x){ return x.id !== item.id; });
           if(!lsSet(K_SAVED, l2)){ toast("No se pudo guardar en este navegador"); return; }
           it.remove();
+          if(!l2.length) body.appendChild(el("p", "empty-note", "Todavía no hay juegos guardados. Usa «Guardar»."));
           if(item.id === S.gameId) renderAll(); // RF-13: la alineación sigue, sin juego ligado
           toast("Juego borrado");
         });
