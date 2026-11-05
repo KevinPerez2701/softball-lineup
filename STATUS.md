@@ -3,7 +3,7 @@
 Single source of truth for what is in flight and what is left. Update it in the same commit as the
 work it describes. Dates come from `date`, never from memory.
 
-Last updated: 2026-11-05 11:05 UTC-4 by Claude
+Last updated: 2026-11-05 10:40 UTC-4 by Claude
 
 ## Now (one line)
 Spec 003 clarified, waiting for G1. Kevin (2026-11-05) wants the impeccable design pass folded into spec 003: next session (with the impeccable plugin loaded) runs the impeccable audit, amends spec 003 with the chosen design RFs (today "Out of scope"), then G1 → plan → tasks. Commit 44cfd5a (stats scoreboard home fix) not pushed yet: ask Kevin.
