@@ -7,18 +7,18 @@ in agents; the orchestrator merges, runs `node --test 'tests/*.test.js'` alone a
 http://127.0.0.1:8000 (never localhost) at the end.
 
 ## Wave 1 — in parallel
-- [ ] T1. [parallel-ok] stats.js: `CODES` SF "Fly sac."/"FS", BO `legacy`, `PICK_CODES`, `COL_TITLES`;
+- [x] T1. [parallel-ok] stats.js: `CODES` SF "Fly sac."/"FS", BO `legacy`, `PICK_CODES`, `COL_TITLES`;
       `Stats.games` `result ""`/`text` with the 0–0 rule; `Stats.pickResult`. Tests first. (RF-3, RF-4, RF-5, RF-6,
       RF-7, RF-8, RF-14, RF-15, RF-16, RF-17) Deps: —
       Files: `stats.js`, `tests/sheet.test.js`, `tests/views.test.js`
       Done when: suite green with the plan's new assertions (labels, 17 titles, games text + 0–0 + JJ, pickResult cases).
-- [ ] T2. [parallel-ok] Dialogs: `danger` on `askConfirm`/`askChoice`, `.btn-danger` resting red, the closed-list
+- [x] T2. [parallel-ok] Dialogs: `danger` on `askConfirm`/`askChoice`, `.btn-danger` resting red, the closed-list
       call sites, RF-10 still locked with Descartar red and focus on Recuperar, RF-2 capture close question. (RF-1,
       RF-2, RF-12, RF-13) Deps: —
       Files: `index.html` (CSS ~197, ask functions ~1725-1767, call sites ~1834, 1844, 2365, 2401, 3090-3093, 3129,
       3163, 3230, 3235, 3427; NOT ~3288)
       Done when: tests green; `node --check` OK; trace of every listed dialog in the report.
-- [ ] T3. [parallel-ok] Header save state: "Guardado ✓"/"Guardar". (RF-9, RF-18) Deps: —
+- [x] T3. [parallel-ok] Header save state: "Guardado ✓"/"Guardar". (RF-9, RF-18) Deps: —
       Files: `index.html` (renderHeader ~1654-1670, phone CSS ~684)
       Done when: tests green; `node --check` OK; trace of both states.
 - [ ] T4. [parallel-ok] Field cards: no jersey on cards/titles, names 11.5 px with per-name shrink to 10 px,
@@ -28,11 +28,11 @@ http://127.0.0.1:8000 (never localhost) at the end.
       overlap with SF/4F/BD on).
 
 ## Wave 2 — in parallel, after T1 is merged
-- [ ] T5. [parallel-ok] Picker: `Stats.PICK_CODES` (no BO) and `Stats.pickResult` in `paForm`. (RF-3, RF-6, RF-14,
+- [x] T5. [parallel-ok] Picker: `Stats.PICK_CODES` (no BO) and `Stats.pickResult` in `paForm`. (RF-3, RF-6, RF-14,
       RF-15) Deps: T1
       Files: `index.html` (paForm ~2838-2845)
       Done when: tests green; `node --check` OK; trace of new PA → HR → 1B, edit of an old HR, guided mode.
-- [ ] T6. [parallel-ok] Stats views: games list `x.text`, column `title`s and the `<details>` key, danger on the
+- [x] T6. [parallel-ok] Stats views: games list `x.text`, column `title`s and the `<details>` key, danger on the
       stats delete confirm. (RF-7, RF-8, RF-16, RF-17, RF-1) Deps: T1, T2 (askConfirm signature)
       Files: `index.html` (renderStatsGames/renderStatsPlayers ~3263-3345 incl. ~3288)
       Done when: tests green; `node --check` OK; trace.

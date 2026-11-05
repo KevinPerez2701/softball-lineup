@@ -3,10 +3,10 @@
 Single source of truth for what is in flight and what is left. Update it in the same commit as the
 work it describes. Dates come from `date`, never from memory.
 
-Last updated: 2026-11-05 14:41 UTC-4 by Claude
+Last updated: 2026-11-05 14:47 UTC-4 by Claude
 
 ## Now (one line)
-Spec 004 — Wave 1 in progress (T1 stats.js ‖ T2 dialogs ‖ T3 header ‖ T4 field cards, worktrees in ../softball-lineup-wt/). G1 approved, G2 pre-approved by Kevin 2026-11-05.
+Spec 004 — T1, T2, T3, T5, T6 merged (reviewed, APPROVE each); T4 (field cards) in progress; then T7 demo. Not pushed: push after T7. G1 approved, G2 pre-approved by Kevin 2026-11-05.
 
 ## Active specs
 | Spec | Phase | Current task | Next task | Blocked by |
@@ -14,7 +14,7 @@ Spec 004 — Wave 1 in progress (T1 stats.js ‖ T2 dialogs ‖ T3 header ‖ T4
 | 001-game-stats | done | — | — | — |
 | 002-inning-capture | done | — | — | — |
 | 003-saved-games | done | — | — | — |
-| 004-critique-fixes | implement | T1–T4 (wave 1) | T5‖T6 | — |
+| 004-critique-fixes | implement | T4 | T7 | — |
 
 Phases: constitution · spec · clarify · plan · tasks · implement · validate · done
 
@@ -25,6 +25,7 @@ Phases: constitution · spec · clarify · plan · tasks · implement · validat
 - Spec 003 Done criteria: critique re-run 2026-11-05 scored heuristics 1=3, 4=2, 5=2, 6=3 (27/40). Open P1s: destructive confirms styled and focused as primary; HR saved without run/RBI and 0–0 counted as a tie. Snapshot in .impeccable/critique/ (git-excluded).
 
 ## Recently done (keep last 10)
+- 2026-11-05 · 004 · T1, T2, T3, T5, T6 done in parallel worktrees, each reviewed (APPROVE) and merged; 112/112 green on main
 - 2026-11-05 · 004 · plan.md (fable + review D1: red resting .btn-danger app-wide) and tasks.md in 3 parallel waves (T1–T7)
 - 2026-11-05 · 004 · Spec drafted and clarified (clarifier NEEDS WORK: 4 blocking, 9 minor; Kevin answered BO, extra confirms, HR undo, long names) → 18 RFs
 - 2026-11-05 · 003 · Browser checks closed: RF-39 (Guardar with the saved-list write failing: error toast, list and link unchanged) ✔, RF-7 (stats save with the saved-list write failing: stats, lineup and list unchanged, sheet stays open, error toast) ✔, 375 px (no horizontal scroll, header Guardar/Compartir/Más, 10 cards ≥ 10 px without overlaps, "Call · Visita"/"MSO · Casa") ✔
