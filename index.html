@@ -2854,8 +2854,10 @@ function paForm(ri, inn, idx, done){
   function draw(){
     body.innerHTML = "";
     var grid = el("div", "pa-grid");
-    Stats.CODES.forEach(function(c){ grid.appendChild(chip(c.pick, f.code === c.code, function(){
-      if(f.code !== c.code){ f.code = c.code; f.outs = Stats.defaultOuts(c.code); }
+    // RF-6: BO ya no se ofrece, pero un turno que lo trae conserva su chip para poder editarlo
+    var codes = (src && src.code === "BO") ? Stats.CODES : Stats.PICK_CODES;
+    codes.forEach(function(c){ grid.appendChild(chip(c.pick, f.code === c.code, function(){
+      Stats.pickResult(f, c.code); // RF-3/14/15: HR marca carrera y CI; salir de HR los restaura
       if(c.code === "HR" || c.code === "SF" || c.code === "BO") f.more = true; // RF-42
     })); });
     body.appendChild(grid);
