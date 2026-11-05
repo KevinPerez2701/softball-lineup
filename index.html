@@ -322,10 +322,6 @@ dialog .btn-ghost:hover{background:var(--surface-2);border-color:var(--ink-3)}
   white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
 }
 .slot.empty .slot-name{color:var(--ink-3);font-weight:500;font-style:italic}
-.slot-jersey{
-  font-family:var(--cond);font-weight:600;font-size:1.2cqw;letter-spacing:0;
-  color:var(--ink-3);font-variant-numeric:tabular-nums;
-}
 .field-note{
   padding:0 14px 12px;font-size:12.5px;color:var(--ink-3);
   display:flex;gap:14px;flex-wrap:wrap;
@@ -761,8 +757,8 @@ body.locked .gate{
   /* 10 px como mínimo: en un teléfono de 360 px el cqw solo daba 6-9 px */
   .slot-num{width:4.2cqw;height:4.2cqw;border-radius:.8cqw;font-size:max(10px,2.7cqw)}
   .slot-key{font-size:max(10px,2.1cqw);gap:.8cqw;letter-spacing:.06em;line-height:1.05}
-  .slot-jersey{font-size:max(10px,1.9cqw)}
-  .slot-name{font-size:max(10px,3cqw);line-height:1.12}
+  /* 11.5 px; si un nombre no cabe, fitSlotNames() lo achica hasta 10 px */
+  .slot-name{font-size:max(11.5px,3cqw);line-height:max(13px,3.36cqw)} /* alto fijo: achicar no cambia la tarjeta */
 
   .innings{padding:10px 11px 12px}
   table.inn{min-width:0;border-spacing:2px}
@@ -811,7 +807,6 @@ body.locked .gate{
 
 @media (max-width:420px){
   .brand b{font-size:18px}
-  .slot-name{font-size:max(10px,3.1cqw)}
 }
 /* dedos, no cursor: 44 px por control y 8 px entre controles vecinos */
 @media (pointer:coarse){
@@ -1924,15 +1919,13 @@ function renderField(){
     var nm = b.querySelector(".slot-name");
     var numEl = b.querySelector(".slot-num");
     if(numEl) numEl.textContent = displayPosNumber(p);
-    key.innerHTML = "";
-    key.appendChild(document.createTextNode(p.k));
+    key.textContent = p.k;
     if(pl){
       filled++;
       b.className = "slot filled";
-      if(pl.num) key.appendChild(el("span", "slot-jersey", "#" + pl.num));
       nm.textContent = cn[pl.id];
       b.setAttribute("aria-label", p.es + " (" + p.k + "): " + pl.name);
-      b.title = p.es + " · " + pl.name + (pl.num ? " · #" + pl.num : "");
+      b.title = p.es + " · " + pl.name;
     }else{
       b.className = "slot empty";
       nm.textContent = p.es;
@@ -1947,7 +1940,31 @@ function renderField(){
   tf.textContent = filled + "/" + enabledCount;
   tf.className = "tab-badge" + (filled === enabledCount ? " ok" : "");
   tf.parentNode.setAttribute("aria-label", "Campo: " + filled + " de " + enabledCount + " posiciones cubiertas");
+  fitSlotNames();
 }
+/* achica, de 0.5 en 0.5 px y hasta 10 px, solo el nombre que no cabe en su tarjeta;
+   las tarjetas ocultas (otra pestaña del teléfono) miden 0 y se saltan */
+function fitSlotNames(){
+  var rg = document.createRange();
+  stage.querySelectorAll(".slot-name").forEach(function(nm){
+    if(!nm.clientWidth) return;
+    nm.style.fontSize = "";
+    rg.selectNodeContents(nm);
+    var size = parseFloat(getComputedStyle(nm).fontSize);
+    // ancho real del texto: scrollWidth redondea y un texto 0.2 px más ancho ya sale con "…"
+    while(rg.getBoundingClientRect().width > nm.getBoundingClientRect().width && size > 10){
+      size = Math.max(10, size - 0.5);
+      nm.style.fontSize = size + "px";
+    }
+  });
+}
+var fitQueued = false;
+window.addEventListener("resize", function(){
+  if(fitQueued) return;
+  fitQueued = true;
+  requestAnimationFrame(function(){ fitQueued = false; fitSlotNames(); });
+});
+if(document.fonts) document.fonts.ready.then(fitSlotNames);
 
 /* clic para asignar */
 stage.addEventListener("click", function(ev){
@@ -3866,6 +3883,7 @@ function setTab(t){
     else b.removeAttribute("aria-current");
   });
   try{ localStorage.setItem(K_TAB, t); }catch(e){}
+  fitSlotNames(); // el campo estaba oculto: ahora sí se puede medir
 }
 document.querySelectorAll(".tab").forEach(function(b){
   b.addEventListener("click", function(){
