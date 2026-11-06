@@ -337,3 +337,17 @@ test("RF-3 detail rates: jugadores con líneas = filas de Jugadores, casos lími
   assert.deepStrictEqual(f(by.p2), ["—", ".000", "—"]);
   assert.deepStrictEqual(f(by.p3), ["—", "—", "—"]);
 });
+
+// ---- spec 008 RF-1: Stats.summaryLine ----
+test("RF-1 summaryLine: normal, 0 AP y tasas 1.000", function(){
+  var g = rec("g", "2026-08-01", "2026-08-01T10:00:00Z", [
+    row("p1", 7, "Ana", [pa(1, "1B"), pa(2, "K"), pa(3, "2B"), pa(3, "BB")]),
+    row("p2", 9, "Beto", [pa(1, "1B")]),
+    rowRo("p3", 11, "Cai", [], [ro(1, "CS")])
+  ]);
+  var team = [{id: "p1", num: 7, name: "Ana"}, {id: "p2", num: 9, name: "Beto"}, {id: "p3", num: 11, name: "Cai"}];
+  var by = byPid(Stats.players([g], team).rows);
+  assert.strictEqual(Stats.summaryLine(by.p1), "AVE .667 · OBP .750 · OPS 1.750 · 4 AP · 1 JJ");
+  assert.strictEqual(Stats.summaryLine(by.p2), "AVE 1.000 · OBP 1.000 · OPS 2.000 · 1 AP · 1 JJ");
+  assert.strictEqual(Stats.summaryLine(by.p3), "AVE — · OBP — · OPS — · 0 AP · 1 JJ");
+});
