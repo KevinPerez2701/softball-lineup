@@ -1867,7 +1867,7 @@ function renderOffer(){
 }
 function recoverStored(){ S = stored; fresh = false; $("recover").hidden = true; renderAll(); }
 /* Descartar = escribir la alineación actual encima de la guardada (K_CUR y la nube). */
-function dropStored(){ fresh = false; $("recover").hidden = true; lsSet(K_CUR, S); }
+function dropStored(){ fresh = false; $("recover").hidden = true; absentFor = null; lsSet(K_CUR, S); } // absentFor: RF-9, "Descartar" cambia de juego
 /* Primer cambio sobre la alineación vacía: true si save() ya puede escribir.
    Con la oferta a la vista se pregunta una sola vez (RF-10) y no se escribe hasta la respuesta. */
 function touched(){
@@ -2580,11 +2580,59 @@ function refocusRow(listSel, btnSel, i){
   b.focus();
   return true;
 }
+/* RF-9: abierta/plegada de "No vinieron"; solo se reinicia al cambiar de juego (S es otro objeto), no en cada dibujo */
+var absentOpen = true, absentFor = null;
+/* RF-6: sección plegable al final de Banca con los del equipo que no están en el partido, cada uno con "Vino" */
+function renderAbsent(){
+  var old = $("absent");
+  if(old) old.remove();
+  var abs = Stats.absent(TEAM, S.roster);
+  if(absentFor !== S){ absentFor = S; absentOpen = !S.roster.length; }
+  if(!abs.length) return;
+  var d = el("details", "hint no-print");
+  d.id = "absent";
+  d.appendChild(el("summary", null, Stats.absentTitle(abs, S.roster)));
+  var ul = el("ul", "list");
+  abs.forEach(function(tp, i){
+    var li = el("li", "row");
+    li.appendChild(el("span", "jersey" + (tp.num ? "" : " ghost"), tp.num || "–"));
+    li.appendChild(el("span", "nm", tp.name));
+    var acts = el("span", "rowacts");
+    var yes = el("button", "btn btn-sm btn-vino", "Vino");
+    yes.type = "button";
+    yes.title = tp.name + " vino: agregarlo al partido";
+    yes.setAttribute("aria-label", yes.title);
+    yes.addEventListener("click", function(){
+      var hadFocus = document.activeElement === yes;
+      /* mismo bloque que la casilla del Roster (RF-7, RF-8): save() hace la pregunta de touched() */
+      var id = tp.id;
+      if(!S.roster.some(function(pl){ return pl.id === id; })){
+        S.roster.push({id:id, num:tp.num || "", name:tp.name});
+      }
+      save();
+      renderAll();
+      toast(tp.name + " agregado al partido");
+      if(hadFocus && !refocusRow("#absent", ".btn-vino", i)){
+        var h = $("benchTitle");
+        if(h) h.focus();
+      }
+    });
+    acts.appendChild(yes);
+    li.appendChild(acts);
+    ul.appendChild(li);
+  });
+  d.appendChild(ul);
+  d.open = absentOpen;
+  d.addEventListener("toggle", function(){ absentOpen = d.open; });
+  var bl = $("benchList");
+  bl.parentNode.appendChild(d);
+}
 function renderBench(){
   var ul = $("benchList");
   ul.innerHTML = "";
   var bench = S.roster.filter(function(p){ return !inLineup(p.id); });
   $("benchCount").textContent = bench.length;
+  renderAbsent();
   if(!bench.length){
     ul.appendChild(el("li", "empty-note", "Nadie en banca."));
     return;
@@ -2620,7 +2668,7 @@ function renderBench(){
       toast(pl.name + " no vino", undoNoVino, true);
       benchUndo = snap; // después de renderAll: su save() soltaría la foto
       if(hadFocus && !refocusRow("#benchList", ".btn-novino", i)){
-        var h = $("benchTitle");
+        var h = document.querySelector("#absent summary") || $("benchTitle");
         if(h) h.focus();
       }
     });
