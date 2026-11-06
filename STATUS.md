@@ -3,10 +3,10 @@
 Single source of truth for what is in flight and what is left. Update it in the same commit as the
 work it describes. Dates come from `date`, never from memory.
 
-Last updated: 2026-11-06 14:18 UTC-4 by Claude
+Last updated: 2026-11-06 14:31 UTC-4 by Claude
 
 ## Now (one line)
-Spec 008 (third critique pass, 23 RFs): T1–T9 merged, T10 browser demo done (all 23 RFs observed, RF-20 gap fixed at demo), 135/135 — waiting for Kevin's OK to push + deploy (G3), then critique re-run. 001–007 live (a7fe5e7); critique 30/40.
+Spec 008 deployed (861b526, Pages built; critique re-run left). Spec 009 (bench attendance: "No vino" + Deshacer, "No vinieron" with "Vino") clarified (13 RFs, clarifier blocking items resolved, 2 answered by Kevin) — waiting for G1.
 
 ## Active specs
 | Spec | Phase | Current task | Next task | Blocked by |
@@ -18,7 +18,8 @@ Spec 008 (third critique pass, 23 RFs): T1–T9 merged, T10 browser demo done (a
 | 005-fielders-choice | done | — | — | — |
 | 006-stats-phone | done | — | — | — |
 | 007-critique-rest | done | — | — | — |
-| 008-critique-third | implement | T10 | — | — |
+| 008-critique-third | validate | T10 (critique re-run) | — | — |
+| 009-bench-attendance | clarify (G1) | — | — | Kevin G1 |
 
 Phases: constitution · spec · clarify · plan · tasks · implement · validate · done
 
