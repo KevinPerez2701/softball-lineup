@@ -1754,7 +1754,7 @@ function askConfirm(title, msg, yesLabel, cb, danger){
 /* Dos opciones además de Cancelar: cb("yes") o cb("alt"). Con locked no hay
    Cancelar y tampoco se cierra con Esc ni con el fondo.
    Argumentos: título, mensaje, texto de "yes", texto de "alt", cb, locked,
-   danger ("yes" | "alt" | nada): ese botón va en rojo; el otro queda normal (solo askYes va en lima);
+   danger ("yes" | "alt" | nada): ese botón va en rojo; el otro queda normal (askYes va en lima salvo que sea el rojo);
    el foco va en Cancelar, o en el botón no rojo si Cancelar está oculto. */
 function askChoice(title, msg, yesLabel, altLabel, cb, locked, danger){
   askConfirm(title, msg, yesLabel, cb);
