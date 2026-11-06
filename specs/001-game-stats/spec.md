@@ -81,8 +81,11 @@ game that the app calculates by itself. Part A is capture and save; part B is vi
 - RF-34: IF the game data has no date, THEN THE SYSTEM SHALL not save, SHALL show "Ponle fecha al juego" and keep
   the capture screen open with the data intact (the date is editable there, RF-30).
 - RF-8: WHEN the user taps "Anotar estadísticas" and `S.statsId` names an existing record, THE SYSTEM SHALL open
-  that record with its game data refreshed from the current game and its rows kept as stored; players in
-  `S.order` without a row are appended at the end; no row is removed; positions of existing rows are kept.
+  that record with its game data refreshed from the current game and its rows kept in their stored order with
+  their PAs; each existing row whose player is in `S.order` takes number, name and position from the current
+  lineup, and rows of players no longer in `S.order` keep theirs; players in `S.order` without a row are appended
+  at the end; no row is removed. (Amended 2026-11-06 by Kevin: positions used to be kept, so fixing the lineup
+  after the game left the sheet showing the old positions.)
 - RF-9: WHEN a saved lineup whose state carries `statsId` is opened and the user taps "Anotar estadísticas", THE
   SYSTEM SHALL behave as RF-8. A lineup saved before its stats existed carries no `statsId` and RF-1 applies.
 - RF-10: WHEN the user starts a new lineup ("Alineación nueva"), THE SYSTEM SHALL clear `S.statsId`; existing
