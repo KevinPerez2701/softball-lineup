@@ -9,7 +9,7 @@ Overlap map (index.html, lines of 97623df): T2 after 465, after 731, 1203 · T3 
 2555–2585 (after T3), 1863. stats.js: T1 after `asNew` (559–567). Tests: T1 new `tests/bench.test.js`.
 
 ## Wave 1 — in parallel
-- [ ] T1. `Stats.absent(team, roster)` + `Stats.absentTitle(absent, roster)`; tests first in new `tests/bench.test.js`.
+- [x] T1. `Stats.absent(team, roster)` + `Stats.absentTitle(absent, roster)`; tests first in new `tests/bench.test.js`.
       (RF-6, RF-9 title, NFR) Deps: —
       Done when: the plan's cases (team order, empty team, all present, empty roster, stale name, team name/num, three
       titles) exist and `node --test tests/bench.test.js < /dev/null` is green.

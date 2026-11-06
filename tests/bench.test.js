@@ -7,6 +7,7 @@ var A = {id: "a", num: "1", name: "Ana"}, B = {id: "b", num: "2", name: "Bea"}, 
 test("RF-6 absent: conserva el orden del equipo sin importar el orden del roster", function(){
   assert.deepStrictEqual(Stats.absent([A, B, C], [{id: "b"}]), [A, C]);
   assert.deepStrictEqual(Stats.absent([A, B, C], [{id: "c"}, {id: "a"}]), [B]);
+  assert.deepStrictEqual(Stats.absent([C, A, B], [{id: "a"}]), [C, B]); // equipo sin ordenar: no ordena por nombre ni número
 });
 
 test("RF-6 absent: equipo vacío da []", function(){
