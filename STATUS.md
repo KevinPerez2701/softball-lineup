@@ -3,10 +3,10 @@
 Single source of truth for what is in flight and what is left. Update it in the same commit as the
 work it describes. Dates come from `date`, never from memory.
 
-Last updated: 2026-11-06 09:58 UTC-4 by Claude
+Last updated: 2026-11-06 11:20 UTC-4 by Claude
 
 ## Now (one line)
-Idle — spec 001 change T16 done (not pushed yet); Pages live again on 8123cd5 (spec 004).
+Spec 005 (JS + grouped picker + undo a deleted turn) clarified, waiting for G1. Critique re-run 29/40 (4 and 5 up to 3); Kevin took every item, stats on phone first: specs 006 (stats on phone) and 007 (keyboard/screen reader, lime, labels) to draft. New report from Kevin: batting order does not adjust when a player is added (needs details).
 
 ## Active specs
 | Spec | Phase | Current task | Next task | Blocked by |
@@ -15,6 +15,7 @@ Idle — spec 001 change T16 done (not pushed yet); Pages live again on 8123cd5 
 | 002-inning-capture | done | — | — | — |
 | 003-saved-games | done | — | — | — |
 | 004-critique-fixes | done | — | — | — |
+| 005-fielders-choice | clarify (done) | — | G1 | Kevin (G1) |
 
 Phases: constitution · spec · clarify · plan · tasks · implement · validate · done
 
@@ -22,9 +23,11 @@ Phases: constitution · spec · clarify · plan · tasks · implement · validat
 - (none)
 
 ## Known gaps (not blocking)
-- Re-run `/impeccable critique` after spec 004 to measure heuristics 4 and 5 (were 2/4 before 004). Not covered by the 004 demo: RF-13 backdrop tap and back button, RF-2 storage-failure toast.
+- Not covered by the 004 demo: RF-13 backdrop tap and back button, RF-2 storage-failure toast.
 
 ## Recently done (keep last 10)
+- 2026-11-06 · 005 · Spec drafted from Kevin's answers, widened to the grouped picker + undo delete, clarifier READY (0 blocking, 3 minor applied)
+- 2026-11-06 · — · impeccable critique re-run after 004: 29/40 (H4 3, H5 3); snapshot .impeccable/critique/2026-11-06T14-56-11Z__index-html.md (git-excluded)
 - 2026-11-06 · 001 · T16 done — refreshRows: rows of players in the lineup take num/name/pos from it; reviewer APPROVE; 112/112 green
 - 2026-11-06 · — · Pages: the 8123cd5 deploy had failed ("in progress deployment" left by the stuck f476807 one); rebuild requested on Kevin's OK → built, sw v7 live
 - 2026-11-06 · 001 · change: RF-8 amended — rows of players in the lineup take number, name and position from it (Kevin, after loading MSO vs Call 2 · 05/11 with Pages stuck on 7bf41b4)
@@ -33,8 +36,6 @@ Phases: constitution · spec · clarify · plan · tasks · implement · validat
 - 2026-11-05 · 004 · plan.md (fable + review D1: red resting .btn-danger app-wide) and tasks.md in 3 parallel waves (T1–T7)
 - 2026-11-05 · 004 · Spec drafted and clarified (clarifier NEEDS WORK: 4 blocking, 9 minor; Kevin answered BO, extra confirms, HR undo, long names) → 18 RFs
 - 2026-11-05 · 003 · Browser checks closed: RF-39 (Guardar with the saved-list write failing: error toast, list and link unchanged) ✔, RF-7 (stats save with the saved-list write failing: stats, lineup and list unchanged, sheet stays open, error toast) ✔, 375 px (no horizontal scroll, header Guardar/Compartir/Más, 10 cards ≥ 10 px without overlaps, "Call · Visita"/"MSO · Casa") ✔
-- 2026-11-05 · 003 · T16 done — sw.js v6 + network-first fetch with cache no-cache (fixes new page + stale stats.js after a deploy); browser demo 15/16 ✔ at 360/800/1440, the ✘ (RF-38 empty text after deleting the last game) fixed; detector: no new findings; 108/108 green. Spec closed by Kevin (G3)
-- 2026-11-05 · 003 · T15 done (orchestrator, measured in the browser at 360 px with SF+4F+DH, 12 cards): every field-card text ≥ 10 px via max(10px, …cqw), padding .4cqw, BD 83.6% and C 94% → no overlaps, "Kevin P."/"Keven P." uncut. Found: the SW network-first fetch goes through the HTTP cache, so a deploy can pair a new index.html with an old stats.js (Stats.unsaved missing) → fix in T16
 
 ## Backlog (ideas not yet specified)
 - (none — closed by Kevin on 2026-10-23)
