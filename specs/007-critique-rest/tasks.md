@@ -21,16 +21,16 @@ T5 2691–2695, 2734, paForm chip/nums/draw, 2984 · T6 588+, 3314–3318, 3379�
       flag; RF-9 colors untouched.
 
 ## Wave 2 — after the dependency is merged
-- [ ] T3. Field/order: `setPos` append + no BD eviction, drop swap, `btnAutoField`. (RF-1, RF-2, RF-3) Deps: T1
+- [x] T3. Field/order: `setPos` append + no BD eviction, drop swap, `btnAutoField`. (RF-1, RF-2, RF-3) Deps: T1
       Done when: suite green; the code paths traced in the report (picker, drag, swap, Autoasignar, BD replaced, Quitar,
       open a saved game).
-- [ ] T5. Picker/capture: chip key + focus + thin/2 px classes, cell aria-label from `cellName`, `setCapTitle` from
+- [x] T5. Picker/capture: chip key + focus + thin/2 px classes, cell aria-label from `cellName`, `setCapTitle` from
       `sheetTitle`, "Agregar sustituto" plain. (RF-5, RF-6, RF-7, RF-8, RF-13) Deps: T1, T2
       Done when: suite green; traced: focus kept after a chip press (result, CI number, Anotó carrera); classes per state.
-- [ ] T6. Stats view: name button + focus back, tabs 2 px outline, Juegos `gameTitle`, `recordText`. (RF-4, RF-7,
+- [x] T6. Stats view: name button + focus back, tabs 2 px outline, Juegos `gameTitle`, `recordText`. (RF-4, RF-7,
       RF-13, RF-15) Deps: T2
       Done when: suite green; traced: Tab → name button → Enter → detail → back focuses the same button; row click opens.
-- [ ] T7. Labels: `#innPill`, "− Inning", `#scTag` visibility, "Abrir juego" by game date. (RF-10, RF-11, RF-12, RF-14)
+- [x] T7. Labels: `#innPill`, "− Inning", `#scTag` visibility, "Abrir juego" by game date. (RF-10, RF-11, RF-12, RF-14)
       Deps: T2
       Done when: suite green; traced: pill follows ± Inning; Final hides at 0–0; list sorted and dated by game date.
 
