@@ -191,7 +191,11 @@ dialog .btn-ghost:hover{background:var(--surface-2);border-color:var(--ink-3)}
 /* chip con el valor por defecto: borde de 2 px sin relleno (el borde extra sale del padding, no cambia el tamaño) */
 .btn-default{background:transparent;border:2px solid var(--accent);padding:5px 10px}
 .btn-default:hover{background:var(--surface-2);border-color:var(--accent)}
+/* variante fina (1 px, mismo padding que .btn): el valor elegido es el de por defecto */
+.btn-thin{background:transparent;border-color:var(--accent)}
+.btn-thin:hover{background:var(--surface-2);border-color:var(--accent)}
 .btn-sm{padding:3px 8px;font-size:12.5px;border-radius:6px}
+.btn-sm.btn-default{padding:2px 7px}
 .btn-icon{padding:3px 7px;font-family:var(--cond);font-weight:700;font-size:15px}
 .btn-icon.btn-sm{padding:4px 6px}
 .btn-danger{color:var(--bad);border-color:var(--bad)}
@@ -1266,7 +1270,7 @@ body.locked .gate{
     <h3>Roster del equipo</h3>
     <span class="sub">Marca solo los jugadores que asistieron a este partido</span>
     <span style="margin-left:auto"></span>
-    <button class="btn btn-sm btn-key" id="teamRosterAll" type="button">Marcar todos</button>
+    <button class="btn btn-sm" id="teamRosterAll" type="button">Marcar todos</button>
     <button class="btn btn-sm btn-ghost" id="teamRosterClear" type="button">Desmarcar todos</button>
     <button class="btn btn-sm" id="teamRosterClose" type="button">Cerrar</button>
   </div>
@@ -1750,7 +1754,7 @@ function askConfirm(title, msg, yesLabel, cb, danger){
 /* Dos opciones además de Cancelar: cb("yes") o cb("alt"). Con locked no hay
    Cancelar y tampoco se cierra con Esc ni con el fondo.
    Argumentos: título, mensaje, texto de "yes", texto de "alt", cb, locked,
-   danger ("yes" | "alt" | nada): ese botón va en rojo y el otro en btn-key;
+   danger ("yes" | "alt" | nada): ese botón va en rojo; el otro queda normal (solo askYes va en lima);
    el foco va en Cancelar, o en el botón no rojo si Cancelar está oculto. */
 function askChoice(title, msg, yesLabel, altLabel, cb, locked, danger){
   askConfirm(title, msg, yesLabel, cb);
@@ -1760,7 +1764,7 @@ function askChoice(title, msg, yesLabel, altLabel, cb, locked, danger){
   $("askNo").hidden = askLocked;
   if(danger){
     $("askYes").className = "btn btn-sm " + (danger === "yes" ? "btn-danger" : "btn-key");
-    $("askAlt").className = "btn btn-sm " + (danger === "alt" ? "btn-danger" : "btn-key");
+    $("askAlt").className = "btn btn-sm" + (danger === "alt" ? " btn-danger" : "");
     (askLocked ? $(danger === "yes" ? "askAlt" : "askYes") : $("askNo")).focus();
   }
 }
@@ -1793,7 +1797,7 @@ function inlineEdit(li, cur, onSave, onCancel){
   inName.className = "inp"; inName.type = "text"; inName.value = cur.name || "";
   inName.setAttribute("aria-label", "Nombre");
   var acts = el("span", "rowacts");
-  var ok = el("button", "btn btn-sm btn-key", "Guardar");
+  var ok = el("button", "btn btn-sm", "Guardar");
   ok.type = "button";
   var no = el("button", "btn btn-sm", "Cancelar");
   no.type = "button";
@@ -2197,7 +2201,7 @@ function renderRoster(){
     cta.appendChild(el("p", null, blank
       ? "Tu equipo está vacío. Agrega a tus jugadores una vez y quedan guardados para cada partido."
       : "Todavía no has marcado quién vino a este partido."));
-    var go = el("button", "btn btn-key", blank ? "Agregar jugadores" : "Marcar asistencia");
+    var go = el("button", "btn", blank ? "Agregar jugadores" : "Marcar asistencia");
     go.type = "button";
     go.addEventListener("click", openTeamRoster);
     cta.appendChild(go);
@@ -3961,7 +3965,7 @@ var SHEETS = {
     ["btnStats", "chart", "Estadísticas", "Jugadores y juegos"],
     ["btnTeamRoster", "users", "Roster", "Jugadores y asistencia al partido"],
     ["btnBackup", "shield", "Respaldo", "Exportar o importar tus datos como texto"],
-    ["btnInstall", "download", "Instalar", "Ábrela desde tu pantalla de inicio, sin señal", true],
+    ["btnInstall", "download", "Instalar", "Ábrela desde tu pantalla de inicio, sin señal"],
     "sep",
     ["btnLogout", "logout", "Cerrar sesión", cloud.email, false, true]
   ]}
