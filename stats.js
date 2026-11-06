@@ -33,6 +33,10 @@ Stats.COL_TITLES = {
   OBP: "Promedio de embasado", SLG: "Slugging (bases totales ÷ VB)", OPS: "OBP + SLG"
 };
 
+// Columnas de la tabla Jugadores, en orden (spec 006 RF-1): [clave de la fila, rótulo, entero]; las tasas salen con Stats.fmt.
+Stats.STAT_COLS = [["avg","AVE"],["obp","OBP"],["slg","SLG"],["ops","OPS"],["g","JJ",1],["pa","AP",1],["ab","VB",1],["h","H",1],
+  ["b2","2B",1],["b3","3B",1],["hr","HR",1],["r","CA",1],["rbi","CI",1],["bb","BB",1],["k","K",1],["sb","BR",1],["cs","AR",1]];
+
 Stats.cellLabel = function(pa){
   var i, c = pa.code;
   for(i = 0; i < Stats.CODES.length; i++) if(Stats.CODES[i].code === pa.code){ c = Stats.CODES[i].cell; break; }
