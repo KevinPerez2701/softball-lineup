@@ -66,7 +66,7 @@ Command: `node --test 'tests/*.test.js' < /dev/null`. Tests first in T1/T2.
 - RF-1/5/6 (sheet.test.js): 13 codes in order, JS pick/cell, one title, groups, RO unchanged; PICK_CODES 12; new
   "005 RF-6 pickRows" (labels, codes per row, BO last in Out with CODES).
 - RF-2: cellLabel JS / "JS•"; playerGames seq "JS•".
-- RF-3 (views.test.js): `[1B, JS, BB, SF, JS(run)]` ⇒ pa 5, ab 3, h 1, bb 1, sf 1, r 1, avg .333, obp .500, slg .333;
+- RF-3 (views.test.js): `[1B, JS, BB, SF, JS(run)]` ⇒ pa 5, ab 3, h 1, bb 1, sf 1, r 1, avg .333, obp .400 (2/5: SF counts in the denominator), slg .333;
   playerGames line and team row agree; `rates` direct.
 - RF-4 (outs.test.js): defaultOuts JS 1; pickResult → outs 1; paOuts JS 1 / with outs 0 → 0.
 - RF-7–9 and RF-1 attributes: browser only (T5 demo).

@@ -33,9 +33,9 @@ RF-14 ("AR" right after "BR") still holds.
 ## Non-functional requirements
 - The players-table column list (key, label, integer flag) is defined once in `stats.js`; `index.html` renders the
   header, rows, Equipo row and key from it. A node test asserts its label order equals RF-1.
-- The detail's Total rates are testable in node: for every player id, the detail Total's avg/obp/ops equal the
-  `Stats.players(entries, TEAM)` row's avg/obp/ops. The existing `playerGames` tests that deep-equal `total` are
-  updated in the same task.
+- The detail's Total rates are read from the player's `Stats.players(entries, TEAM)` row (the same object the
+  detail already fetches), so they equal the Jugadores row by construction; `playerGames` and its `total` stay as they
+  are. A node test pins that the players with detail lines are exactly the Jugadores rows, plus the edge-case rates.
 - Phone: at 360×640, with the table scrolled to the start, the AVE header and cells lie fully inside the scroll box
   (sticky Jugador column ≈ 163 px + AVE ≈ 50 px of ≈ 300 px). No change to stored data, `firestore.rules` or `sw.js`
   (index.html and stats.js are network-first; no new file).
