@@ -191,23 +191,54 @@ Stats.orderAfterAssign = function(order, ids){
   return out;
 };
 
+// Spec 008 RF-8: índices de row.pas de un inning, por ord ascendente; sin ord al final, en el orden guardado.
+Stats.paIndexes = function(row, inn){
+  var idx = [];
+  row.pas.forEach(function(p, j){ if(p.inn === inn) idx.push(j); });
+  return idx.sort(function(a, b){
+    var x = typeof row.pas[a].ord === "number", y = typeof row.pas[b].ord === "number";
+    if(x && y && row.pas[a].ord !== row.pas[b].ord) return row.pas[a].ord - row.pas[b].ord;
+    if(x !== y) return x ? -1 : 1;
+    return a - b;
+  });
+};
+
+// Spec 008 RF-8: "Turno <ord> · <celda>" (+ " · anotó carrera"); sin ord numérico, "Turno · <celda>". Sin "•".
+Stats.turnLabel = function(pa){
+  var i, c = pa.code;
+  for(i = 0; i < Stats.CODES.length; i++) if(Stats.CODES[i].code === pa.code){ c = Stats.CODES[i].cell; break; }
+  return "Turno" + (typeof pa.ord === "number" ? " " + pa.ord : "") + " · " + c + (pa.run ? " · anotó carrera" : "");
+};
+
+// Spec 008 RF-11: línea de estado y botón principal de "¿Hubo otro inning?"; la primera regla que aplica.
+Stats.innQuestion = function(rec){
+  var g = rec.game, chk = Stats.runCheck(rec), i, n;
+  function sum(a){ return (a || []).reduce(function(s, v){ return s + (parseInt(v, 10) || 0); }, 0); }
+  for(i = 1; i <= g.innings; i++){
+    n = Stats.inningOuts(rec, i);
+    if(n > 3) return {text: "Inning " + i + ": " + n + " out", yes: true};
+  }
+  for(i = 1; i <= g.innings; i++){
+    if(chk[i - 1].diff !== 0){
+      n = chk[i - 1].sheet;
+      return {text: "Inning " + i + ": la hoja suma " + n + (n === 1 ? " carrera" : " carreras") + ", el marcador " + chk[i - 1].board,
+        yes: true};
+    }
+  }
+  var us = sum(g.us), them = sum(g.them);
+  if(us === them) return {text: "Empate " + us + "–" + them, yes: true};
+  return {text: "Los " + g.innings + " innings tienen 3 out y cuadran con el marcador", yes: false};
+};
+
 // Spec 007 RF-6: nombre accesible de una celda de la cuadrícula.
 Stats.cellName = function(row, inn){
-  var parts = [row.name + ", inning " + inn], pas = [];
+  var parts = [row.name + ", inning " + inn];
   function find(list, key, v){
     for(var i = 0; i < list.length; i++) if(list[i][key] === v) return list[i];
     return null;
   }
-  row.pas.forEach(function(p, j){ if(p.inn === inn) pas.push({p: p, j: j}); });
-  // por ord ascendente; sin ord al final, en el orden guardado
-  pas.sort(function(a, b){
-    var x = typeof a.p.ord === "number", y = typeof b.p.ord === "number";
-    if(x && y && a.p.ord !== b.p.ord) return a.p.ord - b.p.ord;
-    if(x !== y) return x ? -1 : 1;
-    return a.j - b.j;
-  });
-  pas.forEach(function(e){
-    var p = e.p, c = find(Stats.CODES, "code", p.code),
+  Stats.paIndexes(row, inn).forEach(function(j){
+    var p = row.pas[j], c = find(Stats.CODES, "code", p.code),
       s = (typeof p.ord === "number" ? "turno " + p.ord : "turno") + ": " + (c ? c.title || c.pick : p.code);
     parts.push(p.run ? s + ", anotó carrera" : s);
   });

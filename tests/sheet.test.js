@@ -245,3 +245,46 @@ test("RF-6 cellName: outs corriendo y código desconocido", function(){
   row = {name: "Ana", pas: [{inn: 3, ord: 1, code: "ZZ", run: false}], ro: [{inn: 3, kind: "XX"}]};
   assert.strictEqual(Stats.cellName(row, 3), "Ana, inning 3, turno 1: ZZ, XX");
 });
+
+// ---- spec 008 T2: paIndexes, turnLabel, innQuestion ----
+test("RF-8 paIndexes: ord ascendente, sin ord al final, otros innings fuera", function(){
+  var row = {name: "Ana", pas: [
+    {inn: 3, code: "1B"},
+    {inn: 3, ord: 5, code: "K"},
+    {inn: 4, ord: 1, code: "HR"},
+    {inn: 3, ord: 2, code: "BB"},
+    {inn: 3, code: "FL"}]};
+  assert.deepStrictEqual(Stats.paIndexes(row, 3), [3, 1, 0, 4]);
+  assert.deepStrictEqual(Stats.paIndexes(row, 4), [2]);
+  assert.deepStrictEqual(Stats.paIndexes(row, 9), []);
+});
+
+test("RF-8 turnLabel: con ord, sin ord, carrera, código desconocido, sin •", function(){
+  assert.strictEqual(Stats.turnLabel({ord: 2, code: "RO", run: false}), "Turno 2 · Rol");
+  assert.strictEqual(Stats.turnLabel({code: "1B", run: false}), "Turno · 1B");
+  assert.strictEqual(Stats.turnLabel({ord: 1, code: "HR", run: true}), "Turno 1 · HR · anotó carrera");
+  assert.strictEqual(Stats.turnLabel({ord: 3, code: "ZZ", run: false}), "Turno 3 · ZZ");
+  assert.strictEqual(Stats.turnLabel({ord: 1, code: "HR", run: true}).indexOf("•"), -1);
+});
+
+test("RF-11 innQuestion: cada regla y su precedencia", function(){
+  var three = [pa(1, "K"), pa(1, "K"), pa(1, "K")];
+  function one(pas){ return [{pid: "a", name: "A", pas: pas}]; }
+  // 1: más de 3 outs gana aunque las carreras no cuadren
+  var r = rec(2, [0, 0], [1, 0], one(three.concat([pa(1, "K", true)])));
+  assert.deepStrictEqual(Stats.innQuestion(r), {text: "Inning 1: 4 out", yes: true});
+  // 2: carreras de la hoja distintas del marcador (singular y plural)
+  r = rec(1, [0], [0], one(three.concat([pa(1, "HR", true)])));
+  assert.deepStrictEqual(Stats.innQuestion(r), {text: "Inning 1: la hoja suma 1 carrera, el marcador 0", yes: true});
+  r = rec(1, [1], [0], one(three.concat([pa(1, "HR", true), pa(1, "HR", true)])));
+  assert.deepStrictEqual(Stats.innQuestion(r), {text: "Inning 1: la hoja suma 2 carreras, el marcador 1", yes: true});
+  // 3: empate (0–0 incluido)
+  r = rec(1, [2], [2], one(three.concat([pa(1, "HR", true), pa(1, "HR", true)])));
+  assert.deepStrictEqual(Stats.innQuestion(r), {text: "Empate 2–2", yes: true});
+  r = rec(1, [0], [0], one(three));
+  assert.deepStrictEqual(Stats.innQuestion(r), {text: "Empate 0–0", yes: true});
+  // 4: todo cuadra y no hay empate
+  r = rec(2, [1, 0], [0, 0], one(three.concat([pa(1, "HR", true), pa(2, "K"), pa(2, "K"), pa(2, "K")])));
+  assert.deepStrictEqual(Stats.innQuestion(r),
+    {text: "Los 2 innings tienen 3 out y cuadran con el marcador", yes: false});
+});
