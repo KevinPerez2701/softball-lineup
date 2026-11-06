@@ -2692,11 +2692,10 @@ function openCapture(rec, fromCurrent){
   $("capture").showModal();
   $("capClose").focus(); // RF-31
 }
-// RF-25: "<equipo> vs <rival> · dd/mm", sigue a la fecha de la hoja
+// RF-13: "<equipo> vs <rival> · dd/mm" (sin rival: "<equipo> · dd/mm"), sigue a la fecha de la hoja
 function setCapTitle(){
   var g = cap.rec.game;
-  $("capTitle").textContent = ((g.team || "").trim() || "Equipo") + " vs " + ((g.opp || "").trim() || "rival") +
-    (g.date ? " · " + Stats.fmtDate(g.date).slice(0, 5) : "");
+  $("capTitle").textContent = Stats.sheetTitle(g);
 }
 function renderCapture(){
   if(cap.undo){ cap.undo = null; $("toast").classList.remove("on"); } // RF-9: cualquier cambio de la hoja descarta el Deshacer pendiente
@@ -2737,7 +2736,7 @@ function renderCapture(){
           d.appendChild(document.createTextNode(l.text));
           b.appendChild(d);
         });
-        b.setAttribute("aria-label", row.name + ", inning " + n + lines.map(function(l){ return ", " + l.text; }).join(""));
+        b.setAttribute("aria-label", Stats.cellName(row, n)); // RF-6
         b.addEventListener("click", function(){ onCellTap(ri, n); });
         td.appendChild(b); tr.appendChild(td);
       })(inn);
@@ -2869,18 +2868,24 @@ function paForm(ri, inn, idx, done){
     outs:src ? Stats.paOuts(src) : 0};
   // RF-27/42: "Más detalles" abierto si el turno ya trae CI, BR u outs distintos del defecto; luego sigue a f.more
   f.more = !!(f.rbi || f.sb || f.outs !== Stats.defaultOuts(f.code));
-  // RF-28: isDefault ⇒ el chip elegido con el valor por defecto lleva borde, no relleno
-  function chip(label, on, fn, isDefault){
-    var b = el("button", on ? (isDefault ? "btn btn-default" : "btn btn-key") : "btn", label);
+  // RF-7: elegido ⇒ borde lima (fino si es el valor por defecto, 2 px si no), nunca relleno
+  // RF-5: key identifica el chip; tras redibujar el foco vuelve al chip con la misma key
+  function chip(label, on, fn, isDefault, key){
+    var b = el("button", on ? (isDefault ? "btn btn-thin" : "btn btn-default") : "btn", label);
     b.type = "button";
+    b.dataset.key = key;
     b.setAttribute("aria-pressed", String(on));
-    b.addEventListener("click", function(){ fn(); draw(); });
+    b.addEventListener("click", function(){
+      fn(); draw();
+      var nb = $("paBody").querySelector('[data-key="' + key + '"]');
+      if(nb) nb.focus();
+    });
     return b;
   }
   function nums(box0, title, key, max, def){
     box0.appendChild(el("div", "pa-lbl", title));
     var box = el("div", "chips");
-    for(var i = 0; i <= max; i++) (function(v){ box.appendChild(chip(String(v), f[key] === v, function(){ f[key] = v; }, v === def)); })(i);
+    for(var i = 0; i <= max; i++) (function(v){ box.appendChild(chip(String(v), f[key] === v, function(){ f[key] = v; }, v === def, key + ":" + v)); })(i);
     box0.appendChild(box);
   }
   function draw(){
@@ -2896,7 +2901,7 @@ function paForm(ri, inn, idx, done){
         var b = chip(c.pick, f.code === c.code, function(){
           Stats.pickResult(f, c.code); // RF-3/14/15: HR marca carrera y CI; salir de HR los restaura
           if(c.code === "HR" || c.code === "SF" || c.code === "BO") f.more = true; // RF-42
-        });
+        }, false, "code:" + c.code);
         if(c.title){ b.title = c.title; b.setAttribute("aria-label", c.title); } // solo JS lleva título
         grid.appendChild(b);
       });
@@ -2905,7 +2910,7 @@ function paForm(ri, inn, idx, done){
     });
     body.appendChild(el("div", "pa-lbl", "Carrera"));
     var run = el("div", "chips");
-    run.appendChild(chip("Anotó carrera", f.run, function(){ f.run = !f.run; }));
+    run.appendChild(chip("Anotó carrera", f.run, function(){ f.run = !f.run; }, false, "run"));
     body.appendChild(run);
     var more = el("details", "hint pa-more");
     more.appendChild(el("summary", null, "Más detalles"));
@@ -2989,7 +2994,7 @@ function onRowMenu(ri){
   var row = cap.rec.rows[ri], body = $("paBody");
   $("paTitle").textContent = (row.num ? row.num + " · " : "") + row.name;
   body.innerHTML = "";
-  var add = el("button", "btn btn-key", "Agregar sustituto");
+  var add = el("button", "btn", "Agregar sustituto");
   add.type = "button";
   add.addEventListener("click", function(){ paSubs(ri); });
   body.appendChild(add);
