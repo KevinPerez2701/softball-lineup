@@ -538,6 +538,8 @@ table.sheet tfoot input{
 
 /* selector de turno al bate */
 .pa-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px}
+.pa-grid .btn{flex-direction:column;gap:0}
+.pa-grid .btn small{font-size:11px;font-weight:400;color:var(--ink-3)}
 #paPick .dlg-body .btn{min-height:44px;min-width:44px;justify-content:center}
 #paPick .pickitem{min-height:40px}
 .pa-lbl{margin:12px 0 5px;font-size:12.5px;color:var(--ink-3)}
@@ -2903,10 +2905,10 @@ function paForm(ri, inn, idx, done){
     outs:src ? Stats.paOuts(src) : 0};
   // RF-27/42: "Más detalles" abierto si el turno ya trae CI, BR u outs distintos del defecto; luego sigue a f.more
   f.more = !!(f.rbi || f.sb || f.outs !== Stats.defaultOuts(f.code));
-  // RF-7: elegido ⇒ borde lima (fino si es el valor por defecto, 2 px si no), nunca relleno
+  // RF-6: elegido ⇒ borde lima de 2 px, sea o no el valor por defecto, nunca relleno
   // RF-5: key identifica el chip; tras redibujar el foco vuelve al chip con la misma key
-  function chip(label, on, fn, isDefault, key){
-    var b = el("button", on ? (isDefault ? "btn btn-thin" : "btn btn-default") : "btn", label);
+  function chip(label, on, fn, key){
+    var b = el("button", on ? "btn btn-default" : "btn", label);
     b.type = "button";
     b.dataset.key = key;
     b.setAttribute("aria-pressed", String(on));
@@ -2917,10 +2919,10 @@ function paForm(ri, inn, idx, done){
     });
     return b;
   }
-  function nums(box0, title, key, max, def){
+  function nums(box0, title, key, max){
     box0.appendChild(el("div", "pa-lbl", title));
     var box = el("div", "chips");
-    for(var i = 0; i <= max; i++) (function(v){ box.appendChild(chip(String(v), f[key] === v, function(){ f[key] = v; }, v === def, key + ":" + v)); })(i);
+    for(var i = 0; i <= max; i++) (function(v){ box.appendChild(chip(String(v), f[key] === v, function(){ f[key] = v; }, key + ":" + v)); })(i);
     box0.appendChild(box);
   }
   function draw(){
@@ -2936,7 +2938,8 @@ function paForm(ri, inn, idx, done){
         var b = chip(c.pick, f.code === c.code, function(){
           Stats.pickResult(f, c.code); // RF-3/14/15: HR marca carrera y CI; salir de HR los restaura
           if(c.code === "HR" || c.code === "SF" || c.code === "BO") f.more = true; // RF-42
-        }, false, "code:" + c.code);
+        }, "code:" + c.code);
+        if(c.cell !== c.pick){ b.appendChild(el("small", null, c.cell)); b.setAttribute("aria-label", c.pick); } // RF-18
         if(c.title){ b.title = c.title; b.setAttribute("aria-label", c.title); } // solo JS lleva título
         grid.appendChild(b);
       });
@@ -2945,16 +2948,16 @@ function paForm(ri, inn, idx, done){
     });
     body.appendChild(el("div", "pa-lbl", "Carrera"));
     var run = el("div", "chips");
-    run.appendChild(chip("Anotó carrera", f.run, function(){ f.run = !f.run; }, false, "run"));
+    run.appendChild(chip("Anotó carrera", f.run, function(){ f.run = !f.run; }, "run"));
     body.appendChild(run);
     var more = el("details", "hint pa-more");
     more.appendChild(el("summary", null, "Más detalles"));
     more.open = f.more;
     // un <details> ya reemplazado por draw() no cuenta
     more.addEventListener("toggle", function(){ if(more.isConnected) f.more = more.open; });
-    nums(more, "CI (carreras impulsadas)", "rbi", 4, 0);
-    nums(more, "BR (bases robadas)", "sb", 3, 0);
-    nums(more, "Outs en la jugada", "outs", 3, Stats.defaultOuts(f.code));
+    nums(more, "CI (carreras impulsadas)", "rbi", 4);
+    nums(more, "BR (bases robadas)", "sb", 3);
+    nums(more, "Outs en la jugada", "outs", 3);
     body.appendChild(more);
     var acts = el("div", "chips"), ok = el("button", "btn btn-key", "Listo"), no = el("button", "btn", "Cancelar");
     acts.style.marginTop = "14px";
@@ -3101,15 +3104,17 @@ function guideAdvance(){
 function guideAsk(){
   // 12 innings: termina (RF-15); el aviso se ve porque #paPick ya está cerrado
   if(cap.rec.game.innings >= 12){ $("paPick").close(); toast("Máximo 12 innings"); return; }
-  var body = $("paBody"), acts = el("div", "chips");
+  var body = $("paBody"), acts = el("div", "chips"), q = Stats.innQuestion(cap.rec); // RF-11
   $("paTitle").textContent = "¿Hubo otro inning?";
   body.innerHTML = "";
-  acts.appendChild(guideBtn("Sí", "btn btn-key", function(){
+  body.appendChild(el("p", "ask-msg", q.text));
+  acts.style.marginTop = "14px";
+  acts.appendChild(guideBtn("Sí", q.yes ? "btn btn-key" : "btn", function(){
     cap.rec.game.innings++; Stats.fit(cap.rec); renderCapture();
     guide.inn = cap.rec.game.innings;
     guideShow();
   }));
-  acts.appendChild(guideBtn("No", "btn", function(){ $("paPick").close(); }));
+  acts.appendChild(guideBtn("No", q.yes ? "btn" : "btn btn-key", function(){ $("paPick").close(); }));
   body.appendChild(acts);
 }
 // RF-5: filas con menos de 2 turnos en el inning (001 RF-28) + sustituto bajo el bateador que toca
