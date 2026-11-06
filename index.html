@@ -569,6 +569,12 @@ table.sheet tfoot input{
 /* estadísticas: tabla de jugadores; la columna del nombre queda fija al desplazar */
 #statsView{width:min(980px,calc(100vw - 28px))}
 #statsView .dlg-body{overflow-x:hidden}
+/* altura fija: el borde superior no se mueve entre vistas (RF-15); [open] para no mostrar el diálogo cerrado */
+#statsView[open]{height:82vh;display:flex;flex-direction:column}
+#statsView .dlg-head{flex:none;flex-wrap:nowrap}
+#statsView .dlg-head h3{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#statsView .chips{flex-wrap:nowrap}
+#statsView .dlg-body{flex:1 1 auto;max-height:none}
 table.stat{border-collapse:separate;border-spacing:0;width:100%;font-variant-numeric:tabular-nums}
 table.stat th,table.stat td{padding:0 6px;border-bottom:1px solid var(--line);text-align:right;white-space:nowrap}
 table.stat thead th{padding:0;font-family:var(--cond);font-weight:700;font-size:12.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-2)}
@@ -732,6 +738,7 @@ body.locked .gate{
     width:38px;height:4px;border-radius:4px;background:var(--line-2);
   }
   .dlg-body{max-height:calc(90vh - 90px)}
+  #statsView[open]{height:90vh}
 
   .scorecard{margin:12px 0;padding:11px;gap:9px;grid-template-columns:repeat(2,minmax(0,1fr))}
   .scorecard .fieldset:nth-child(1),
@@ -3326,7 +3333,11 @@ $("savedClose").addEventListener("click", function(){ $("saved").close(); });
 var statsViewName = "players";
 var statsSort = {key:"avg", desc:true};
 var statsDetail = null; /* pid del jugador abierto en Jugadores, o null */
-function openPlayerDetail(pid){ statsDetail = pid; openStats("players"); }
+function openPlayerDetail(pid){
+  statsDetail = pid; openStats("players");
+  var h = $("statsBody").querySelector("h3"); /* solo aquí: los redibujados de openStats no mueven el foco */
+  if(h) h.focus();
+}
 function closePlayerDetail(view){ statsDetail = null; openStats(view); }
 /* Juegos (RF-23 a RF-25): resumen, lista, abrir en la captura y borrar con marcador */
 function renderStatsGames(body){
@@ -3432,14 +3443,17 @@ function renderPlayerDetail(body, entries, pid){
     if(nb) nb.focus();
   });
   body.appendChild(back);
-  if(p) body.appendChild(el("h3", null, (p.num ? p.num + " · " : "") + p.name));
+  if(p){
+    var h3 = el("h3", null, (p.num ? p.num + " · " : "") + p.name);
+    h3.tabIndex = -1;
+    body.appendChild(h3);
+    body.appendChild(el("p", null, Stats.summaryLine(p)));
+  }
   var cols = [["VB","ab"],["H","h"],["CA","r"],["CI","rbi"],["BB","bb"],["K","k"]];
-  var rates = [["AVE","avg"],["OBP","obp"],["OPS","ops"]]; /* spec 006 RF-3: solo en la fila Total */
   var wrap = el("div", "sheet-scroll"), tb = el("table", "stat det"), hr = el("tr");
-  ["Fecha", "Rival"].concat(cols.concat(rates).map(function(c){ return c[0]; }), ["Turnos"]).forEach(function(t, i){
+  ["Fecha", "Rival"].concat(cols.map(function(c){ return c[0]; }), ["Turnos"]).forEach(function(t, i){
     var th = el("th", null, t);
     th.scope = "col";
-    if(i >= 2 + cols.length && t !== "Turnos") th.title = Stats.COL_TITLES[t];
     if(i < 2 || t === "Turnos") th.style.textAlign = "left";
     hr.appendChild(th);
   });
@@ -3451,7 +3465,6 @@ function renderPlayerDetail(body, entries, pid){
     tr.appendChild(th);
     tr.appendChild(el("td", null, l.opp || ""));
     cols.forEach(function(c){ tr.appendChild(el("td", null, String(l[c[1]]))); });
-    rates.forEach(function(){ tr.appendChild(el("td")); });
     tr.appendChild(el("td", null, l.seq));
     tbody.appendChild(tr);
   });
@@ -3461,7 +3474,6 @@ function renderPlayerDetail(body, entries, pid){
   tr.appendChild(thT);
   tr.appendChild(el("td"));
   cols.forEach(function(c){ tr.appendChild(el("td", null, String(g.total[c[1]]))); });
-  rates.forEach(function(c){ tr.appendChild(el("td", null, p ? Stats.fmt(p[c[1]]) : "—")); });
   tr.appendChild(el("td"));
   tf.appendChild(tr); tb.appendChild(tf);
   wrap.appendChild(tb); body.appendChild(wrap);
