@@ -26,7 +26,7 @@ Overlap map (index.html, lines of 97623df): T2 after 465, after 731, 1203 · T3 
       player gone from TEAM makes Deshacer a no-op; `node --check` on the extracted inline script passes.
 
 ## Wave 2 — after the dependency is merged
-- [ ] T4. Absent section: `renderBench` renders `details#absent.hint.no-print` in both branches from `Stats.absent` /
+- [x] T4. Absent section: `renderBench` renders `details#absent.hint.no-print` in both branches from `Stats.absent` /
       `Stats.absentTitle`; rows jersey + name + "Vino" (no badge, not draggable); "Vino" copies the Roster checkbox add;
       `absentOpen`/`absentFor` reset on a new `S` and in `dropStored`; `toggle` listener; focus via `refocusRow`, else
       summary, else `#benchTitle`. (RF-6–RF-11, RF-13) Deps: T1, T3

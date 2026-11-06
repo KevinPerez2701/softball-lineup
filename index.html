@@ -1867,7 +1867,7 @@ function renderOffer(){
 }
 function recoverStored(){ S = stored; fresh = false; $("recover").hidden = true; renderAll(); }
 /* Descartar = escribir la alineación actual encima de la guardada (K_CUR y la nube). */
-function dropStored(){ fresh = false; $("recover").hidden = true; absentFor = null; lsSet(K_CUR, S); } // absentFor: RF-9, "Descartar" cambia de juego
+function dropStored(){ fresh = false; $("recover").hidden = true; lsSet(K_CUR, S); }
 /* Primer cambio sobre la alineación vacía: true si save() ya puede escribir.
    Con la oferta a la vista se pregunta una sola vez (RF-10) y no se escribe hasta la respuesta. */
 function touched(){
@@ -2623,7 +2623,7 @@ function renderAbsent(){
   });
   d.appendChild(ul);
   d.open = absentOpen;
-  d.addEventListener("toggle", function(){ absentOpen = d.open; });
+  d.addEventListener("toggle", function(){ if(d.isConnected) absentOpen = d.open; }); // un toggle tardío de una sección ya quitada no pisa el estado
   var bl = $("benchList");
   bl.parentNode.appendChild(d);
 }

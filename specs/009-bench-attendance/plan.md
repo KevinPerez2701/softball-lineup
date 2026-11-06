@@ -4,8 +4,10 @@ No code in this document. Planned 2026-11-06 by sdd-planner (fable); line number
 lines, stats.js 678 lines). Format copied from `specs/008-critique-third/plan.md`.
 
 ## Orchestrator review (wins over the text below)
-- D1: accepted the one-line fix — `dropStored` (1863) also sets `absentFor = null`, so "Descartar" resets the fold like
-  any other game switch (RF-9). Goes in T4.
+- D1 (revised after the T4 review): `dropStored` does NOT reset the fold. It keeps the same `S` and runs inside a
+  "Vino" press on the fresh lineup ("Equipo" open); resetting there folded the list on the next "Vino" while Kevin was
+  still marking players — the opposite of RF-9's intent. Also: the `toggle` listener only writes while the section is
+  in the page (`isConnected`), so a late event from a removed section cannot overwrite the choice.
 - D2: the "—" badge on bench rows stays (RF-13); ≈ 82 px for the name at 360 px, ellipsis. Kevin may ask later.
 - Checked: `setTab` does not call `save()`/`renderAll()`, so switching phone tabs does not drop the undo.
 - RF-4 over-drop (team rename, scoreboard edit) accepted, as 008 D2.
