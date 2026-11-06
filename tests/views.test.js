@@ -298,3 +298,23 @@ test("playerGames: a runner-out-only game is a line with zero counts and adds no
   assert.strictEqual(res.lines.length, 2);
   assert.deepStrictEqual(res.total, {ab: 1, h: 1, r: 0, rbi: 0, bb: 0, k: 0});
 });
+
+// ---- spec 005: jugada de selección (JS) cuenta AP y VB, no hit ni embasado (RF-2/RF-3) ----
+// Fixture a mano: [1B, JS, BB, SF, JS con carrera] -> PA 5, AB 5-1-1 = 3, H 1, TB 1, BB 1, SF 1, R 1.
+test("005 RF-3 players/playerGames: JS cuenta AP y VB, no hit ni embasado", function(){
+  var g = rec("g", "2026-07-01", "2026-07-01T10:00:00Z", [row("p1", 7, "Ana", [
+    pa(1, "1B"), pa(2, "JS"), pa(3, "BB"), pa(4, "SF"), pa(5, "JS", {run: true})
+  ])]);
+  var res = Stats.players([g], TEAM), a = byPid(res.rows).p1, t = res.team;
+  [a, t].forEach(function(x){
+    assert.deepStrictEqual([x.pa, x.ab, x.h, x.bb, x.sf, x.k, x.r, x.tb], [5, 3, 1, 1, 1, 0, 1, 1]);
+    // OBP = (h+bb)/(ab+bb+sf) = 2/5 = .400 con AB 3; AVG 1/3; SLG 1/3
+    assert.deepStrictEqual([x.avg, x.obp, x.slg], [0.333, 0.4, 0.333]);
+  });
+  var l = Stats.playerGames([g], "p1").lines[0];
+  assert.deepStrictEqual([l.ab, l.h, l.r, l.bb, l.k], [3, 1, 1, 1, 0]);
+  assert.ok(l.seq.indexOf("JS•") !== -1, l.seq);
+  assert.ok(l.seq.indexOf(" JS ") !== -1, l.seq);
+  var d = Stats.rates({h: 1, ab: 3, bb: 1, sf: 1, tb: 1});
+  assert.deepStrictEqual([d.avg, d.obp, d.slg], [0.333, 0.4, 0.333]);
+});
