@@ -1,6 +1,6 @@
 # Spec 009 — Attendance from the Banca card: "No vino" and "Vino" without opening Roster
 
-Status: in-progress — G1 approved by Kevin 2026-11-06 ("si apruebo la spec 009 inicia"; G2 pre-approved by the same words)
+Status: done (deployed 2026-11-06, 0769e89) — G1 approved by Kevin 2026-11-06 ("si apruebo la spec 009 inicia"; G2 pre-approved by the same words)
 Created: 2026-11-06 · Clarified: 2026-11-06 (clarifier NEEDS WORK: 5 blocking, 8 minor — all resolved below; two
 answered by Kevin, the rest decided by the orchestrator and listed in Open questions)
 

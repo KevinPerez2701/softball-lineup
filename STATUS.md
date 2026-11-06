@@ -3,10 +3,10 @@
 Single source of truth for what is in flight and what is left. Update it in the same commit as the
 work it describes. Dates come from `date`, never from memory.
 
-Last updated: 2026-11-06 15:05 UTC-4 by Claude
+Last updated: 2026-11-06 15:17 UTC-4 by Claude
 
 ## Now (one line)
-Spec 009 (bench attendance) T1–T4 merged, T5 browser demo done (144/144) — waiting for Kevin's OK to push + deploy. Spec 008 live (861b526); its critique re-run is still pending.
+Spec 009 live (0769e89, Pages built; live page checked: service worker serves the new index.html and stats.js on a normal load). Spec 008 live; its critique re-run is still pending.
 
 ## Active specs
 | Spec | Phase | Current task | Next task | Blocked by |
@@ -19,7 +19,7 @@ Spec 009 (bench attendance) T1–T4 merged, T5 browser demo done (144/144) — w
 | 006-stats-phone | done | — | — | — |
 | 007-critique-rest | done | — | — | — |
 | 008-critique-third | validate | T10 (critique re-run) | — | — |
-| 009-bench-attendance | validate | T5 (deploy on OK) | — | Kevin OK |
+| 009-bench-attendance | done | — | — | — |
 
 Phases: constitution · spec · clarify · plan · tasks · implement · validate · done
 
@@ -31,6 +31,7 @@ Phases: constitution · spec · clarify · plan · tasks · implement · validat
 - Not covered by the 004 demo: RF-13 backdrop tap and back button, RF-2 storage-failure toast.
 
 ## Recently done (keep last 10)
+- 2026-11-06 15:17 · 009 · Deployed with Kevin's OK (0769e89, Pages built). Live check in Chrome: the page under the service worker already runs the new code on a normal load (btn-novino, Stats.absentTitle, RF-20 rule, 4 tabs; "Equipo (26)" on the fresh lineup). sw.js is network-first (no-cache, 3.5 s) for index.html and stats.js, so a reload with signal gets the new version
 - 2026-11-06 · 009 · T1–T4 done (parallel worktrees T1–T3, then T4; opus reviewers APPROVE all; orchestrator fixes at merge: toast padding rule screen-only, any toast drops the No vino undo, Descartar keeps the fold (D1 revised), late toggle guard). T5 demo on localhost:8001 (Kevin's session; started by Abrir "MSO vs Call · 06/11/2026", every press reverted, ends "Guardado ✓"): fresh lineup → "Equipo (26)" open; Abrir → "No vinieron (17)" folded (bench 0, all 9 in the lineup); Enter on Vino → Simon to the bench, section stays open, focus to the next Vino, toast "agregado al partido", header Guardar; Enter on No vino → toast sticky after 7 s with Deshacer + ✕ "Cerrar aviso", focus on the summary (bench empty), header back to "Guardado ✓"; Deshacer → Simon back, header Guardar; No vino then Vino Cachin → no Deshacer left; folded section stays folded through No vino; ✕ closes. Phone 360×640 (iframe) dark and light: bench row one line 43 px, name cut at 83 px, "No vino" 61 px + "Agregar" 64 px; with the toast on, .wrap padding 150 px and the card bottom (477) clears the toast top (498). 144/144. Not observed: RF-8 (no Recuperar banner on this origin; traced by the T4 reviewer), print (section has no-print)
 - 2026-11-06 · 008 · T10 browser demo on localhost:8001 (Kevin signed in, nothing saved; sheet edits undone, closed without saving). Desktop 1800 px dark + phone 360×640 (same-origin iframe) dark and light: RF-1 "AVE .750 · OBP .750 · OPS 1.500 · 4 AP · 1 JJ", detail 9 columns; RF-2 Enter → focus on the h3; RF-3 slot numbers ink; RF-4 checkboxes ink; RF-5 ring ink on page/dialog, bar-ink on toast/tab bar/field; RF-6 1B/CI 0/BR 0/outs 0 2 px outline; RF-7 Guardar key only when dirty, Guardar estadísticas lime only after a change (plain again after undo/restore), Agregar lime only with non-blank text; RF-8 "Turno 1 · 1B · anotó carrera"; RF-9 "Luis Moreno · Inning 1 · Turno 9"; RF-10 "#9 1B" 11 px; RF-11 rule 4 ("Los 5 innings…", No primary) and rule 2 ("Inning 5: la hoja suma 1 carrera, el marcador 0", Sí primary); RF-12 toast still up after 8 s, Tab reaches Deshacer and ✕ "Cerrar aviso", Enter on Deshacer restores; RF-13 at 360×640 Call 2 row clears the toast (150 px padding); RF-14 4th tab, aria-current stays on Orden, focus back on the tab; RF-15 top 84.7/84.7/84.7 desktop, 64/64/64 phone; RF-16 header one line; RF-17 order; RF-18 Rol/Lín/FS second line; RF-19 Nuevo last; RF-20 **missing from every task → added `#savedBody .rowacts{gap:16px}`, 16 px measured**; RF-21 "+ Inning" first; RF-22 phone-only span; RF-23 ✕ 32 px desktop. "Estadísticas" fits (71 px label in an 82 px tab at 360 px). Known: light-mode field focus ring on clay ~2.6:1; after Deshacer the focus drops to the body
 - 2026-11-06 · 008 · T1–T9 done in parallel worktrees, opus reviewers APPROVE (T3 BLOCK: toast focus ring invisible in light mode → `--focus:var(--bar-ink)` on .toast). Orchestrator fixes at merge: header Guardar initial class ghost + comment; hidden toast buttons no longer clickable/tabbable (visibility); cell line nowrap so "#10 Rol•" does not split. 135/135
@@ -40,7 +41,6 @@ Phases: constitution · spec · clarify · plan · tasks · implement · validat
 - 2026-11-06 · 007 · T1 (orderAfterAssign, cellName), T2 (dateLabel, sheetTitle, gameTitle, savedByDate, recordText; validIso moved onto Stats at merge), T4 (btn-thin, btn-sm.btn-default, RF-8 demotions) — reviewers APPROVE, merged, 131/131
 - 2026-11-06 · 005+006 · Browser demo on localhost:8000 (Kevin signed in; 127.0.0.1 cannot sign in: the API key's referrer list blocks it): picker 4 labeled rows, JS title/aria-label, chips 44 px, JS → 1 out with "Más detalles" closed; delete → "Turno borrado · Deshacer" restores the turn and its numbering; a later change drops the undo; runner out delete/undo; close + reopen shows no stale notice; Jugadores in RF-1 order with Equipo and key; detail AVE/OBP/OPS between K and Turnos = table (.400/.500/1.400 for Kevin); at 360 px AVE/OBP/SLG visible on open. Fix found in the demo (D2): at 360×640 the picker scrolled and "Listo" sat below the fold → row labels moved to the left of each row (.pa-row); now 413 px, no scroll. Also found: the working lineup on localhost had lost its roster/field/order (saved game intact); reopened the saved game
 - 2026-11-06 · 005 · T4 done (grouped picker rows, JS title/aria-label, 44 px chips, closeCapture hides a pending undo — gap left by T3) + 006 · T1 done (Stats.STAT_COLS rates first, detail AVE/OBP/OPS from the players row); reviewer APPROVE both; merged clean; +key-order assertion; 117/117
-- 2026-11-06 · 005 · T1–T3 done in parallel worktrees (JS code + groups + default outs; views tests; undo a deleted turn), reviewer APPROVE, merged, 115/115 green
 
 ## Backlog (ideas not yet specified)
 - (none — closed by Kevin on 2026-10-23)
