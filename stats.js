@@ -33,8 +33,8 @@ Stats.COL_TITLES = {
   OBP: "Promedio de embasado", SLG: "Slugging (bases totales ÷ VB)", OPS: "OBP + SLG"
 };
 
-// Columnas de la tabla Jugadores, en orden (spec 006 RF-1): [clave de la fila, rótulo, entero]; las tasas salen con Stats.fmt.
-Stats.STAT_COLS = [["avg","AVE"],["obp","OBP"],["slg","SLG"],["ops","OPS"],["g","JJ",1],["pa","AP",1],["ab","VB",1],["h","H",1],
+// Columnas de la tabla Jugadores, en orden (spec 006 RF-1, orden 008 RF-17): [clave de la fila, rótulo, entero]; las tasas salen con Stats.fmt.
+Stats.STAT_COLS = [["avg","AVE"],["pa","AP",1],["obp","OBP"],["slg","SLG"],["ops","OPS"],["g","JJ",1],["ab","VB",1],["h","H",1],
   ["b2","2B",1],["b3","3B",1],["hr","HR",1],["r","CA",1],["rbi","CI",1],["bb","BB",1],["k","K",1],["sb","BR",1],["cs","AR",1]];
 
 Stats.cellLabel = function(pa){
@@ -326,6 +326,11 @@ Stats.rates = function(c){
 
 Stats.fmt = function(x){
   return x === null ? "—" : x.toFixed(3).replace(/^0\./, ".");
+};
+
+// Línea resumen del detalle de jugador (008 RF-1); p es una fila de Stats.players().rows.
+Stats.summaryLine = function(p){
+  return "AVE " + Stats.fmt(p.avg) + " · OBP " + Stats.fmt(p.obp) + " · OPS " + Stats.fmt(p.ops) + " · " + p.pa + " AP · " + p.g + " JJ";
 };
 
 Stats.players = function(entries, team){

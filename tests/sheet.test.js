@@ -76,11 +76,11 @@ test("RF-8 COL_TITLES: los 17 nombres", function(){
   assert.strictEqual(Object.keys(Stats.COL_TITLES).length, 17);
 });
 
-test("RF-1 STAT_COLS: orden con los promedios primero", function(){
+test("RF-17 STAT_COLS: AVE, AP y luego OBP, SLG, OPS", function(){
   assert.deepStrictEqual(Stats.STAT_COLS.map(function(c){ return c[1]; }),
-    ["AVE","OBP","SLG","OPS","JJ","AP","VB","H","2B","3B","HR","CA","CI","BB","K","BR","AR"]);
+    ["AVE","AP","OBP","SLG","OPS","JJ","VB","H","2B","3B","HR","CA","CI","BB","K","BR","AR"]);
   assert.deepStrictEqual(Stats.STAT_COLS.map(function(c){ return c[0]; }),
-    ["avg","obp","slg","ops","g","pa","ab","h","b2","b3","hr","r","rbi","bb","k","sb","cs"]);
+    ["avg","pa","obp","slg","ops","g","ab","h","b2","b3","hr","r","rbi","bb","k","sb","cs"]);
   Stats.STAT_COLS.forEach(function(c){ assert.ok(c[1] in Stats.COL_TITLES, c[1]); });
   // solo las cuatro tasas van sin bandera de entero
   assert.deepStrictEqual(Stats.STAT_COLS.filter(function(c){ return !c[2]; }).map(function(c){ return c[1]; }),
