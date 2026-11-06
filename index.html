@@ -463,6 +463,9 @@ ul.list{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;ga
 }
 .hint[open] summary::before{transform:rotate(45deg)}
 .hint p{margin:6px 0 0;line-height:1.5}
+#absent{margin:10px 0 0}
+#absent .list{margin-top:6px;font-size:15px;color:var(--ink)}
+#absent .row{grid-template-columns:auto minmax(0,1fr) auto}
 /* hoja de acciones (menús del teléfono) */
 .sheet-list{display:flex;flex-direction:column;gap:6px}
 .sheet-item{
@@ -729,6 +732,8 @@ body.locked .gate{
   .toast{bottom:calc(84px + env(safe-area-inset-bottom))}
   /* RF-13: el aviso fijo ocupa 84 (bottom) + 54 (alto: botón 36 + 2×9) + 4 (translateY) = 142 px sobre el borde; 150 deja aire */
   #capture:has(.toast.on) .dlg-body{padding-bottom:150px}
+  /* RF-12: mismos 142 px del aviso fijo (84 + 54 + 4); 150 deja aire para que la última fila de la Banca suba libre */
+  body:has(> .toast.on) .wrap{padding-bottom:calc(150px + env(safe-area-inset-bottom))}
 
   /* diálogos como hojas que suben desde abajo */
   dialog,#teamRoster,#capture,#statsView{
@@ -1200,7 +1205,7 @@ body.locked .gate{
 
       <section class="card" aria-label="Banca" data-view="orden">
         <div class="panel-head">
-          <h2>Banca</h2>
+          <h2 id="benchTitle" tabindex="-1">Banca</h2>
           <span class="count" id="benchCount">0</span>
         </div>
         <div class="panel-body">
