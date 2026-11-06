@@ -76,6 +76,18 @@ test("RF-8 COL_TITLES: los 17 nombres", function(){
   assert.strictEqual(Object.keys(Stats.COL_TITLES).length, 17);
 });
 
+test("RF-1 STAT_COLS: orden con los promedios primero", function(){
+  assert.deepStrictEqual(Stats.STAT_COLS.map(function(c){ return c[1]; }),
+    ["AVE","OBP","SLG","OPS","JJ","AP","VB","H","2B","3B","HR","CA","CI","BB","K","BR","AR"]);
+  Stats.STAT_COLS.forEach(function(c){ assert.ok(c[1] in Stats.COL_TITLES, c[1]); });
+  // solo las cuatro tasas van sin bandera de entero
+  assert.deepStrictEqual(Stats.STAT_COLS.filter(function(c){ return !c[2]; }).map(function(c){ return c[1]; }),
+    ["AVE","OBP","SLG","OPS"]);
+  var g = rec(3, [0, 0, 0], [0, 0, 0], [{pid: "p1", num: 7, name: "Ana", pos: null, pas: [pa(1, "1B")]}]);
+  var r = Stats.players([g], [{id: "p1", num: 7, name: "Ana"}]).rows[0];
+  Stats.STAT_COLS.forEach(function(c){ assert.ok(c[0] in r, c[0]); });
+});
+
 test("RF-14/15 pickResult: HR marca carrera y CI, y al salir restaura", function(){
   var f = Stats.pickResult({code: "1B", run: false, rbi: 0, outs: 0}, "HR");
   assert.deepStrictEqual([f.code, f.run, f.rbi, f.outs], ["HR", true, 1, 0]);

@@ -318,3 +318,22 @@ test("005 RF-3 players/playerGames: JS cuenta AP y VB, no hit ni embasado", func
   var d = Stats.rates({h: 1, ab: 3, bb: 1, sf: 1, tb: 1});
   assert.deepStrictEqual([d.avg, d.obp, d.slg], [0.333, 0.4, 0.333]);
 });
+
+// ---- spec 006 RF-3: tasas en el detalle = fila de Jugadores, casos límite ----
+test("RF-3 detail rates: jugadores con líneas = filas de Jugadores, casos límite", function(){
+  var g = rec("g", "2026-08-01", "2026-08-01T10:00:00Z", [
+    row("p1", 7, "Ana", [pa(1, "BB")]),
+    row("p2", 9, "Beto", [pa(1, "SF")]),
+    rowRo("p3", 11, "Cai", [], [ro(1, "CS")])
+  ]);
+  var team = [{id: "p1", num: 7, name: "Ana"}, {id: "p2", num: 9, name: "Beto"}, {id: "p3", num: 11, name: "Cai"}];
+  var rows = Stats.players([g], team).rows, by = byPid(rows);
+  var withLines = ["p1", "p2", "p3", "p4"].filter(function(pid){ return Stats.playerGames([g], pid).lines.length > 0; });
+  assert.deepStrictEqual(withLines.sort(), rows.map(function(r){ return r.pid; }).sort());
+  function f(r){ return [Stats.fmt(r.avg), Stats.fmt(r.obp), Stats.fmt(r.ops)]; }
+  assert.deepStrictEqual([by.p1.avg, by.p1.obp, by.p1.ops], [null, 1, null]);
+  assert.deepStrictEqual(f(by.p1), ["—", "1.000", "—"]);
+  assert.strictEqual(by.p2.obp, 0);
+  assert.deepStrictEqual(f(by.p2), ["—", ".000", "—"]);
+  assert.deepStrictEqual(f(by.p3), ["—", "—", "—"]);
+});
