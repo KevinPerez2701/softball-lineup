@@ -34,4 +34,5 @@ Overlap map (index.html, lines of 97623df): T2 after 465, after 731, 1203 · T3 
       user's choice survives Vino/No vino/team sync; Vino → end of bench + toast; with the banner → the existing question.
 - [ ] T5. Orchestrator: merge, full suite alone, browser pass (plan Test strategy) at 360×640 and desktop, light and dark,
       keyboard pass, confirm the RF-12 value, STATUS.md, one deploy on Kevin's OK. Deps: T2, T4
+      Progress 2026-11-06 15:05: merge + suite + browser pass done (STATUS → Recently done). Left: Kevin's OK, deploy.
       Done when: every demo step observed and listed; the saved game reopened at the end.
