@@ -1,6 +1,6 @@
 # Spec 005 — Faster scoring: fielder's choice ("JS"), grouped result picker, undo a deleted turn
 
-Status: clarified
+Status: in-progress (G1 + G2: Kevin 2026-11-06, "Sí, apruebo e implementa")
 Created: 2026-11-06 · Clarified: 2026-11-06 (clarifier READY, 0 blocking, 3 minor — applied)
 
 ## Context and goal

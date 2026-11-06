@@ -117,6 +117,7 @@ game that the app calculates by itself. Part A is capture and save; part B is vi
 - RF-18: THE SYSTEM SHALL show in "Jugadores" one row per player id with ≥ 1 PA across all records, columns
   JJ, AP, VB, H, 2B, 3B, HR, CA, CI, BB, K, BR, AVE, OBP, SLG, OPS (formulas in Definitions), plus a team totals
   row whose counts are sums, whose JJ is the number of records, and whose rates come from the summed counts.
+  (Column order amended 2026-11-06 by spec 006 RF-1: rates first.)
 - RF-19: THE SYSTEM SHALL show rates rounded half-up to three decimals with no leading zero (`.333`, `1.083`),
   `—` when the denominator is 0, and OPS as `—` when OBP or SLG is `—`.
 - RF-20: WHEN the user taps a column header in "Jugadores", THE SYSTEM SHALL sort by it (numbers descending, name
@@ -126,6 +127,7 @@ game that the app calculates by itself. Part A is capture and save; part B is vi
   their newest record (RF-23 order) if the id is no longer in `TEAM`.
 - RF-22: WHEN the user taps a player row, THE SYSTEM SHALL show that player's line per game (date, opponent,
   VB, H, CA, CI, BB, K, and the sequence of cell labels in inning order) in RF-23 order, with their totals.
+  (Amended 2026-11-06 by spec 006 RF-3: AVE, OBP and OPS in the Total row, between K and the sequence.)
 - RF-23: THE SYSTEM SHALL show in "Juegos" every record newest first by date (same date: later `savedAt` first),
   with date, opponent, score and result (G/P/E), and above the list the team record (G-P-E) and total runs for
   and against.

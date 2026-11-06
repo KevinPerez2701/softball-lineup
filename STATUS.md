@@ -3,10 +3,10 @@
 Single source of truth for what is in flight and what is left. Update it in the same commit as the
 work it describes. Dates come from `date`, never from memory.
 
-Last updated: 2026-11-06 11:20 UTC-4 by Claude
+Last updated: 2026-11-06 11:50 UTC-4 by Claude
 
 ## Now (one line)
-Spec 005 (JS + grouped picker + undo a deleted turn) clarified, waiting for G1. Critique re-run 29/40 (4 and 5 up to 3); Kevin took every item, stats on phone first: specs 006 (stats on phone) and 007 (keyboard/screen reader, lime, labels) to draft. New report from Kevin: batting order does not adjust when a player is added (needs details).
+Spec 005 implementing (wave 1: T1 stats.js, T2 views tests, T3 undo — parallel worktrees); spec 006 clarified (G1 by Kevin), planner running; 007 (keyboard/screen reader, lime, labels, batting order on assigning a position) to draft.
 
 ## Active specs
 | Spec | Phase | Current task | Next task | Blocked by |
@@ -15,7 +15,8 @@ Spec 005 (JS + grouped picker + undo a deleted turn) clarified, waiting for G1. 
 | 002-inning-capture | done | — | — | — |
 | 003-saved-games | done | — | — | — |
 | 004-critique-fixes | done | — | — | — |
-| 005-fielders-choice | clarify (done) | — | G1 | Kevin (G1) |
+| 005-fielders-choice | implement | T1, T2, T3 (wave 1, parallel) | T4 | — |
+| 006-stats-phone | plan | — | tasks | — |
 
 Phases: constitution · spec · clarify · plan · tasks · implement · validate · done
 
