@@ -3,10 +3,10 @@
 Single source of truth for what is in flight and what is left. Update it in the same commit as the
 work it describes. Dates come from `date`, never from memory.
 
-Last updated: 2026-11-06 14:45 UTC-4 by Claude
+Last updated: 2026-11-06 11:48 UTC-4 by Claude (earlier same-day stamps 12:20–14:45 were written from memory, not from `date`)
 
 ## Now (one line)
-Spec 007 wave 1 merged (T1, T2, T4; reviewers APPROVE; 131/131), wave 2 (T3, T5, T6, T7) in parallel worktrees; 005 + 006 held for one deploy with 007.
+Specs 005, 006, 007 code done, reviewed and demoed on localhost:8000 (131/131); one deploy now (Kevin: "espera a la 007 para hacer un solo deploy"), then data ops: rename the 29/10 game, Elias 05/11 PA → JS.
 
 ## Active specs
 | Spec | Phase | Current task | Next task | Blocked by |
@@ -17,7 +17,7 @@ Spec 007 wave 1 merged (T1, T2, T4; reviewers APPROVE; 131/131), wave 2 (T3, T5,
 | 004-critique-fixes | done | — | — | — |
 | 005-fielders-choice | validate | T5 (push + Elias PA → JS) | — | Kevin's OK to push |
 | 006-stats-phone | validate | T2 (push) | — | Kevin's OK to push |
-| 007-critique-rest | implement | T3, T5, T6, T7 (wave 2, parallel) | T8 demo | — |
+| 007-critique-rest | validate | T8 (deploy + data ops) | — | — |
 
 Phases: constitution · spec · clarify · plan · tasks · implement · validate · done
 
@@ -28,6 +28,7 @@ Phases: constitution · spec · clarify · plan · tasks · implement · validat
 - Not covered by the 004 demo: RF-13 backdrop tap and back button, RF-2 storage-failure toast.
 
 ## Recently done (keep last 10)
+- 2026-11-06 · 007 · T3, T5, T6, T7 done in parallel worktrees, reviewer APPROVE, merged (131/131, inline scripts node --check OK). Browser demo on localhost:8000 (Kevin's session, nothing saved, game restored by reopening): Abrir juego by game date with "Sin fecha" last; pill "Softball · 5 innings"; "− Inning"; Final hidden at 0–0, shown at 7–6; picker/drag swap/Autoasignar/BD append to the order, replaced BD and "Quitar" keep their place; one solid lime on the main screen (Guardar); picker Space keeps focus (Rolling, Anotó carrera), outlines thin (default) / 2 px (changed); cell names read "Kevin Perez, inning 1, turno 2: E, anotó carrera, turno 10: Fly" and "…, sin turnos"; sheet title "MSO vs Call 2 · 05/11"; Juegos "Récord 2–1–0", "19/10/2026" without "vs rival"; Enter on a player name opens the detail and "← Jugadores" returns focus; at 360 px AVE visible and the name column sticky
 - 2026-11-06 · 007 · T1 (orderAfterAssign, cellName), T2 (dateLabel, sheetTitle, gameTitle, savedByDate, recordText; validIso moved onto Stats at merge), T4 (btn-thin, btn-sm.btn-default, RF-8 demotions) — reviewers APPROVE, merged, 131/131
 - 2026-11-06 · 005+006 · Browser demo on localhost:8000 (Kevin signed in; 127.0.0.1 cannot sign in: the API key's referrer list blocks it): picker 4 labeled rows, JS title/aria-label, chips 44 px, JS → 1 out with "Más detalles" closed; delete → "Turno borrado · Deshacer" restores the turn and its numbering; a later change drops the undo; runner out delete/undo; close + reopen shows no stale notice; Jugadores in RF-1 order with Equipo and key; detail AVE/OBP/OPS between K and Turnos = table (.400/.500/1.400 for Kevin); at 360 px AVE/OBP/SLG visible on open. Fix found in the demo (D2): at 360×640 the picker scrolled and "Listo" sat below the fold → row labels moved to the left of each row (.pa-row); now 413 px, no scroll. Also found: the working lineup on localhost had lost its roster/field/order (saved game intact); reopened the saved game
 - 2026-11-06 · 005 · T4 done (grouped picker rows, JS title/aria-label, 44 px chips, closeCapture hides a pending undo — gap left by T3) + 006 · T1 done (Stats.STAT_COLS rates first, detail AVE/OBP/OPS from the players row); reviewer APPROVE both; merged clean; +key-order assertion; 117/117
@@ -37,7 +38,6 @@ Phases: constitution · spec · clarify · plan · tasks · implement · validat
 - 2026-11-06 · — · impeccable critique re-run after 004: 29/40 (H4 3, H5 3); snapshot .impeccable/critique/2026-11-06T14-56-11Z__index-html.md (git-excluded)
 - 2026-11-06 · 001 · T16 done — refreshRows: rows of players in the lineup take num/name/pos from it; reviewer APPROVE; 112/112 green
 - 2026-11-06 · — · Pages: the 8123cd5 deploy had failed ("in progress deployment" left by the stuck f476807 one); rebuild requested on Kevin's OK → built, sw v7 live
-- 2026-11-06 · 001 · change: RF-8 amended — rows of players in the lineup take number, name and position from it (Kevin, after loading MSO vs Call 2 · 05/11 with Pages stuck on 7bf41b4)
 
 ## Backlog (ideas not yet specified)
 - (none — closed by Kevin on 2026-10-23)
