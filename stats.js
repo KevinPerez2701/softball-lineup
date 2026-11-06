@@ -558,6 +558,42 @@ Stats.result = function(st){
   return (us > them ? "Ganado " : us < them ? "Perdido " : "Empate ") + us + "–" + them;
 };
 
+// ---------- títulos y fechas (spec 007) ----------
+function validIso(iso){ return /^\d{4}-\d{2}-\d{2}$/.test(iso || ""); }
+
+// "dd/mm/aaaa" o "Sin fecha" si está vacía o no es una fecha ISO
+Stats.dateLabel = function(iso){
+  return validIso(iso) ? Stats.fmtDate(iso) : "Sin fecha";
+};
+
+// Título de la hoja de captura: "Equipo vs Rival · dd/mm"; sin rival, solo el equipo
+Stats.sheetTitle = function(g){
+  var team = (g.team || "").trim(), opp = (g.opp || "").trim();
+  var t = opp ? (team || "Equipo") + " vs " + opp : team || "Estadísticas";
+  return validIso(g.date) ? t + " · " + Stats.fmtDate(g.date).slice(0, 5) : t;
+};
+
+// Título en Estadísticas → Juegos: "dd/mm/aaaa" y " · vs Rival" si hay rival
+Stats.gameTitle = function(g){
+  var opp = (g.opp || "").trim();
+  return Stats.dateLabel(g.date) + (opp ? " · vs " + opp : "");
+};
+
+// Copia de los juegos guardados por fecha del juego (nueva primero), luego por guardado; sin fecha al final
+Stats.savedByDate = function(list){
+  function d(e){ return (e.state && e.state.date) || ""; }
+  return list.slice().sort(function(a, b){
+    var da = d(a), db = d(b);
+    if(da !== db) return !da ? 1 : !db ? -1 : da < db ? 1 : -1;
+    return (b.at || 0) - (a.at || 0);
+  });
+};
+
+// "Récord G–P–E" con rayas largas
+Stats.recordText = function(g){
+  return "Récord " + g.w + "–" + g.l + "–" + g.t;
+};
+
 // ---------- nombres ----------
 
 // Nombre para el recuadro del campo: siempre inicial + apellido cuando hay
