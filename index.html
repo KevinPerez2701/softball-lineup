@@ -732,8 +732,6 @@ body.locked .gate{
   .toast{bottom:calc(84px + env(safe-area-inset-bottom))}
   /* RF-13: el aviso fijo ocupa 84 (bottom) + 54 (alto: botón 36 + 2×9) + 4 (translateY) = 142 px sobre el borde; 150 deja aire */
   #capture:has(.toast.on) .dlg-body{padding-bottom:150px}
-  /* RF-12: mismos 142 px del aviso fijo (84 + 54 + 4); 150 deja aire para que la última fila de la Banca suba libre */
-  body:has(> .toast.on) .wrap{padding-bottom:calc(150px + env(safe-area-inset-bottom))}
 
   /* diálogos como hojas que suben desde abajo */
   dialog,#teamRoster,#capture,#statsView{
@@ -824,6 +822,9 @@ body.locked .gate{
 }
 /* solo en pantalla: al imprimir desde el teléfono sale la hoja completa */
 @media screen and (max-width:680px){
+  /* 009 RF-12: mismos 142 px del aviso fijo (84 + 54 + 4); 150 deja aire para que la última fila de la Banca suba libre.
+     Solo en pantalla: un aviso fijo encendido no debe dejar 150 px en blanco al imprimir. */
+  body:has(> .toast.on) .wrap{padding-bottom:calc(150px + env(safe-area-inset-bottom))}
   body[data-tab="juego"] [data-view]:not([data-view="juego"]),
   body[data-tab="campo"] [data-view]:not([data-view="campo"]),
   body[data-tab="orden"] [data-view]:not([data-view="orden"]){display:none}

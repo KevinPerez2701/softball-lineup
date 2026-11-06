@@ -13,7 +13,7 @@ Overlap map (index.html, lines of 97623df): T2 after 465, after 731, 1203 · T3 
       (RF-6, RF-9 title, NFR) Deps: —
       Done when: the plan's cases (team order, empty team, all present, empty roster, stale name, team name/num, three
       titles) exist and `node --test tests/bench.test.js < /dev/null` is green.
-- [ ] T2. CSS: `#absent` rules after 465; phone RF-12 rule `body:has(> .toast.on) .wrap{padding-bottom:…}` in the 680
+- [x] T2. CSS: `#absent` rules after 465; phone RF-12 rule `body:has(> .toast.on) .wrap{padding-bottom:…}` in the 680
       block; `<h2>` of Banca (1203) gets `id="benchTitle" tabindex="-1"`. (RF-1 layout, RF-6 look, RF-11 target, RF-12)
       Deps: —
       Done when: rules present; inline scripts unchanged; the padding value is computed from the CSS (`.wrap` phone
