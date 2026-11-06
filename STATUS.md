@@ -3,10 +3,10 @@
 Single source of truth for what is in flight and what is left. Update it in the same commit as the
 work it describes. Dates come from `date`, never from memory.
 
-Last updated: 2026-11-06 13:15 UTC-4 by Claude
+Last updated: 2026-11-06 13:50 UTC-4 by Claude
 
 ## Now (one line)
-Specs 005 + 006 merged (117/117), browser demo waiting for Kevin to sign in on localhost:8000; spec 007 clarified with Kevin's answers, planner (fable) running.
+Specs 005 + 006 demo passed on localhost:8000 with Kevin's session (no data saved); waiting for Kevin's OK to push. Spec 007 planner (fable) running.
 
 ## Active specs
 | Spec | Phase | Current task | Next task | Blocked by |
@@ -15,8 +15,8 @@ Specs 005 + 006 merged (117/117), browser demo waiting for Kevin to sign in on l
 | 002-inning-capture | done | — | — | — |
 | 003-saved-games | done | — | — | — |
 | 004-critique-fixes | done | — | — | — |
-| 005-fielders-choice | validate | T5 (browser demo) | push | Kevin signs in on localhost:8000 (127.0.0.1 is blocked by the API key referrer list) |
-| 006-stats-phone | validate | T2 (browser demo) | push | same as 005 |
+| 005-fielders-choice | validate | T5 (push + Elias PA → JS) | — | Kevin's OK to push |
+| 006-stats-phone | validate | T2 (push) | — | Kevin's OK to push |
 | 007-critique-rest | plan | — | tasks | — |
 
 Phases: constitution · spec · clarify · plan · tasks · implement · validate · done
@@ -28,6 +28,7 @@ Phases: constitution · spec · clarify · plan · tasks · implement · validat
 - Not covered by the 004 demo: RF-13 backdrop tap and back button, RF-2 storage-failure toast.
 
 ## Recently done (keep last 10)
+- 2026-11-06 · 005+006 · Browser demo on localhost:8000 (Kevin signed in; 127.0.0.1 cannot sign in: the API key's referrer list blocks it): picker 4 labeled rows, JS title/aria-label, chips 44 px, JS → 1 out with "Más detalles" closed; delete → "Turno borrado · Deshacer" restores the turn and its numbering; a later change drops the undo; runner out delete/undo; close + reopen shows no stale notice; Jugadores in RF-1 order with Equipo and key; detail AVE/OBP/OPS between K and Turnos = table (.400/.500/1.400 for Kevin); at 360 px AVE/OBP/SLG visible on open. Fix found in the demo (D2): at 360×640 the picker scrolled and "Listo" sat below the fold → row labels moved to the left of each row (.pa-row); now 413 px, no scroll. Also found: the working lineup on localhost had lost its roster/field/order (saved game intact); reopened the saved game
 - 2026-11-06 · 005 · T4 done (grouped picker rows, JS title/aria-label, 44 px chips, closeCapture hides a pending undo — gap left by T3) + 006 · T1 done (Stats.STAT_COLS rates first, detail AVE/OBP/OPS from the players row); reviewer APPROVE both; merged clean; +key-order assertion; 117/117
 - 2026-11-06 · 005 · T1–T3 done in parallel worktrees (JS code + groups + default outs; views tests; undo a deleted turn), reviewer APPROVE, merged, 115/115 green
 - 2026-11-06 · 006 · plan (fable; D1: detail rates from the players row) and tasks
@@ -37,7 +38,6 @@ Phases: constitution · spec · clarify · plan · tasks · implement · validat
 - 2026-11-06 · — · Pages: the 8123cd5 deploy had failed ("in progress deployment" left by the stuck f476807 one); rebuild requested on Kevin's OK → built, sw v7 live
 - 2026-11-06 · 001 · change: RF-8 amended — rows of players in the lineup take number, name and position from it (Kevin, after loading MSO vs Call 2 · 05/11 with Pages stuck on 7bf41b4)
 - 2026-11-05 · 004 · T4 + T7 done — field cards fit names 11.5→10 px without jersey; sw.js v7; browser demo on 127.0.0.1: 9/9 checklist steps ✔ (all closed-list confirms red with focus on Cancelar, RF-10 still locked, Guardar y salir, HR run/CI and undo, Sin marcador, column titles, Guardado ✓, cards no overlap); spec closed
-- 2026-11-05 · 004 · T1, T2, T3, T5, T6 done in parallel worktrees, each reviewed (APPROVE) and merged; 112/112 green on main
 
 ## Backlog (ideas not yet specified)
 - (none — closed by Kevin on 2026-10-23)

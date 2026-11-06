@@ -540,6 +540,8 @@ table.sheet tfoot input{
 #paPick .dlg-body .btn{min-height:44px;min-width:44px;justify-content:center}
 #paPick .pickitem{min-height:40px}
 .pa-lbl{margin:12px 0 5px;font-size:12.5px;color:var(--ink-3)}
+.pa-row{display:grid;grid-template-columns:66px minmax(0,1fr);align-items:center;gap:6px;margin-bottom:6px}
+.pa-row .pa-lbl{margin:0}
 .pa-more{margin:12px 0 0}
 .pa-more summary{min-height:40px}
 .pickitem.pa-item{grid-template-columns:minmax(0,1fr) auto auto;cursor:default}
@@ -2883,7 +2885,8 @@ function paForm(ri, inn, idx, done){
     var codes = (src && src.code === "BO") ? Stats.CODES : Stats.PICK_CODES;
     // RF-1/4: una fila con etiqueta por grupo (Hit, Se embasa, Out, Sacrificio)
     Stats.pickRows(codes).forEach(function(row){
-      body.appendChild(el("div", "pa-lbl", row.label));
+      var line = el("div", "pa-row"); // etiqueta a la izquierda: arriba ocupaba ~100 px y "Listo" quedaba fuera a 360 px
+      line.appendChild(el("div", "pa-lbl", row.label));
       var grid = el("div", "pa-grid");
       row.codes.forEach(function(c){
         var b = chip(c.pick, f.code === c.code, function(){
@@ -2893,7 +2896,8 @@ function paForm(ri, inn, idx, done){
         if(c.title){ b.title = c.title; b.setAttribute("aria-label", c.title); } // solo JS lleva título
         grid.appendChild(b);
       });
-      body.appendChild(grid);
+      line.appendChild(grid);
+      body.appendChild(line);
     });
     body.appendChild(el("div", "pa-lbl", "Carrera"));
     var run = el("div", "chips");
