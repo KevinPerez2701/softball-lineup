@@ -3,10 +3,10 @@
 Single source of truth for what is in flight and what is left. Update it in the same commit as the
 work it describes. Dates come from `date`, never from memory.
 
-Last updated: 2026-11-06 12:05 UTC-4 by Claude
+Last updated: 2026-11-06 12:51 UTC-4 by Claude
 
 ## Now (one line)
-Idle — specs 001–007 done and live on Pages (a7fe5e7); critique re-measured 30/40. Next: Kevin picks which critique items become spec 008.
+Spec 008 (third critique pass, 23 RFs) clarified, G1+G2 approved by Kevin ("apruébalo de una vez e inicia") — planning. 001–007 live (a7fe5e7); critique 30/40.
 
 ## Active specs
 | Spec | Phase | Current task | Next task | Blocked by |
@@ -18,6 +18,7 @@ Idle — specs 001–007 done and live on Pages (a7fe5e7); critique re-measured 
 | 005-fielders-choice | done | — | — | — |
 | 006-stats-phone | done | — | — | — |
 | 007-critique-rest | done | — | — | — |
+| 008-critique-third | plan | — | — | — |
 
 Phases: constitution · spec · clarify · plan · tasks · implement · validate · done
 
