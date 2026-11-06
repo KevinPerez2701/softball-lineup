@@ -1279,9 +1279,9 @@ body.locked .gate{
     <form class="addrow" id="addForm" autocomplete="off">
       <input class="inp" id="newNum" type="text" inputmode="numeric" maxlength="2" placeholder="#" aria-label="Número">
       <input class="inp" id="newName" type="text" placeholder="Nombre del jugador" aria-label="Nombre">
-      <button class="btn btn-key" type="submit">Agregar</button>
+      <button class="btn" id="btnAdd" type="submit">Agregar</button>
     </form>
-    <p class="panel-hint">Marca a los que vinieron a este partido, o usa <b>Marcar todos</b>. Después, en <b>Orden al bate</b> (pestaña <b>Orden</b> en el teléfono), usa <b>Completar orden</b> o agrégalos uno por uno. El botón ✕ elimina al jugador definitivamente del roster del equipo.</p>
+    <p class="panel-hint">Marca a los que vinieron a este partido, o usa <b>Marcar todos</b>. Después, en <b>Orden al bate</b> <span class="phone-only">(pestaña <b>Orden</b>)</span>, usa <b>Completar orden</b> o agrégalos uno por uno. El botón ✕ elimina al jugador definitivamente del roster del equipo.</p>
     <ul class="list" id="teamRosterList"></ul>
   </div>
 </dialog>
@@ -1673,7 +1673,7 @@ function renderHeader(){
   // RF-9/18: con juego ligado y sin cambios el botón dice "Guardado ✓" (sin estilo de llave); si no, "Guardar"
   var bs = $("btnSave"), saved = !!g && !dirty;
   bs.textContent = saved ? "Guardado ✓" : "Guardar";
-  bs.className = saved ? "btn btn-ghost btn-sm" : "btn btn-key btn-sm";
+  bs.className = dirty ? "btn btn-key btn-sm" : "btn btn-ghost btn-sm";
   if(saved) bs.setAttribute("aria-label", "Guardado");
   else bs.removeAttribute("aria-label");
 }
@@ -2333,6 +2333,10 @@ function syncTeamPlayer(pl){
 }
 
 
+/* RF-7: "Agregar" en lima solo con nombre no vacío */
+function syncAddBtn(){ $("btnAdd").classList.toggle("btn-key", !!$("newName").value.trim()); }
+$("newName").addEventListener("input", syncAddBtn);
+
 $("addForm").addEventListener("submit", function(ev){
   ev.preventDefault();
   var name = $("newName").value.trim();
@@ -2346,6 +2350,7 @@ $("addForm").addEventListener("submit", function(ev){
   // Los jugadores nuevos quedan disponibles en el roster del equipo,
   // pero NO se agregan automáticamente al partido.
   $("newName").value = ""; $("newNum").value = "";
+  syncAddBtn();
   $("newNum").focus();
   renderTeamRoster();
   renderAll();
