@@ -693,12 +693,12 @@ body.locked .gate{
   body[data-tab="juego"] .work{margin-top:12px !important}
 
   .tabbar{
-    display:grid;grid-template-columns:repeat(3,1fr);
+    display:grid;grid-template-columns:repeat(4,1fr);
     position:fixed;left:0;right:0;bottom:0;z-index:40;
     background:var(--bar);color:var(--bar-ink);
     border-top:1px solid rgba(255,255,255,.08);
     padding:6px max(8px,env(safe-area-inset-right)) calc(6px + env(safe-area-inset-bottom)) max(8px,env(safe-area-inset-left));
-    --focus:var(--accent);
+    --focus:var(--bar-ink);
   }
   .tab{
     position:relative;display:flex;flex-direction:column;align-items:center;gap:3px;
@@ -708,6 +708,7 @@ body.locked .gate{
     transition:opacity .15s,background .15s;
   }
   .tab .ico{width:22px;height:22px}
+  @media (max-width:400px){.tab{letter-spacing:.04em}} /* RF-14: "ESTADÍSTICAS" mide 79.8 px con .08em y la celda útil a 360 px son 78 */
   .tab[aria-current="page"]{opacity:1;background:rgba(255,255,255,.08)}
   .tab[aria-current="page"] .ico{color:var(--accent)}
   .tab-badge{
@@ -1229,6 +1230,10 @@ body.locked .gate{
   <button type="button" class="tab" data-tab="orden">
     <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 6h11M9 12h11M9 18h11"/><path d="M4 5v3M3.5 12.5h1.5L3.5 15H5M3.5 17h1.5v2H3.5"/></svg>
     <span>Orden</span><b class="tab-badge" id="tabOrder">0</b>
+  </button>
+  <button type="button" class="tab" id="tabStats">
+    <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20h16M7 20v-7M12 20V5M17 20v-10"/></svg>
+    <span>Estadísticas</span>
   </button>
 </nav>
 
@@ -3957,12 +3962,14 @@ function setTab(t){
   try{ localStorage.setItem(K_TAB, t); }catch(e){}
   fitSlotNames(); // el campo estaba oculto: ahora sí se puede medir
 }
-document.querySelectorAll(".tab").forEach(function(b){
+document.querySelectorAll(".tab[data-tab]").forEach(function(b){
   b.addEventListener("click", function(){
     setTab(b.dataset.tab);
     window.scrollTo(0, 0);
   });
 });
+// RF-14: no es una vista (sin data-tab): abre Estadísticas con la misma implementación del botón del encabezado
+$("tabStats").addEventListener("click", function(){ $("btnStats").click(); });
 (function(){
   var t = null;
   try{ t = localStorage.getItem(K_TAB); }catch(e){}
@@ -3980,13 +3987,12 @@ var SHEETS = {
     ["btnPrint", "printer", "Imprimir / PDF", "Hoja carta para el anotador", true]
   ]},
   more: {title:"Más", items:[
-    ["btnNew", "file", "Nuevo", "Limpia campo, orden y marcador"],
     ["btnSaveNew", "save", "Guardar como nuevo", "Copia de este juego con la fecha de hoy"],
     ["btnLoad", "folder", "Abrir", "Abrir o borrar juegos guardados"],
-    ["btnStats", "chart", "Estadísticas", "Jugadores y juegos"],
     ["btnTeamRoster", "users", "Roster", "Jugadores y asistencia al partido"],
     ["btnBackup", "shield", "Respaldo", "Exportar o importar tus datos como texto"],
     ["btnInstall", "download", "Instalar", "Ábrela desde tu pantalla de inicio, sin señal"],
+    ["btnNew", "file", "Nuevo", "Limpia campo, orden y marcador"],
     "sep",
     ["btnLogout", "logout", "Cerrar sesión", cloud.email, false, true]
   ]}
