@@ -6,7 +6,7 @@ work it describes. Dates come from `date`, never from memory.
 Last updated: 2026-11-06 14:31 UTC-4 by Claude
 
 ## Now (one line)
-Spec 008 deployed (861b526, Pages built; critique re-run left). Spec 009 (bench attendance: "No vino" + Deshacer, "No vinieron" with "Vino") clarified (13 RFs, clarifier blocking items resolved, 2 answered by Kevin) — waiting for G1.
+Spec 008 deployed (861b526, Pages built; critique re-run left). Spec 009 (bench attendance: "No vino" + Deshacer, "No vinieron" with "Vino") G1 approved by Kevin ("si apruebo la spec 009 inicia"), plan (fable) + tasks written, G2 pre-approved by the same words; wave 1 (T1–T3) running in worktrees.
 
 ## Active specs
 | Spec | Phase | Current task | Next task | Blocked by |
@@ -19,7 +19,7 @@ Spec 008 deployed (861b526, Pages built; critique re-run left). Spec 009 (bench 
 | 006-stats-phone | done | — | — | — |
 | 007-critique-rest | done | — | — | — |
 | 008-critique-third | validate | T10 (critique re-run) | — | — |
-| 009-bench-attendance | clarify (G1) | — | — | Kevin G1 |
+| 009-bench-attendance | implement | T1–T3 | T4 | — |
 
 Phases: constitution · spec · clarify · plan · tasks · implement · validate · done
 
