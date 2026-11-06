@@ -94,7 +94,7 @@ All tasks touch `stats.js` or `index.html`, so they run sequentially (no paralle
       (offline + two devices), README section for stats. (All) Deps: T1–T14
       Files: `README.md`
       Done when: `/sdd:validate` reports every RF traced and the demo checklist passed.
-- [ ] T16. Change 2026-11-06 (RF-8 amended): rows of players in the lineup take number, name and position from
+- [x] T16. Change 2026-11-06 (RF-8 amended): rows of players in the lineup take number, name and position from
       it when the sheet opens from the current game. (RF-8) Deps: —
       Files: `stats.js`, `tests/sheet.test.js`
       Done when: `node --test 'tests/*.test.js'` green with the refreshRows tests asserting the refreshed

@@ -91,18 +91,21 @@ test("RF-1/8/36 refreshRows: vacío copia la alineación", function(){
 
 test("RF-8/36 refreshRows: conserva filas, agrega nuevos, quita duplicados", function(){
   var stored = [
-    {pid: "b", num: "2", name: "Bea", pos: null, pas: [pa(1, "1B")]},
+    {pid: "b", num: "2", name: "Bea", pos: null, pas: [pa(1, "1B")], sub: true},
     {pid: "x", num: "9", name: "Fuera", pos: "CF", pas: []},
     {pid: "b", num: "2", name: "Bea", pos: "P", pas: []}];
-  var lineup = [{pid: "a", num: "1", name: "Ana", pos: "P"}, {pid: "b", num: "2", name: "Bea", pos: "DH"},
+  var lineup = [{pid: "a", num: "1", name: "Ana", pos: "P"}, {pid: "b", num: "7", name: "Beatriz", pos: "DH"},
     {pid: "c", num: "3", name: "Cris", pos: "SS"}];
   var out = Stats.refreshRows(stored, lineup);
   assert.deepStrictEqual(out.map(function(r){ return r.pid; }), ["b", "x", "a", "c"]);
-  assert.strictEqual(out[0].pos, null);
+  // RF-8 (2026-11-06): la fila de quien sigue en el orden toma número, nombre y posición de la alineación
+  assert.deepStrictEqual([out[0].num, out[0].name, out[0].pos], ["7", "Beatriz", "DH"]);
   assert.strictEqual(out[0].pas.length, 1);
-  assert.strictEqual(out[1].pos, "CF");
+  assert.strictEqual(out[0].sub, true);
+  assert.strictEqual(out[1].pos, "CF"); // ya no está en el orden: conserva lo suyo
   assert.deepStrictEqual(out[2], {pid: "a", num: "1", name: "Ana", pos: "P", pas: []});
   assert.strictEqual(stored.length, 3);
+  assert.strictEqual(stored[0].pos, null); // no toca las filas de quien llama
 });
 
 test("RF-36 refreshRows: duplicados dentro de la alineación o las filas", function(){

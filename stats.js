@@ -30,12 +30,17 @@ Stats.cellLabel = function(pa){
   return pa.run ? c + "•" : c;
 };
 
-// Devuelve un array nuevo; las filas guardadas se conservan tal cual (mismo objeto).
+// Devuelve un array nuevo; la fila de quien no está en la alineación es el mismo objeto, las demás son copias.
 Stats.refreshRows = function(rows, lineup){
-  var seen = {}, out = [], i, p;
+  var seen = {}, by = {}, out = [], i, k, p, r;
+  for(i = lineup.length - 1; i >= 0; i--) by[lineup[i].pid] = lineup[i]; // el primero gana, como en las filas
   for(i = 0; i < rows.length; i++){
     if(seen[rows[i].pid]) continue;
-    seen[rows[i].pid] = true; out.push(rows[i]);
+    seen[rows[i].pid] = true;
+    r = rows[i]; p = by[r.pid];
+    // RF-8: quien sigue en la alineación toma de ella número, nombre y posición (se corrige la alineación después del juego)
+    if(p){ r = {}; for(k in rows[i]) r[k] = rows[i][k]; r.num = p.num; r.name = p.name; r.pos = p.pos; }
+    out.push(r);
   }
   for(i = 0; i < lineup.length; i++){
     p = lineup[i];
