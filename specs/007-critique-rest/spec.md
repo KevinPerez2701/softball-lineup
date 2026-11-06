@@ -1,6 +1,6 @@
 # Spec 007 — Rest of the critique: batting order on assigning a position, keyboard and screen reader, one meaning for lime, labels
 
-Status: in-progress (G1 + G2: Kevin 2026-11-06, "implementa de una vez en paralelo lo que puedas"; one deploy with 005 + 006)
+Status: done (deployed 2026-11-06 with 005 and 006, a7fe5e7; 29/10 game renamed)
 Created: 2026-11-06 · Clarified: 2026-11-06 (clarifier NEEDS WORK: 8 blocking, 7 minor — all resolved below; four
 decisions answered by Kevin the same day)
 

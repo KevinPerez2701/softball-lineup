@@ -35,6 +35,6 @@ T5 2691–2695, 2734, paForm chip/nums/draw, 2984 · T6 588+, 3314–3318, 3379�
       Done when: suite green; traced: pill follows ± Inning; Final hides at 0–0; list sorted and dated by game date.
 
 ## Wave 3 — orchestrator
-- [ ] T8. Merge, full suite alone, browser pass (plan Test strategy) at 360 px and desktop, STATUS.md; one deploy with
+- [x] T8. Merge, full suite alone, browser pass (plan Test strategy) at 360 px and desktop, STATUS.md; one deploy with
       005 + 006 on Kevin's OK; data ops: rename the 29/10 game, Elias's 05/11 PA → JS. Deps: T1–T7
       Done when: every demo step observed and listed.

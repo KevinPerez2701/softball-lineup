@@ -29,7 +29,7 @@ browser checks on http://127.0.0.1:8000 at the end. Spec 006 runs at the same ti
       detalles" closed.
 
 ## Wave 3 — orchestrator
-- [ ] T5. Full suite alone; browser demo at 360 px and desktop on http://127.0.0.1:8000 (plan Test strategy list,
+- [x] T5. Full suite alone; browser demo at 360 px and desktop on http://127.0.0.1:8000 (plan Test strategy list,
       D2 measured); STATUS.md; commit; push on Kevin's OK; post-deploy: Elias's 5th-inning PA of 05/11 → JS.
       (all RFs) Deps: T1–T4
       Done when: every demo step observed and listed.

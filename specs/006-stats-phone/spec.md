@@ -1,6 +1,6 @@
 # Spec 006 — Batting stats that read first on the phone
 
-Status: clarified (G1: Kevin 2026-11-06, "cuando esté listo implementa de una vez en paralelo lo que puedas")
+Status: done (deployed 2026-11-06 with 005 and 007, a7fe5e7)
 Created: 2026-11-06 · Clarified: 2026-11-06 (clarifier NEEDS WORK: 1 blocking, 6 minor — applied; the blocking
 placement decided by the orchestrator: between K and Turnos, the closest place to the names on a phone)
 
