@@ -22,7 +22,7 @@ browser checks on http://127.0.0.1:8000 at the end. Spec 006 runs at the same ti
       undo dropped; delete then close → no-op; runner out delete/undo.
 
 ## Wave 2 — after T1 is merged
-- [ ] T4. Picker rows: `paForm.draw` renders `Stats.pickRows(codes)` as labeled rows; JS chip `title`/`aria-label`;
+- [x] T4. Picker rows: `paForm.draw` renders `Stats.pickRows(codes)` as labeled rows; JS chip `title`/`aria-label`;
       legacy BO choice and the RF-42 list unchanged; chip `min-height` 44 px (D1). (RF-1, RF-4, RF-6) Deps: T1
       Files: `index.html` (paForm draw, `#paPick .dlg-body .btn` CSS)
       Done when: suite green; traced: free-cell new PA, guided mode, edit of a stored BO, JS → outs 1 and "Más
