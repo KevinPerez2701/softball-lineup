@@ -655,9 +655,9 @@ body.locked .gate{
   max-width:calc(100vw - 28px);text-align:center;
   background:var(--bar);color:var(--bar-ink);padding:9px 16px;border-radius:999px;
   font-weight:600;font-size:13.5px;box-shadow:var(--shadow-2);
-  opacity:0;pointer-events:none;transition:opacity .2s,transform .2s;
+  opacity:0;visibility:hidden;pointer-events:none;transition:opacity .2s,transform .2s,visibility .2s;
 }
-.toast.on{opacity:1;transform:translateX(-50%) translateY(-4px)}
+.toast.on{opacity:1;visibility:visible;transform:translateX(-50%) translateY(-4px)}
 .toast .toast-x{min-width:36px;color:var(--bar-ink);opacity:.75}
 
 @media (max-width:1080px){
