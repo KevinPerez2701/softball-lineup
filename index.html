@@ -537,7 +537,7 @@ table.sheet tfoot input{
 
 /* selector de turno al bate */
 .pa-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px}
-#paPick .dlg-body .btn{min-height:40px;min-width:44px;justify-content:center}
+#paPick .dlg-body .btn{min-height:44px;min-width:44px;justify-content:center}
 #paPick .pickitem{min-height:40px}
 .pa-lbl{margin:12px 0 5px;font-size:12.5px;color:var(--ink-3)}
 .pa-more{margin:12px 0 0}
@@ -2879,14 +2879,22 @@ function paForm(ri, inn, idx, done){
   }
   function draw(){
     body.innerHTML = "";
-    var grid = el("div", "pa-grid");
     // RF-6: BO ya no se ofrece, pero un turno que lo trae conserva su chip para poder editarlo
     var codes = (src && src.code === "BO") ? Stats.CODES : Stats.PICK_CODES;
-    codes.forEach(function(c){ grid.appendChild(chip(c.pick, f.code === c.code, function(){
-      Stats.pickResult(f, c.code); // RF-3/14/15: HR marca carrera y CI; salir de HR los restaura
-      if(c.code === "HR" || c.code === "SF" || c.code === "BO") f.more = true; // RF-42
-    })); });
-    body.appendChild(grid);
+    // RF-1/4: una fila con etiqueta por grupo (Hit, Se embasa, Out, Sacrificio)
+    Stats.pickRows(codes).forEach(function(row){
+      body.appendChild(el("div", "pa-lbl", row.label));
+      var grid = el("div", "pa-grid");
+      row.codes.forEach(function(c){
+        var b = chip(c.pick, f.code === c.code, function(){
+          Stats.pickResult(f, c.code); // RF-3/14/15: HR marca carrera y CI; salir de HR los restaura
+          if(c.code === "HR" || c.code === "SF" || c.code === "BO") f.more = true; // RF-42
+        });
+        if(c.title){ b.title = c.title; b.setAttribute("aria-label", c.title); } // solo JS lleva título
+        grid.appendChild(b);
+      });
+      body.appendChild(grid);
+    });
     body.appendChild(el("div", "pa-lbl", "Carrera"));
     var run = el("div", "chips");
     run.appendChild(chip("Anotó carrera", f.run, function(){ f.run = !f.run; }));
@@ -3129,7 +3137,7 @@ function saveCapture(){
   if($("statsView").open) openStats(statsViewName);
   toast(gameName !== null ? "Estadísticas guardadas en «" + gameName + "»" : "Estadísticas guardadas"); // después de cerrar: toast() va dentro del primer diálogo abierto
 }
-function closeCapture(){ guide = null; cap = null; $("capture").close(); } // RF-20
+function closeCapture(){ guide = null; if(cap && cap.undo) $("toast").classList.remove("on"); cap = null; $("capture").close(); } // RF-20
 // RF-11: si hay cambios sin guardar, confirmar antes de descartar
 function tryCloseCapture(){
   if(!cap || JSON.stringify(cap.rec) === cap.opened){ closeCapture(); return; }
