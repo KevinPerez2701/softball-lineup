@@ -590,6 +590,7 @@ table.stat th:first-child{
 }
 table.stat thead th:first-child button{text-align:left}
 table.stat th:first-child .nm{display:block;max-width:150px;overflow:hidden;text-overflow:ellipsis}
+table.stat tbody button.nm{padding:0;border:0;background:transparent;color:inherit;font:inherit;cursor:pointer;text-align:left}
 table.stat tfoot th,table.stat tfoot td{font-weight:700;border-top:2px solid var(--line-2);border-bottom:0}
 
 /* ---------- entrada (login) ---------- */
@@ -3328,7 +3329,7 @@ function closePlayerDetail(view){ statsDetail = null; openStats(view); }
 /* Juegos (RF-23 a RF-25): resumen, lista, abrir en la captura y borrar con marcador */
 function renderStatsGames(body){
   var g = Stats.games(lsGet(K_STATS, []));
-  var sum = el("p", null, "Récord " + g.w + "-" + g.l + "-" + g.t + " · Carreras " + g.runsFor + " a favor, " + g.runsAgainst + " en contra");
+  var sum = el("p", null, Stats.recordText(g) + " · Carreras " + g.runsFor + " a favor, " + g.runsAgainst + " en contra");
   sum.style.fontWeight = "600";
   body.appendChild(sum);
   g.list.forEach(function(x){
@@ -3336,7 +3337,7 @@ function renderStatsGames(body){
     it.style.cursor = "default";
     var info = el("span");
     info.style.minWidth = "0";
-    var t = el("div", null, (x.date || "").split("-").reverse().join("/") + " · vs " + (x.opp || "rival"));
+    var t = el("div", null, Stats.gameTitle(x));
     t.style.fontWeight = "600";
     var d = el("div", "where", x.text);
     info.appendChild(t); info.appendChild(d);
@@ -3396,7 +3397,9 @@ function renderStatsPlayers(body, entries){
   Stats.sortPlayers(players.rows, statsSort.key, statsSort.desc).forEach(function(p){
     var tr = el("tr"), th = el("th");
     th.scope = "row";
-    th.appendChild(el("span", "nm", (p.num ? p.num + " · " : "") + p.name));
+    var nb = el("button", "nm", (p.num ? p.num + " · " : "") + p.name);
+    nb.type = "button"; nb.setAttribute("data-pid", p.pid); /* sin listener: su clic sube al tr */
+    th.appendChild(nb);
     tr.appendChild(th);
     Stats.STAT_COLS.forEach(function(c){ tr.appendChild(statCell("td", p, c)); });
     tr.addEventListener("click", function(){ openPlayerDetail(p.pid); });
@@ -3421,7 +3424,11 @@ function renderPlayerDetail(body, entries, pid){
   var p = Stats.players(entries, TEAM).rows.filter(function(r){ return r.pid === pid; })[0];
   var back = el("button", "btn btn-sm", "← Jugadores");
   back.type = "button";
-  back.addEventListener("click", function(){ closePlayerDetail("players"); });
+  back.addEventListener("click", function(){
+    closePlayerDetail("players");
+    var nb = $("statsBody").querySelector('button[data-pid="' + pid + '"]');
+    if(nb) nb.focus();
+  });
   body.appendChild(back);
   if(p) body.appendChild(el("h3", null, (p.num ? p.num + " · " : "") + p.name));
   var cols = [["VB","ab"],["H","h"],["CA","r"],["CI","rbi"],["BB","bb"],["K","k"]];
@@ -3464,8 +3471,8 @@ function openStats(view){
   var dlg = $("statsView"), body = $("statsBody"), entries = lsGet(K_STATS, []);
   $("statsTabPlayers").setAttribute("aria-pressed", String(statsViewName === "players"));
   $("statsTabGames").setAttribute("aria-pressed", String(statsViewName === "games"));
-  $("statsTabPlayers").classList.toggle("btn-key", statsViewName === "players");
-  $("statsTabGames").classList.toggle("btn-key", statsViewName === "games");
+  $("statsTabPlayers").classList.toggle("btn-default", statsViewName === "players");
+  $("statsTabGames").classList.toggle("btn-default", statsViewName === "games");
   body.innerHTML = "";
   if(!Stats.live(entries).length) body.appendChild(el("p", "empty-note", "Todavía no hay juegos anotados"));
   else if(statsViewName !== "players" || !statsDetail || !renderPlayerDetail(body, entries, statsDetail)){
