@@ -38,7 +38,7 @@ window.addEventListener("beforeinstallprompt", function(e){ e.preventDefault(); 
   --accent-ink:#1b2410;
   --accent-soft:#eef5b4;
   --accent-text:#5d6b00;
-  --focus:#5d6b00;
+  --focus:var(--ink);
   --bar:#141c16;
   --bar-ink:#f3f6ee;
   --grass-a:#4e8a55;
@@ -71,7 +71,6 @@ window.addEventListener("beforeinstallprompt", function(e){ e.preventDefault(); 
     --accent-ink:#141a06;
     --accent-soft:#3a4410;
     --accent-text:#cbdd22;
-    --focus:#cbdd22;
     --bar:#36452f;
     --bar-ink:#eef3e6;
     --grass-a:#2f5636;
@@ -101,7 +100,6 @@ window.addEventListener("beforeinstallprompt", function(e){ e.preventDefault(); 
   --accent-ink:#141a06;
   --accent-soft:#3a4410;
   --accent-text:#cbdd22;
-  --focus:#cbdd22;
   --bar:#36452f;
   --bar-ink:#eef3e6;
   --grass-a:#2f5636;
@@ -143,8 +141,8 @@ input,textarea{caret-color:var(--accent-text)}
   position:sticky;top:0;z-index:30;background:var(--bar);color:var(--bar-ink);
   border-bottom:3px solid var(--accent);
   padding-top:env(safe-area-inset-top);
-  /* sobre la barra oscura el foco oliva no se ve: ahí va el lima */
-  --focus:var(--accent);
+  /* sobre la barra oscura el foco oscuro no se ve: ahí va el claro de la barra */
+  --focus:var(--bar-ink);
 }
 .topbar-in{
   max-width:1360px;margin:0 auto;
@@ -169,6 +167,7 @@ input,textarea{caret-color:var(--accent-text)}
 .tgroup{display:flex;gap:7px;flex-wrap:wrap}
 .tgroup + .tgroup{padding-left:14px;border-left:1px solid rgba(255,255,255,.18)}
 .offstage,.tabbar{display:none}
+.phone-only{display:none}
 
 /* ---------- buttons ---------- */
 .btn{
@@ -191,13 +190,11 @@ dialog .btn-ghost:hover{background:var(--surface-2);border-color:var(--ink-3)}
 /* chip con el valor por defecto: borde de 2 px sin relleno (el borde extra sale del padding, no cambia el tamaño) */
 .btn-default{background:transparent;border:2px solid var(--accent);padding:5px 10px}
 .btn-default:hover{background:var(--surface-2);border-color:var(--accent)}
-/* variante fina (1 px, mismo padding que .btn): el valor elegido es el de por defecto */
-.btn-thin{background:transparent;border-color:var(--accent)}
-.btn-thin:hover{background:var(--surface-2);border-color:var(--accent)}
 .btn-sm{padding:3px 8px;font-size:12.5px;border-radius:6px}
 .btn-sm.btn-default{padding:2px 7px}
 .btn-icon{padding:3px 7px;font-family:var(--cond);font-weight:700;font-size:15px}
 .btn-icon.btn-sm{padding:4px 6px}
+@media (pointer:fine){#teamRosterList .btn-icon{min-width:32px;min-height:32px;justify-content:center}}
 .btn-danger{color:var(--bad);border-color:var(--bad)}
 .btn-danger:hover{background:var(--bad);color:#fff;border-color:transparent}
 .btn-add-order,.btn-remove-order{padding:3px 8px}
@@ -285,6 +282,7 @@ dialog .btn-ghost:hover{background:var(--surface-2);border-color:var(--ink-3)}
 .field-stage{
   position:relative;width:100%;min-width:520px;aspect-ratio:900/820;
   container-type:inline-size;
+  --focus:var(--bar-ink);
 }
 .field-svg{position:absolute;inset:0;width:100%;height:100%;display:block}
 .field-svg-m{display:none}
@@ -315,7 +313,6 @@ dialog .btn-ghost:hover{background:var(--surface-2);border-color:var(--ink-3)}
   font-family:var(--cond);font-weight:700;font-size:1.62cqw;line-height:1;
   font-variant-numeric:tabular-nums;
 }
-.slot.filled .slot-num{background:var(--accent);color:var(--accent-ink)}
 .slot-key{
   grid-area:key;display:flex;align-items:baseline;gap:.55cqw;
   font-family:var(--cond);font-weight:700;font-size:1.42cqw;
@@ -440,14 +437,14 @@ ul.list{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;ga
   border-radius:7px;padding:5px 8px;font-family:var(--cond);
   font-weight:700;font-size:12px;letter-spacing:.05em;cursor:pointer;
 }
-.toggle input{margin:0;accent-color:var(--accent);cursor:pointer}
+.toggle input{margin:0;accent-color:var(--ink);cursor:pointer}
 .toggle.off{opacity:.55}
 .panel-hint{margin:0 0 9px;color:var(--ink-3);font-size:12.5px}
 .row-more{display:none}
 .sheet-sep{height:1px;background:var(--line);margin:6px 2px}
 .sheet-item.danger{background:transparent;border-color:var(--line)}
 .sheet-item.danger b,.sheet-item.danger .ico{color:var(--bad)}
-.toast{display:flex;align-items:center;gap:14px;width:max-content}
+.toast{display:flex;align-items:center;gap:14px;width:max-content;--focus:var(--bar-ink)}
 .toast button{
   background:none;border:0;color:var(--accent);font:inherit;font-weight:700;cursor:pointer;
   padding:6px 4px;min-height:36px;pointer-events:auto;text-transform:uppercase;letter-spacing:.04em;
@@ -481,7 +478,7 @@ ul.list{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;ga
 .sheet-item.key .ico,.sheet-item.key small{color:var(--accent-ink)}
 .row.lineup-row{grid-template-columns:auto 28px minmax(0,1fr) auto auto}
 .row.inactive{opacity:.55}
-.row .check{width:18px;height:18px;accent-color:var(--accent);cursor:pointer}
+.row .check{width:18px;height:18px;accent-color:var(--ink);cursor:pointer}
 
 /* ---------- dialog ---------- */
 dialog{
@@ -598,7 +595,7 @@ table.stat tfoot th,table.stat tfoot td{font-weight:700;border-top:2px solid var
 body.locked .topbar,body.locked main,body.locked .tabbar{display:none}
 body.locked .gate{
   display:grid;place-items:center;min-height:100vh;min-height:100dvh;
-  background-color:var(--bar);color:var(--bar-ink);--focus:var(--accent);
+  background-color:var(--bar);color:var(--bar-ink);--focus:var(--bar-ink);
   /* el diamante del campo, en tiza tenue, detrás de la tarjeta */
   background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 900 820'%3E%3Cg fill='none' stroke='%23ffffff' stroke-opacity='.07' stroke-width='4'%3E%3Cpath d='M450 741 L37.8 328.8 A548 548 0 0 1 862.2 328.8 Z'/%3E%3Cpath d='M450 690 L567 573 L450 456 L333 573 Z'/%3E%3Cpath d='M247.3 487.3 A216 216 0 0 1 652.7 487.3'/%3E%3C/g%3E%3C/svg%3E");
   background-repeat:no-repeat;background-position:50% 100%;background-size:min(1100px,190vw) auto;
@@ -619,7 +616,7 @@ body.locked .gate{
 }
 .gate-card{
   background:var(--surface);color:var(--ink);border-radius:18px;padding:22px 20px 18px;
-  display:flex;flex-direction:column;gap:7px;--focus:var(--accent-text);
+  display:flex;flex-direction:column;gap:7px;--focus:var(--ink);
   box-shadow:0 2px 6px rgba(0,0,0,.2),0 30px 60px -30px rgba(0,0,0,.75);
 }
 .gate-card h1{
@@ -804,6 +801,7 @@ body.locked .gate{
   .tools .btn{min-height:44px}
   #btnShareMenu,#btnMoreMenu{min-width:44px}
   .posbadge{padding:2px 6px}
+  .phone-only{display:inline}
 }
 /* solo en pantalla: al imprimir desde el teléfono sale la hoja completa */
 @media screen and (max-width:680px){
