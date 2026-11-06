@@ -1004,7 +1004,7 @@ body.locked .gate{
     <div class="fieldset sc-score">
       <span class="lbl">Marcador</span>
       <div class="score" aria-label="Marcador final: visitante - casa">
-        <span class="tag">Final</span>
+        <span class="tag" id="scTag">Final</span>
         <span class="sc"><b id="scUs">0</b><small><span class="sc-name" id="scVisName"></span>&nbsp;·&nbsp;Visita</small></span>
         <i aria-hidden="true">–</i>
         <span class="sc"><b id="scThem">0</b><small><span class="sc-name" id="scHomeName"></span>&nbsp;·&nbsp;Casa</small></span>
@@ -1153,11 +1153,11 @@ body.locked .gate{
       <section class="card innings" aria-label="Carreras por inning" data-view="juego">
         <div class="innings-head">
           <h2>Carreras por inning</h2>
-          <span class="pill">Softball · 7 innings</span>
+          <span class="pill" id="innPill">Softball · 7 innings</span>
           <span class="spacer" style="margin-left:auto"></span>
           <button class="btn btn-sm btn-key no-print" id="btnCapture" type="button">Anotar estadísticas</button>
           <button class="btn btn-sm no-print" id="btnAddInn" type="button">+ Inning extra</button>
-          <button class="btn btn-sm no-print" id="btnDelInn" type="button">− Quitar</button>
+          <button class="btn btn-sm no-print" id="btnDelInn" type="button" aria-label="Quitar un inning">− Inning</button>
         </div>
         <div class="innings-scroll">
           <table class="inn" id="innTable"></table>
@@ -2582,6 +2582,7 @@ $("btnClearField").addEventListener("click", function(){
 /* ============ innings ============ */
 function renderInnings(){
   var n = S.innings;
+  $("innPill").textContent = "Softball · " + n + " innings";
   while(S.us.length < n) S.us.push(0);
   while(S.them.length < n) S.them.push(0);
   S.us = S.us.slice(0, n);
@@ -2651,6 +2652,7 @@ function updateScore(){
   var nUs = S.team || "Nosotros", nThem = S.opp || "Ellos";
   var nVis = S.home === "us" ? nThem : nUs, nCasa = S.home === "us" ? nUs : nThem;
 
+  $("scTag").style.visibility = (visitante || casa) ? "" : "hidden"; // RF-12: "Final" solo con marcador
   $("scUs").textContent = visitante;
   $("scThem").textContent = casa;
   $("scVisName").textContent = nVis;
@@ -3268,7 +3270,7 @@ $("btnLoad").addEventListener("click", function(){
   }
   var liveStats = {};
   Stats.live(lsGet(K_STATS, [])).forEach(function(e){ liveStats[e.id] = 1; });
-  list.forEach(function(item){
+  Stats.savedByDate(list).forEach(function(item){ // RF-14: solo orden de pantalla
     var isOpen = item.id === S.gameId;
     var it = el("div", "pickitem");
     if(isOpen) it.setAttribute("aria-current", "true");
@@ -3281,7 +3283,7 @@ $("btnLoad").addEventListener("click", function(){
     t.style.overflow = "hidden";
     t.style.textOverflow = "ellipsis";
     var res = Stats.result(item.state || {});
-    var d = el("div", "where", Stats.fmtDateTime(new Date(item.at)) + (res ? " · " + res : ""));
+    var d = el("div", "where", Stats.dateLabel((item.state || {}).date) + (res ? " · " + res : ""));
     if(item.state && item.state.statsId && liveStats[item.state.statsId]){
       d.appendChild(document.createTextNode(" ")); d.appendChild(el("span", "pill", "Estadísticas"));
     }
