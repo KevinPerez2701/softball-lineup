@@ -1901,6 +1901,7 @@ function undoNoVino(){
 /* 3 a 5 s según el largo, para que dé tiempo de leerlo; con "undo" lleva un
    botón Deshacer y dura un poco más. Con "sticky" no tiene temporizador y suma un ✕ para cerrarlo. */
 function toast(msg, undo, sticky){
+  benchUndo = null; // 009 RF-4: otro aviso descarta el Deshacer de "No vino" (el handler lo pone después de esta llamada)
   var t = $("toast");
   /* con un diálogo abierto, el aviso va dentro de él: fuera quedaría tapado
      por el fondo del modal y su botón Deshacer no se podría tocar */

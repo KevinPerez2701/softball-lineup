@@ -18,7 +18,7 @@ Overlap map (index.html, lines of 97623df): T2 after 465, after 731, 1203 · T3 
       Deps: —
       Done when: rules present; inline scripts unchanged; the padding value is computed from the CSS (`.wrap` phone
       padding + toast height + offset) and stated in the report.
-- [ ] T3. "No vino": button in each bench row before "Agregar" (plain `btn btn-sm`, aria-label), snapshot, `benchUndo`
+- [x] T3. "No vino": button in each bench row before "Agregar" (plain `btn btn-sm`, aria-label), snapshot, `benchUndo`
       + drop hook first in `save()`, sticky toast with undo, RF-5 guard, `refocusRow(listSel, btnSel, i)` helper used for
       the bench. (RF-1, RF-2, RF-3, RF-4, RF-5, RF-11 bench) Deps: —
       Done when: traced in the report: the press removes him and BD, the toast is sticky, Deshacer restores roster and
