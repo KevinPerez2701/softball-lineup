@@ -60,7 +60,7 @@ views.test.js; T2 appends to sheet.test.js.
       follow the four rules.
 
 ## Wave 3 — orchestrator
-- [ ] T10. Merge, full suite alone, browser pass (plan Test strategy) at 360×640 and desktop, light and dark, keyboard
+- [x] T10. Merge, full suite alone, browser pass (plan Test strategy) at 360×640 and desktop, light and dark, keyboard
       pass for RF-2/RF-12, decide the tab label width fix if needed, STATUS.md, one deploy on Kevin's OK, impeccable
       critique re-run. Deps: T1–T9
       Done when: every demo step observed and listed; critique snapshot saved.
