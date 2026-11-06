@@ -3,10 +3,10 @@
 Single source of truth for what is in flight and what is left. Update it in the same commit as the
 work it describes. Dates come from `date`, never from memory.
 
-Last updated: 2026-11-06 13:50 UTC-4 by Claude
+Last updated: 2026-11-06 14:10 UTC-4 by Claude
 
 ## Now (one line)
-Specs 005 + 006 demo passed on localhost:8000 with Kevin's session (no data saved); waiting for Kevin's OK to push. Spec 007 planner (fable) running.
+Spec 007 implementing (wave 1: T1, T2, T4 in parallel worktrees); 005 + 006 done and demoed, held for one deploy with 007 (Kevin, 2026-11-06).
 
 ## Active specs
 | Spec | Phase | Current task | Next task | Blocked by |
@@ -17,7 +17,7 @@ Specs 005 + 006 demo passed on localhost:8000 with Kevin's session (no data save
 | 004-critique-fixes | done | — | — | — |
 | 005-fielders-choice | validate | T5 (push + Elias PA → JS) | — | Kevin's OK to push |
 | 006-stats-phone | validate | T2 (push) | — | Kevin's OK to push |
-| 007-critique-rest | plan | — | tasks | — |
+| 007-critique-rest | implement | T1, T2, T4 (wave 1, parallel) | T3, T5, T6, T7 | — |
 
 Phases: constitution · spec · clarify · plan · tasks · implement · validate · done
 
