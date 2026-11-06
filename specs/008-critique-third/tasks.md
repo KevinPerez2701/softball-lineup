@@ -64,3 +64,5 @@ views.test.js; T2 appends to sheet.test.js.
       pass for RF-2/RF-12, decide the tab label width fix if needed, STATUS.md, one deploy on Kevin's OK, impeccable
       critique re-run. Deps: T1–T9
       Done when: every demo step observed and listed; critique snapshot saved.
+      Progress 2026-11-06 14:18: merge + suite + browser pass done (STATUS → Recently done); RF-20 had no task — CSS
+      added by the orchestrator at the demo. Left: Kevin's OK, push/deploy, critique re-run.
