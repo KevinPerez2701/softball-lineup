@@ -528,7 +528,7 @@ table.sheet thead th small{display:block;min-height:13px;font-size:11px;letter-s
 table.sheet thead th small.outs{color:var(--ink-3);font-weight:400;white-space:nowrap}
 table.sheet thead th small.outs-warn{color:var(--bad);font-weight:700}
 table.sheet thead th.inn-bad{color:var(--bad)}
-.sheet-cell small.ord{display:inline;margin-right:3px;font-size:10px;font-weight:400;color:var(--ink-3)}
+.sheet-cell small.ord{display:inline;font-size:11px;font-weight:400;color:var(--ink-3)}
 table.sheet tfoot th{font-size:13.5px;font-weight:600;color:var(--ink)}
 table.sheet tfoot input{
   width:100%;min-width:38px;min-height:44px;text-align:center;background:var(--surface-2);
@@ -2764,7 +2764,7 @@ function renderCapture(){
         var lines = Stats.cellLines(row, n);
         lines.forEach(function(l){
           var d = el("div");
-          if(typeof l.ord === "number") d.appendChild(el("small", "ord", String(l.ord)));
+          if(typeof l.ord === "number"){ d.appendChild(el("small", "ord", "#" + l.ord)); d.appendChild(document.createTextNode(" ")); } // RF-10: "#9 1B"
           d.appendChild(document.createTextNode(l.text));
           b.appendChild(d);
         });
@@ -2854,8 +2854,8 @@ function onCellTap(rowIdx, inn){
 function paList(ri, inn){
   var row = cap.rec.rows[ri], body = $("paBody"), n = 0;
   body.innerHTML = "";
-  row.pas.forEach(function(p, idx){
-    if(p.inn !== inn) return;
+  Stats.paIndexes(row, inn).forEach(function(idx){ // RF-8: por ord; idx sigue siendo el índice real
+    var p = row.pas[idx];
     n++;
     var it = el("div", "pickitem pa-item"), ed = el("button", "btn btn-sm", "Editar"), del = el("button", "btn btn-sm btn-danger", "Borrar");
     ed.type = del.type = "button";
@@ -2866,7 +2866,7 @@ function paList(ri, inn){
         if(typeof p.ord === "number") Stats.renumberOrd(cap.rec, inn, p.ord); // RF-10: cierra el hueco
       });
     });
-    it.appendChild(el("span", "pa-code", Stats.cellLabel(p)));
+    it.appendChild(el("span", "pa-code", Stats.turnLabel(p)));
     it.appendChild(ed); it.appendChild(del);
     body.appendChild(it);
   });
@@ -2984,6 +2984,10 @@ function paForm(ri, inn, idx, done){
       }
     }
     body.appendChild(acts);
+  }
+  if(!guide){ // RF-9: el modo guiado pone su propio título después
+    $("paTitle").textContent = (row.num ? row.num + " · " : "") + row.name + " · Inning " + inn +
+      (src ? (typeof src.ord === "number" ? " · Turno " + src.ord : "") : " · Turno " + Stats.nextOrd(cap.rec, inn));
   }
   draw();
 }
