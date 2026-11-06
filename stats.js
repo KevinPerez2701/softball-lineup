@@ -5,16 +5,25 @@ var Stats = {};
 
 /* ============ hoja: resultados, filas, innings, cuadre ============ */
 Stats.CODES = [
-  {code:"1B", pick:"1B", cell:"1B"}, {code:"2B", pick:"2B", cell:"2B"},
-  {code:"3B", pick:"3B", cell:"3B"}, {code:"HR", pick:"HR", cell:"HR"},
-  {code:"BB", pick:"BB", cell:"BB"}, {code:"K", pick:"K", cell:"K"},
-  {code:"RO", pick:"Rolling", cell:"Rol"}, {code:"FL", pick:"Fly", cell:"Fly"},
-  {code:"LI", pick:"Línea", cell:"Lín"}, {code:"E", pick:"E", cell:"E"},
-  {code:"BO", pick:"BO", cell:"BO", legacy:true}, {code:"SF", pick:"Fly sac.", cell:"FS"}
+  {code:"1B", pick:"1B", cell:"1B", group:"Hit"}, {code:"2B", pick:"2B", cell:"2B", group:"Hit"},
+  {code:"3B", pick:"3B", cell:"3B", group:"Hit"}, {code:"HR", pick:"HR", cell:"HR", group:"Hit"},
+  {code:"BB", pick:"BB", cell:"BB", group:"Se embasa"}, {code:"K", pick:"K", cell:"K", group:"Out"},
+  {code:"RO", pick:"Rolling", cell:"Rol", group:"Out"}, {code:"FL", pick:"Fly", cell:"Fly", group:"Out"},
+  {code:"LI", pick:"Línea", cell:"Lín", group:"Out"}, {code:"E", pick:"E", cell:"E", group:"Se embasa"},
+  {code:"JS", pick:"JS", cell:"JS", group:"Se embasa", title:"Jugada de selección"},
+  {code:"BO", pick:"BO", cell:"BO", group:"Out", legacy:true}, {code:"SF", pick:"Fly sac.", cell:"FS", group:"Sacrificio"}
 ];
 
 // Lo que ofrece el selector: BO sigue existiendo en datos viejos pero ya no se elige.
 Stats.PICK_CODES = Stats.CODES.filter(function(c){ return !c.legacy; });
+
+// Filas rotuladas del selector (spec 005 RF-6): una por grupo, en este orden.
+Stats.PICK_GROUPS = ["Hit", "Se embasa", "Out", "Sacrificio"];
+Stats.pickRows = function(codes){
+  return Stats.PICK_GROUPS.map(function(g){
+    return {label: g, codes: codes.filter(function(c){ return c.group === g; })};
+  });
+};
 
 // Nombre completo de cada columna de la tabla de estadísticas (clave = etiqueta de la columna).
 Stats.COL_TITLES = {
@@ -106,7 +115,7 @@ Stats.roLabel = function(kind){
 };
 
 Stats.defaultOuts = function(code){
-  return ["K", "RO", "FL", "LI", "SF", "BO"].indexOf(code) >= 0 ? 1 : 0;
+  return ["K", "RO", "FL", "LI", "SF", "BO", "JS"].indexOf(code) >= 0 ? 1 : 0;
 };
 
 // Muta y devuelve f (formulario del selector). Elegir HR marca carrera y CI (recordando lo previo en

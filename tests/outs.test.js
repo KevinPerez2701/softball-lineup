@@ -29,8 +29,8 @@ test("RF-7 RO_KINDS y roLabel", function(){
   assert.strictEqual(Stats.roLabel("ZZ"), "ZZ");
 });
 
-test("RF-6 defaultOuts: 1 para K RO FL LI SF BO, 0 para el resto", function(){
-  ["K", "RO", "FL", "LI", "SF", "BO"].forEach(function(c){ assert.strictEqual(Stats.defaultOuts(c), 1, c); });
+test("RF-6 defaultOuts: 1 para K RO FL LI SF BO JS, 0 para el resto", function(){
+  ["K", "RO", "FL", "LI", "SF", "BO", "JS"].forEach(function(c){ assert.strictEqual(Stats.defaultOuts(c), 1, c); });
   ["1B", "2B", "3B", "HR", "BB", "E", "", "XX"].forEach(function(c){ assert.strictEqual(Stats.defaultOuts(c), 0, c); });
 });
 
@@ -39,6 +39,12 @@ test("RF-6/12 paOuts: outs guardado gana, sin outs usa el default", function(){
   assert.strictEqual(Stats.paOuts(pa(1, "K", {outs: 0})), 0);
   assert.strictEqual(Stats.paOuts(pa(1, "K")), 1);
   assert.strictEqual(Stats.paOuts(pa(1, "1B")), 0);
+});
+
+test("005 RF-4 JS: 1 out por defecto, pickResult lo pone, outs guardado gana", function(){
+  assert.strictEqual(Stats.pickResult({code: "1B", run: false, rbi: 0, outs: 0}, "JS").outs, 1);
+  assert.strictEqual(Stats.paOuts(pa(1, "JS")), 1);
+  assert.strictEqual(Stats.paOuts(pa(1, "JS", {outs: 0})), 0);
 });
 
 test("RF-8 inningOuts suma turnos y outs corriendo; filas sin ro sirven", function(){

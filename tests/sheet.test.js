@@ -12,13 +12,13 @@ function rec(innings, us, them, rows){
     game: {date: "2026-10-01", team: "A", opp: "B", home: true, innings: innings, us: us, them: them}, rows: rows || []};
 }
 
-test("RF-2 CODES: 12 entries, textos de picker y celda", function(){
+test("RF-2 CODES: 13 entries, textos de picker y celda, grupo y title", function(){
   assert.deepStrictEqual(Stats.CODES.map(function(c){ return c.code; }),
-    ["1B","2B","3B","HR","BB","K","RO","FL","LI","E","BO","SF"]);
+    ["1B","2B","3B","HR","BB","K","RO","FL","LI","E","JS","BO","SF"]);
   var by = {};
   Stats.CODES.forEach(function(c){ by[c.code] = c; });
-  assert.strictEqual(Object.keys(by).length, 12);
-  ["1B","2B","3B","HR","BB","K","E","BO"].forEach(function(k){
+  assert.strictEqual(Object.keys(by).length, 13);
+  ["1B","2B","3B","HR","BB","K","E","JS","BO"].forEach(function(k){
     assert.strictEqual(by[k].pick, k); assert.strictEqual(by[k].cell, k);
   });
   assert.deepStrictEqual([by.SF.pick, by.SF.cell], ["Fly sac.", "FS"]);
@@ -27,6 +27,14 @@ test("RF-2 CODES: 12 entries, textos de picker y celda", function(){
   assert.deepStrictEqual([by.RO.pick, by.RO.cell], ["Rolling", "Rol"]);
   assert.deepStrictEqual([by.FL.pick, by.FL.cell], ["Fly", "Fly"]);
   assert.deepStrictEqual([by.LI.pick, by.LI.cell], ["Línea", "Lín"]);
+  // 005 RF-1: solo JS lleva title
+  assert.strictEqual(by.JS.title, "Jugada de selección");
+  Stats.CODES.forEach(function(c){ if(c.code !== "JS") assert.strictEqual(c.title, undefined, c.code); });
+  // 005 RF-6: grupo de cada entrada
+  var groups = {};
+  Stats.CODES.forEach(function(c){ groups[c.code] = c.group; });
+  assert.deepStrictEqual(groups, {"1B":"Hit","2B":"Hit","3B":"Hit",HR:"Hit",BB:"Se embasa",E:"Se embasa",JS:"Se embasa",
+    K:"Out",RO:"Out",FL:"Out",LI:"Out",BO:"Out",SF:"Sacrificio"});
 });
 
 test("RF-2 cellLabel: etiqueta de celda y marca de carrera", function(){
@@ -35,12 +43,28 @@ test("RF-2 cellLabel: etiqueta de celda y marca de carrera", function(){
   assert.strictEqual(Stats.cellLabel(pa(1, "1B", true)), "1B•");
   assert.strictEqual(Stats.cellLabel(pa(1, "K", false)), "K");
   assert.strictEqual(Stats.cellLabel(pa(1, "SF", true)), "FS•");
+  assert.strictEqual(Stats.cellLabel(pa(1, "JS")), "JS");
+  assert.strictEqual(Stats.cellLabel(pa(1, "JS", true)), "JS•");
 });
 
-test("RF-6 PICK_CODES: 11 entries, sin BO, mismo orden", function(){
+test("RF-6 PICK_CODES: 12 entries, sin BO, mismo orden", function(){
   assert.deepStrictEqual(Stats.PICK_CODES.map(function(c){ return c.code; }),
-    ["1B","2B","3B","HR","BB","K","RO","FL","LI","E","SF"]);
-  assert.strictEqual(Stats.PICK_CODES.length, 11);
+    ["1B","2B","3B","HR","BB","K","RO","FL","LI","E","JS","SF"]);
+  assert.strictEqual(Stats.PICK_CODES.length, 12);
+});
+
+test("005 RF-6 pickRows: cuatro filas con rótulo, BO al final de Out", function(){
+  assert.deepStrictEqual(Stats.PICK_GROUPS, ["Hit", "Se embasa", "Out", "Sacrificio"]);
+  function rows(codes){
+    return Stats.pickRows(codes).map(function(r){ return [r.label, r.codes.map(function(c){ return c.code; })]; });
+  }
+  assert.deepStrictEqual(rows(Stats.PICK_CODES), [
+    ["Hit", ["1B","2B","3B","HR"]], ["Se embasa", ["BB","E","JS"]],
+    ["Out", ["K","RO","FL","LI"]], ["Sacrificio", ["SF"]]]);
+  assert.deepStrictEqual(rows(Stats.CODES), [
+    ["Hit", ["1B","2B","3B","HR"]], ["Se embasa", ["BB","E","JS"]],
+    ["Out", ["K","RO","FL","LI","BO"]], ["Sacrificio", ["SF"]]]);
+  assert.strictEqual(Stats.pickRows(Stats.PICK_CODES)[1].codes[2], Stats.CODES[10]);
 });
 
 test("RF-8 COL_TITLES: los 17 nombres", function(){
