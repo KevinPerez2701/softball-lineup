@@ -1839,6 +1839,7 @@ function inlineEdit(li, cur, onSave, onCancel){
 
 /* Mientras la alineación vacía del arranque no cambie (ni se ligue a un juego), no se escribe: K_CUR y la nube conservan la anterior. */
 function save(){
+  if(benchUndo){ benchUndo = null; $("toast").classList.remove("on"); } // RF-4: cualquier cambio suelta el Deshacer de "No vino"
   renderHeader(); // todo cambio pasa por aquí: el ● aparece con el primero
   if(fresh){
     if(!S.gameId && !Stats.differs(S, freshState)) return true;
@@ -1881,6 +1882,16 @@ $("recoverNo").addEventListener("click", function(){
 function saveTeam(){ lsSet(K_TEAM, TEAM); }
 
 var toastT;
+/* Deshacer de "No vino": una sola foto {id, roster, dh}; la suelta el primer save() posterior (RF-4). */
+var benchUndo = null;
+function undoNoVino(){
+  var u = benchUndo; benchUndo = null;
+  if(!u) return;
+  /* RF-5: ya está en el partido o salió del equipo: no se cambia nada */
+  if(player(u.id) || !TEAM.some(function(t){ return t.id === u.id; })) return;
+  S.roster = u.roster; S.dh = u.dh;
+  renderAll();
+}
 /* 3 a 5 s según el largo, para que dé tiempo de leerlo; con "undo" lleva un
    botón Deshacer y dura un poco más. Con "sticky" no tiene temporizador y suma un ✕ para cerrarlo. */
 function toast(msg, undo, sticky){
@@ -2552,6 +2563,16 @@ $("btnClearOrder").addEventListener("click", function(){
 });
 
 /* ============ banca ============ */
+/* RF-11: tras quitar la fila i, el foco va al mismo botón de la fila que quedó en su lugar, si no al de la anterior.
+   false si no queda ninguna: quien llama pone el foco en otro lado. */
+function refocusRow(listSel, btnSel, i){
+  var rows = document.querySelectorAll(listSel + " .row");
+  var row = rows[i] || rows[i - 1];
+  var b = row && row.querySelector(btnSel);
+  if(!b) return false;
+  b.focus();
+  return true;
+}
 function renderBench(){
   var ul = $("benchList");
   ul.innerHTML = "";
@@ -2561,7 +2582,7 @@ function renderBench(){
     ul.appendChild(el("li", "empty-note", "Nadie en banca."));
     return;
   }
-  bench.forEach(function(pl){
+  bench.forEach(function(pl, i){
     var r = rowFor(pl, {bench:true});
     r.li.setAttribute("draggable", "true");
     r.li.addEventListener("dragstart", function(ev){
@@ -2579,6 +2600,24 @@ function renderBench(){
       renderAll();
       toast(pl.name + " pasa al orden al bate");
     });
+    /* RF-1/RF-2: "No vino" retira al jugador del partido (como desmarcarlo en Roster), con Deshacer fijo en el aviso */
+    var no = el("button", "btn btn-sm btn-novino", "No vino");
+    no.type = "button";
+    no.title = pl.name + " no vino: retirarlo del partido";
+    no.setAttribute("aria-label", no.title);
+    no.addEventListener("click", function(){
+      var hadFocus = document.activeElement === no;
+      var snap = {id: pl.id, roster: S.roster.slice(), dh: S.dh};
+      removePlayerEverywhere(pl.id);
+      renderAll();
+      toast(pl.name + " no vino", undoNoVino, true);
+      benchUndo = snap; // después de renderAll: su save() soltaría la foto
+      if(hadFocus && !refocusRow("#benchList", ".btn-novino", i)){
+        var h = $("benchTitle");
+        if(h) h.focus();
+      }
+    });
+    r.acts.appendChild(no);
     r.acts.appendChild(add);
     ul.appendChild(r.li);
   });
