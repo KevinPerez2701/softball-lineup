@@ -3,10 +3,10 @@
 Single source of truth for what is in flight and what is left. Update it in the same commit as the
 work it describes. Dates come from `date`, never from memory.
 
-Last updated: 2026-11-06 12:55 UTC-4 by Claude
+Last updated: 2026-11-06 13:15 UTC-4 by Claude
 
 ## Now (one line)
-Specs 005 + 006 code done and merged (all tasks reviewed APPROVE, 117/117); browser demo pending (127.0.0.1 not signed in). Spec 007 drafted, clarifier running.
+Specs 005 + 006 merged (117/117), browser demo waiting for Kevin to sign in on localhost:8000; spec 007 clarified with Kevin's answers, planner (fable) running.
 
 ## Active specs
 | Spec | Phase | Current task | Next task | Blocked by |
@@ -15,9 +15,9 @@ Specs 005 + 006 code done and merged (all tasks reviewed APPROVE, 117/117); brow
 | 002-inning-capture | done | — | — | — |
 | 003-saved-games | done | — | — | — |
 | 004-critique-fixes | done | — | — | — |
-| 005-fielders-choice | validate | T5 (browser demo) | push | Kevin signs in on 127.0.0.1 or OKs a prod demo |
+| 005-fielders-choice | validate | T5 (browser demo) | push | Kevin signs in on localhost:8000 (127.0.0.1 is blocked by the API key referrer list) |
 | 006-stats-phone | validate | T2 (browser demo) | push | same as 005 |
-| 007-critique-rest | clarify | — | G1 | clarifier, then Kevin (G1) |
+| 007-critique-rest | plan | — | tasks | — |
 
 Phases: constitution · spec · clarify · plan · tasks · implement · validate · done
 
