@@ -1,6 +1,6 @@
 # Spec 008 — Third critique pass: phone player detail, lime only for "tap now", numbered turns, inning question, minors
 
-Status: clarified — G1 approved by Kevin 2026-11-06 ("apruébalo de una vez e inicia"; G2 pre-approved by the same words)
+Status: in-progress — G1 approved by Kevin 2026-11-06 ("apruébalo de una vez e inicia"; G2 pre-approved by the same words)
 Created: 2026-11-06 · Clarified: 2026-11-06 (clarifier NEEDS WORK: 6 blocking, 10 minor — all resolved below; B4/B5/B6
 decided by the orchestrator under Kevin's "apruébalo de una vez", listed in Open questions)
 

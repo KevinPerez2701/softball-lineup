@@ -6,7 +6,7 @@ work it describes. Dates come from `date`, never from memory.
 Last updated: 2026-11-06 12:51 UTC-4 by Claude
 
 ## Now (one line)
-Spec 008 (third critique pass, 23 RFs) clarified, G1+G2 approved by Kevin ("apruébalo de una vez e inicia") — planning. 001–007 live (a7fe5e7); critique 30/40.
+Spec 008 (third critique pass, 23 RFs) clarified, G1+G2 approved by Kevin ("apruébalo de una vez e inicia") — implementing wave 1 (T1, T2, T3, T5, T8, T9 in parallel worktrees). 001–007 live (a7fe5e7); critique 30/40.
 
 ## Active specs
 | Spec | Phase | Current task | Next task | Blocked by |
@@ -18,7 +18,7 @@ Spec 008 (third critique pass, 23 RFs) clarified, G1+G2 approved by Kevin ("apru
 | 005-fielders-choice | done | — | — | — |
 | 006-stats-phone | done | — | — | — |
 | 007-critique-rest | done | — | — | — |
-| 008-critique-third | plan | — | — | — |
+| 008-critique-third | implement | T1 T2 T3 T5 T8 T9 | T4 T6 T7 | — |
 
 Phases: constitution · spec · clarify · plan · tasks · implement · validate · done
 
