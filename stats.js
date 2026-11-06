@@ -566,6 +566,18 @@ Stats.asNew = function(st, today){
   return out;
 };
 
+// Spec 009: jugadores del equipo que no están en el partido, en orden del equipo (mismos objetos; solo compara ids)
+Stats.absent = function(team, roster){
+  var inGame = Object.create(null);
+  (roster || []).forEach(function(p){ inGame[p.id] = true; });
+  return (team || []).filter(function(p){ return !inGame[p.id]; });
+};
+
+// "No vinieron (n)", o "Equipo (n)" si no hay nadie en el partido
+Stats.absentTitle = function(absent, roster){
+  return ((roster || []).length ? "No vinieron" : "Equipo") + " (" + (absent || []).length + ")";
+};
+
 // "aaaa-mm-dd" -> "dd/mm/aaaa"
 Stats.fmtDate = function(iso){
   if(!iso) return "";
