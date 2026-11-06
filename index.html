@@ -658,6 +658,7 @@ body.locked .gate{
   opacity:0;pointer-events:none;transition:opacity .2s,transform .2s;
 }
 .toast.on{opacity:1;transform:translateX(-50%) translateY(-4px)}
+.toast .toast-x{min-width:36px;color:var(--bar-ink);opacity:.75}
 
 @media (max-width:1080px){
   .work{grid-template-columns:minmax(0,1fr)}
@@ -716,6 +717,8 @@ body.locked .gate{
   }
   .tab-badge.ok{background:var(--accent);color:var(--accent-ink)}
   .toast{bottom:calc(84px + env(safe-area-inset-bottom))}
+  /* RF-13: el aviso fijo ocupa 84 (bottom) + 54 (alto: botón 36 + 2×9) + 4 (translateY) = 142 px sobre el borde; 150 deja aire */
+  #capture:has(.toast.on) .dlg-body{padding-bottom:150px}
 
   /* diálogos como hojas que suben desde abajo */
   dialog,#teamRoster,#capture,#statsView{
@@ -1302,10 +1305,10 @@ body.locked .gate{
   <div class="dlg-head">
     <h3 id="capTitle">Estadísticas</h3>
     <input class="inp" id="capDate" type="date" aria-label="Fecha del juego" style="width:auto">
-    <button class="btn btn-sm" id="capDelInn" type="button" aria-label="Quitar un inning">− Inning</button>
     <button class="btn btn-sm" id="capAddInn" type="button" aria-label="Agregar un inning">+ Inning</button>
+    <button class="btn btn-sm" id="capDelInn" type="button" aria-label="Quitar un inning">− Inning</button>
     <button class="btn btn-sm" id="capGuide" type="button">Anotar por inning</button>
-    <button class="btn btn-sm btn-key" id="capSave" type="button">Guardar estadísticas</button>
+    <button class="btn btn-sm" id="capSave" type="button">Guardar estadísticas</button>
     <span style="margin-left:auto"></span>
     <button class="btn btn-sm" id="capClose" type="button">Cerrar</button>
   </div>
@@ -1868,8 +1871,8 @@ function saveTeam(){ lsSet(K_TEAM, TEAM); }
 
 var toastT;
 /* 3 a 5 s según el largo, para que dé tiempo de leerlo; con "undo" lleva un
-   botón Deshacer y dura un poco más. */
-function toast(msg, undo){
+   botón Deshacer y dura un poco más. Con "sticky" no tiene temporizador y suma un ✕ para cerrarlo. */
+function toast(msg, undo, sticky){
   var t = $("toast");
   /* con un diálogo abierto, el aviso va dentro de él: fuera quedaría tapado
      por el fondo del modal y su botón Deshacer no se podría tocar */
@@ -1883,8 +1886,15 @@ function toast(msg, undo){
     b.addEventListener("click", function(){ t.classList.remove("on"); undo(); });
     t.appendChild(b);
   }
+  if(sticky){
+    var x = el("button", "toast-x", "✕");
+    x.type = "button"; x.setAttribute("aria-label", "Cerrar aviso");
+    x.addEventListener("click", function(){ t.classList.remove("on"); });
+    t.appendChild(x);
+  }
   t.classList.add("on");
   clearTimeout(toastT);
+  if(sticky) return;
   toastT = setTimeout(function(){ t.classList.remove("on"); },
     undo ? 6000 : Math.min(5000, Math.max(3000, msg.length * 60)));
 }
@@ -2800,8 +2810,13 @@ function refreshCheck(){
     e.className = o.warn ? "outs outs-warn" : "outs";
     e.textContent = o.warn ? "⚠ " + o.outs + " out" : (o.outs > 0 ? o.outs + " out" : "");
   });
+  refreshCapSave();
 }
-$("capDate").addEventListener("input", function(){ cap.rec.game.date = $("capDate").value; setCapTitle(); });
+// RF-7: "Guardar estadísticas" en lima solo con ≥1 turno y (nunca guardada o cambiada desde que se abrió)
+function refreshCapSave(){
+  $("capSave").classList.toggle("btn-key", Stats.hasPA(cap.rec) && (!cap.rec.savedAt || JSON.stringify(cap.rec) !== cap.opened));
+}
+$("capDate").addEventListener("input", function(){ cap.rec.game.date = $("capDate").value; setCapTitle(); refreshCapSave(); });
 $("capAddInn").addEventListener("click", function(){
   if(cap.rec.game.innings >= 12){ toast("Máximo 12 innings"); return; }
   cap.rec.game.innings++; Stats.fit(cap.rec); renderCapture();
@@ -2816,7 +2831,7 @@ function paDone(){ $("paPick").close(); renderCapture(); }
 function paDelete(msg, mutate){
   var before = JSON.stringify(cap.rec.rows);
   mutate(); paDone(); cap.undo = before;
-  toast(msg, function(){ if(!cap || cap.undo !== before) return; cap.rec.rows = JSON.parse(before); renderCapture(); });
+  toast(msg, function(){ if(!cap || cap.undo !== before) return; cap.rec.rows = JSON.parse(before); renderCapture(); }, true);
 }
 function onCellTap(rowIdx, inn){
   var row = cap.rec.rows[rowIdx];
