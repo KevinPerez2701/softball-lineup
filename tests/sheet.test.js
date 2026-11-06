@@ -215,3 +215,33 @@ test("RF-33 hasPA", function(){
   assert.strictEqual(Stats.hasPA(rec(3, [], [], [{pid: "a", pas: []}])), false);
   assert.strictEqual(Stats.hasPA(rec(3, [], [], [{pid: "a", pas: []}, {pid: "b", pas: [pa(1, "K")]}])), true);
 });
+
+test("RF-6 cellName: celda vacía", function(){
+  assert.strictEqual(Stats.cellName({name: "Ana", pas: []}, 3), "Ana, inning 3, sin turnos");
+  assert.strictEqual(Stats.cellName({name: "Ana", pas: [pa(1, "K")]}, 3), "Ana, inning 3, sin turnos");
+});
+
+test("RF-6 cellName: turno con ord, título del código y carrera", function(){
+  var row = {name: "Ana", pas: [{inn: 3, ord: 2, code: "RO", run: false}]};
+  assert.strictEqual(Stats.cellName(row, 3), "Ana, inning 3, turno 2: Rolling");
+  row = {name: "Ana", pas: [{inn: 3, ord: 1, code: "JS", run: false}]};
+  assert.strictEqual(Stats.cellName(row, 3), "Ana, inning 3, turno 1: Jugada de selección");
+  row = {name: "Ana", pas: [{inn: 3, ord: 1, code: "HR", run: true}]};
+  assert.strictEqual(Stats.cellName(row, 3), "Ana, inning 3, turno 1: HR, anotó carrera");
+});
+
+test("RF-6 cellName: ordena por ord; sin ord al final, sin número", function(){
+  var row = {name: "Ana", pas: [
+    {inn: 3, code: "1B", run: false},
+    {inn: 3, ord: 5, code: "K", run: false},
+    {inn: 3, ord: 2, code: "BB", run: false},
+    {inn: 4, ord: 1, code: "HR", run: false}]};
+  assert.strictEqual(Stats.cellName(row, 3), "Ana, inning 3, turno 2: BB, turno 5: K, turno: 1B");
+});
+
+test("RF-6 cellName: outs corriendo y código desconocido", function(){
+  var row = {name: "Ana", pas: [], ro: [{inn: 3, kind: "CS"}, {inn: 2, kind: "PO"}]};
+  assert.strictEqual(Stats.cellName(row, 3), "Ana, inning 3, Atrapado robando");
+  row = {name: "Ana", pas: [{inn: 3, ord: 1, code: "ZZ", run: false}], ro: [{inn: 3, kind: "XX"}]};
+  assert.strictEqual(Stats.cellName(row, 3), "Ana, inning 3, turno 1: ZZ, XX");
+});

@@ -184,6 +184,41 @@ Stats.cellLines = function(row, inn){
   return out;
 };
 
+// Spec 007 RF-1/2/3: orden al bate tras asignar. Nunca quita a nadie; agrega al final a quien falta, en el orden de ids.
+Stats.orderAfterAssign = function(order, ids){
+  var out = order.slice();
+  ids.forEach(function(id){ if(id && out.indexOf(id) < 0) out.push(id); });
+  return out;
+};
+
+// Spec 007 RF-6: nombre accesible de una celda de la cuadrícula.
+Stats.cellName = function(row, inn){
+  var parts = [row.name + ", inning " + inn], pas = [];
+  function find(list, key, v){
+    for(var i = 0; i < list.length; i++) if(list[i][key] === v) return list[i];
+    return null;
+  }
+  row.pas.forEach(function(p, j){ if(p.inn === inn) pas.push({p: p, j: j}); });
+  // por ord ascendente; sin ord al final, en el orden guardado
+  pas.sort(function(a, b){
+    var x = typeof a.p.ord === "number", y = typeof b.p.ord === "number";
+    if(x && y && a.p.ord !== b.p.ord) return a.p.ord - b.p.ord;
+    if(x !== y) return x ? -1 : 1;
+    return a.j - b.j;
+  });
+  pas.forEach(function(e){
+    var p = e.p, c = find(Stats.CODES, "code", p.code),
+      s = (typeof p.ord === "number" ? "turno " + p.ord : "turno") + ": " + (c ? c.title || c.pick : p.code);
+    parts.push(p.run ? s + ", anotó carrera" : s);
+  });
+  (row.ro || []).forEach(function(o){
+    var k = find(Stats.RO_KINDS, "kind", o.kind);
+    if(o.inn === inn) parts.push(k ? k.pick : o.kind);
+  });
+  if(parts.length === 1) parts.push("sin turnos");
+  return parts.join(", ");
+};
+
 Stats.rowEmpty = function(row){
   return !row.pas.length && !(row.ro || []).length;
 };
