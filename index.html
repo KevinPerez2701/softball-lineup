@@ -2681,7 +2681,7 @@ function openCapture(rec, fromCurrent){
     rec.rows = Stats.refreshRows(rec.rows, lineup);
   }
   var copy = Stats.fit(rec);
-  cap = {rec:copy, opened:JSON.stringify(copy), fromCurrent:fromCurrent, linkId:S.statsId || null, anchor:null}; // anchor: último turno del modo guiado (RF-15)
+  cap = {rec:copy, opened:JSON.stringify(copy), fromCurrent:fromCurrent, linkId:S.statsId || null, anchor:null, undo:null}; // anchor: último turno del modo guiado (RF-15); undo: JSON de cap.rec.rows antes del último borrado, para Deshacer; null si no hay
   renderCapture();
   $("capture").showModal();
   $("capClose").focus(); // RF-31
@@ -2693,6 +2693,7 @@ function setCapTitle(){
     (g.date ? " · " + Stats.fmtDate(g.date).slice(0, 5) : "");
 }
 function renderCapture(){
+  if(cap.undo){ cap.undo = null; $("toast").classList.remove("on"); } // RF-9: cualquier cambio de la hoja descarta el Deshacer pendiente
   var g = cap.rec.game, t = $("capTable");
   setCapTitle();
   t.innerHTML = "";
@@ -2793,6 +2794,12 @@ $("capDelInn").addEventListener("click", function(){
 });
 /* selector de turno (#paPick): no hay toast mientras está abierto (toast() se mueve al primer diálogo abierto) */
 function paDone(){ $("paPick").close(); renderCapture(); }
+// RF-7/8: borra con mutate(), cierra el selector y ofrece Deshacer; paDone() va antes de fijar cap.undo (re-renderiza y descarta el anterior)
+function paDelete(msg, mutate){
+  var before = JSON.stringify(cap.rec.rows);
+  mutate(); paDone(); cap.undo = before;
+  toast(msg, function(){ if(!cap || cap.undo !== before) return; cap.rec.rows = JSON.parse(before); renderCapture(); });
+}
 function onCellTap(rowIdx, inn){
   var row = cap.rec.rows[rowIdx];
   $("paTitle").textContent = (row.num ? row.num + " · " : "") + row.name + " · Inning " + inn;
@@ -2812,9 +2819,10 @@ function paList(ri, inn){
     ed.type = del.type = "button";
     ed.addEventListener("click", function(){ paForm(ri, inn, idx); });
     del.addEventListener("click", function(){
-      row.pas.splice(idx, 1);
-      if(typeof p.ord === "number") Stats.renumberOrd(cap.rec, inn, p.ord); // RF-10: cierra el hueco
-      paDone();
+      paDelete("Turno borrado", function(){
+        row.pas.splice(idx, 1);
+        if(typeof p.ord === "number") Stats.renumberOrd(cap.rec, inn, p.ord); // RF-10: cierra el hueco
+      });
     });
     it.appendChild(el("span", "pa-code", Stats.cellLabel(p)));
     it.appendChild(ed); it.appendChild(del);
@@ -2825,9 +2833,10 @@ function paList(ri, inn){
     var it = el("div", "pickitem pa-item"), del = el("button", "btn btn-sm btn-danger", "Borrar");
     del.type = "button";
     del.addEventListener("click", function(){
-      row.ro.splice(idx, 1);
-      if(!row.ro.length) delete row.ro;
-      paDone();
+      paDelete("Out corriendo borrado", function(){
+        row.ro.splice(idx, 1);
+        if(!row.ro.length) delete row.ro;
+      });
     });
     it.appendChild(el("span", "pa-code", Stats.roLabel(r.kind)));
     it.appendChild(el("span")); // hueco de "Editar": los outs corriendo no se editan, se borran
