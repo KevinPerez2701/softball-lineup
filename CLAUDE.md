@@ -8,8 +8,11 @@ GitHub Pages (branch `main`, root): everything committed here is served on the w
 
 ## Commands
 - Run: from the repo root `python3 -m http.server 8000 < /dev/null`, then open http://localhost:8000 (kill it after).
-- Demos/QA by agents: open **http://127.0.0.1:8000**, never localhost. Kevin's real Firebase session can live on
-  localhost:8000; there a demo seed or a click acts on his real account and syncs to Firestore (2026-11-05).
+- Demos/QA by agents: serve on port 8001 (`python3 -m http.server 8001 --bind 127.0.0.1 < /dev/null`) and open
+  **http://localhost:8001** — its own origin, separate from Kevin's localhost:8000 (Kevin, 2026-11-06). Not
+  127.0.0.1, `[::1]` or `*.localhost`: the Firebase browser key's referrer list blocks them, so sign-in fails there.
+  Signing in reaches Kevin's real Firestore data: demos stay read-only (close without saving, undo, reopen the saved
+  game) unless Kevin asks for a write.
 - Tests: `node --test 'tests/*.test.js'` (Node stdlib, no npm).
 - Lint/build: none.
 

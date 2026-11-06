@@ -3,7 +3,7 @@
 Single source of truth for what is in flight and what is left. Update it in the same commit as the
 work it describes. Dates come from `date`, never from memory.
 
-Last updated: 2026-11-06 11:53 UTC-4 by Claude
+Last updated: 2026-11-06 11:59 UTC-4 by Claude
 
 ## Now (one line)
 Idle — specs 001–007 done and live on Pages (a7fe5e7). Next: re-run the impeccable critique to measure 005–007, or pick from the backlog.
@@ -25,7 +25,7 @@ Phases: constitution · spec · clarify · plan · tasks · implement · validat
 - (none)
 
 ## Known gaps (not blocking)
-- Demos: 127.0.0.1 cannot sign in (the Firebase browser key's referrer list allows localhost and github.io only), so the CLAUDE.md rule "demos on 127.0.0.1" cannot reach the signed-in app. Demos this time ran on localhost:8000 with Kevin's session, read-only. Decide: add 127.0.0.1 to the key's referrers with a test account, or update the rule.
+- Demos: decided by Kevin 2026-11-06 — localhost:8001 (own origin; 127.0.0.1 is blocked by the key's referrer list), read-only; recorded in CLAUDE.md.
 - Not covered by the 004 demo: RF-13 backdrop tap and back button, RF-2 storage-failure toast.
 
 ## Recently done (keep last 10)
