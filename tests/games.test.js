@@ -269,3 +269,47 @@ test("result: Ganado / Perdido / Empate, 0-0 empty, string scores", function(){
   assert.strictEqual(Stats.result({us: ["3", "2"], them: ["1", "0"]}), "Ganado 5–1");
   assert.strictEqual(Stats.result({us: ["3", "2"], them: [0, 0]}), "Ganado 5–0");
 });
+
+test("sheetTitle: team vs opp, team only, neither, dd/mm suffix, trimmed", function(){
+  assert.strictEqual(Stats.sheetTitle({team: "MSO", opp: "Call", date: "2026-11-05"}), "MSO vs Call · 05/11");
+  assert.strictEqual(Stats.sheetTitle({team: "MSO", opp: "", date: "2026-11-05"}), "MSO · 05/11");
+  assert.strictEqual(Stats.sheetTitle({team: "", opp: "", date: "2026-11-05"}), "Estadísticas · 05/11");
+  assert.strictEqual(Stats.sheetTitle({team: "", opp: "Call", date: "2026-11-05"}), "Equipo vs Call · 05/11");
+  assert.strictEqual(Stats.sheetTitle({team: "MSO", opp: "Call", date: ""}), "MSO vs Call");
+  assert.strictEqual(Stats.sheetTitle({team: "MSO", opp: " ", date: ""}), "MSO");
+  assert.strictEqual(Stats.sheetTitle({team: "", opp: "", date: ""}), "Estadísticas");
+  assert.strictEqual(Stats.sheetTitle({team: "  MSO ", opp: " Call  ", date: "2026-11-05"}), "MSO vs Call · 05/11");
+});
+
+test("dateLabel and gameTitle: date text, Sin fecha, optional vs opp", function(){
+  assert.strictEqual(Stats.dateLabel("2026-11-05"), "05/11/2026");
+  assert.strictEqual(Stats.dateLabel(""), "Sin fecha");
+  assert.strictEqual(Stats.dateLabel(undefined), "Sin fecha");
+  assert.strictEqual(Stats.dateLabel("basura"), "Sin fecha");
+  assert.strictEqual(Stats.gameTitle({opp: "Call", date: "2026-11-05"}), "05/11/2026 · vs Call");
+  assert.strictEqual(Stats.gameTitle({opp: "", date: "2026-11-05"}), "05/11/2026");
+  assert.strictEqual(Stats.gameTitle({opp: "  ", date: "2026-11-05"}), "05/11/2026");
+  assert.strictEqual(Stats.gameTitle({opp: "", date: ""}), "Sin fecha");
+  assert.strictEqual(Stats.gameTitle({opp: "Call", date: ""}), "Sin fecha · vs Call");
+});
+
+test("savedByDate: date desc, tie by at desc, no state or date last, input untouched", function(){
+  var list = [
+    {id: "a", at: 1, state: {date: "2026-10-01"}},
+    {id: "b", at: 2},
+    {id: "c", at: 3, state: {date: "2026-11-05"}},
+    {id: "d", at: 9, state: {date: ""}},
+    {id: "e", at: 5, state: {date: "2026-11-05"}},
+    {id: "f", at: 4, state: {date: "2026-10-01"}}
+  ];
+  var before = JSON.stringify(list);
+  var out = Stats.savedByDate(list);
+  assert.deepStrictEqual(out.map(function(x){ return x.id; }), ["e", "c", "f", "a", "d", "b"]);
+  assert.notStrictEqual(out, list);
+  assert.strictEqual(JSON.stringify(list), before);
+});
+
+test("recordText: Récord G–P–E with en dashes", function(){
+  assert.strictEqual(Stats.recordText({w: 0, l: 0, t: 0}), "Récord 0–0–0");
+  assert.strictEqual(Stats.recordText({w: 3, l: 1, t: 2}), "Récord 3–1–2");
+});
