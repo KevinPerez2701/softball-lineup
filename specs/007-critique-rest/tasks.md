@@ -10,13 +10,13 @@ T5 2691–2695, 2734, paForm chip/nums/draw, 2984 · T6 588+, 3314–3318, 3379�
 1149, 1153, 2574–2576, 2645–2655, 3255–3268. stats.js: T1 after `cellLines`, T2 after `result`.
 
 ## Wave 1 — in parallel
-- [ ] T1. stats.js `orderAfterAssign` + `cellName`; tests first (new `tests/order.test.js`, `tests/sheet.test.js`
+- [x] T1. stats.js `orderAfterAssign` + `cellName`; tests first (new `tests/order.test.js`, `tests/sheet.test.js`
       append). (RF-1, RF-2, RF-3, RF-6) Deps: —
       Done when: the plan's RF-1/2/3 and RF-6 tests exist and the suite is green.
-- [ ] T2. stats.js `dateLabel`, `sheetTitle`, `gameTitle`, `savedByDate`, `recordText`; tests first
+- [x] T2. stats.js `dateLabel`, `sheetTitle`, `gameTitle`, `savedByDate`, `recordText`; tests first
       (`tests/games.test.js` append). (RF-13, RF-14, RF-15) Deps: —
       Done when: the RF-13/14/15 tests exist, the suite is green, the `gameName` test untouched and green.
-- [ ] T4. Lime CSS (`.btn-thin`, `.btn-sm.btn-default`) + RF-8 demotions. (RF-7 CSS, RF-8, RF-9) Deps: —
+- [x] T4. Lime CSS (`.btn-thin`, `.btn-sm.btn-default`) + RF-8 demotions. (RF-7 CSS, RF-8, RF-9) Deps: —
       Done when: every remaining `btn-key` in index.html is an RF-8 survivor (listed in the report); btnInstall has no key
       flag; RF-9 colors untouched.
 

@@ -559,18 +559,18 @@ Stats.result = function(st){
 };
 
 // ---------- títulos y fechas (spec 007) ----------
-function validIso(iso){ return /^\d{4}-\d{2}-\d{2}$/.test(iso || ""); }
+Stats.validIso = function(iso){ return /^\d{4}-\d{2}-\d{2}$/.test(iso || ""); };
 
 // "dd/mm/aaaa" o "Sin fecha" si está vacía o no es una fecha ISO
 Stats.dateLabel = function(iso){
-  return validIso(iso) ? Stats.fmtDate(iso) : "Sin fecha";
+  return Stats.validIso(iso) ? Stats.fmtDate(iso) : "Sin fecha";
 };
 
 // Título de la hoja de captura: "Equipo vs Rival · dd/mm"; sin rival, solo el equipo
 Stats.sheetTitle = function(g){
   var team = (g.team || "").trim(), opp = (g.opp || "").trim();
   var t = opp ? (team || "Equipo") + " vs " + opp : team || "Estadísticas";
-  return validIso(g.date) ? t + " · " + Stats.fmtDate(g.date).slice(0, 5) : t;
+  return Stats.validIso(g.date) ? t + " · " + Stats.fmtDate(g.date).slice(0, 5) : t;
 };
 
 // Título en Estadísticas → Juegos: "dd/mm/aaaa" y " · vs Rival" si hay rival
