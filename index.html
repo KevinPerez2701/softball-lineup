@@ -949,7 +949,7 @@ body.locked .gate{
     <div class="tools">
       <div class="tgroup" role="group" aria-label="Juego">
         <button class="btn btn-ghost btn-sm" id="btnNew" type="button">Nuevo</button>
-        <button class="btn btn-key btn-sm" id="btnSave" type="button">Guardar</button>
+        <button class="btn btn-ghost btn-sm" id="btnSave" type="button">Guardar</button>
         <button class="btn btn-ghost btn-sm" id="btnSaveNew" type="button" hidden>Guardar como nuevo</button>
         <button class="btn btn-ghost btn-sm" id="btnLoad" type="button">Abrir</button>
         <button class="btn btn-ghost btn-sm" id="btnStats" type="button">Estadísticas</button>
@@ -1670,7 +1670,7 @@ function renderHeader(){
   name.title = text;
   box.appendChild(name);
   $("btnSaveNew").hidden = !g;
-  // RF-9/18: con juego ligado y sin cambios el botón dice "Guardado ✓" (sin estilo de llave); si no, "Guardar"
+  // RF-9/18: con juego ligado y sin cambios el botón dice "Guardado ✓" (sin estilo de llave); si no, "Guardar" (lima solo con cambios, 008 RF-7)
   var bs = $("btnSave"), saved = !!g && !dirty;
   bs.textContent = saved ? "Guardado ✓" : "Guardar";
   bs.className = dirty ? "btn btn-key btn-sm" : "btn btn-ghost btn-sm";
