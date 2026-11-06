@@ -2038,6 +2038,8 @@ stage.addEventListener("drop", function(ev){
       S.assign[target] = fromId || null;
       S.assign[from] = targetId || null;
     }
+    /* quien no estaba en el orden entra al final: primero el arrastrado, luego el destino */
+    S.order = Stats.orderAfterAssign(S.order, [fromId, targetId].filter(Boolean));
   }else if(data.indexOf("pl:") === 0){
     setPos(target, data.slice(3));
   }else return;
@@ -2050,14 +2052,13 @@ function setPos(posKey, playerId){
   else if(prev) S.assign[prev] = null;
   if(posKey === "DH") {
     if(!S.enabledDH) return;
-    if(S.dh && S.dh !== playerId) {
-      S.order = S.order.filter(function(id){ return id !== S.dh; });
-    }
     S.dh = playerId;
   } else {
     if(S.dh === playerId) S.dh = null;
     S.assign[posKey] = playerId;
   }
+  /* quien recibe posición y no estaba en el orden entra al final; nadie sale */
+  S.order = Stats.orderAfterAssign(S.order, [playerId]);
 }
 
 /* ============ picker ============ */
@@ -2558,13 +2559,14 @@ $("btnAutoField").addEventListener("click", function(){
   var used = {};
   POS_ORDER.forEach(function(k){ if(S.assign[k]) used[S.assign[k]] = 1; });
   var free = S.roster.filter(function(p){ return !used[p.id]; });
-  var fi = 0, missing = 0;
+  var fi = 0, missing = 0, placed = [];
   /* solo las posiciones activas: LCF/RCF sin 4F (o SF apagado) no se ven */
   POS_ORDER.forEach(function(k){
     if(!isPosEnabled(k) || S.assign[k]) return;
-    if(fi < free.length){ S.assign[k] = free[fi].id; fi++; }
+    if(fi < free.length){ S.assign[k] = free[fi].id; placed.push(free[fi].id); fi++; }
     else missing++;
   });
+  S.order = Stats.orderAfterAssign(S.order, placed);
   renderAll();
   toast(missing ? "Faltan " + missing + (missing === 1 ? " jugador" : " jugadores") + " para llenar el campo"
                 : "Posiciones vacías completadas");
