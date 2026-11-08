@@ -502,7 +502,7 @@ dialog::backdrop{background:rgba(10,16,11,.55)}
 #teamRoster{width:min(520px,calc(100vw - 28px))}
 #capture{width:min(980px,calc(100vw - 28px))}
 #capture .dlg-body{overflow-x:hidden}
-#capBar,#capTools,#capFoot{display:contents} /* RF-40: en escritorio los envoltorios desaparecen y la cabecera se ve como antes */
+#capBar,#capTools,#capFoot{display:contents;color:inherit} /* color: el popover trae CanvasText del navegador; RF-40: en escritorio los envoltorios desaparecen y la cabecera se ve como antes */
 #capMore{display:none}
 
 /* hoja de estadísticas: solo la tabla se desplaza a los lados; la columna del bateador queda fija */
@@ -734,8 +734,6 @@ body.locked .gate{
   }
   .tab-badge.ok{background:var(--accent);color:var(--accent-ink)}
   .toast{bottom:calc(84px + env(safe-area-inset-bottom))}
-  /* RF-13: el aviso fijo ocupa 84 (bottom) + 54 (alto: botón 36 + 2×9) + 4 (translateY) = 142 px sobre el borde; 150 deja aire */
-  #capture:has(.toast.on) .dlg-body{padding-bottom:150px}
 
   /* RF-40: hoja de captura — cabecera de una fila (título + ⋯), panel con fecha/innings/guía y barra fija abajo */
   #capBar{display:flex;align-items:center;gap:8px;flex:1 1 100%;min-width:0}
@@ -755,8 +753,7 @@ body.locked .gate{
   @supports (top:anchor(bottom)){
     #capTools{position-anchor:--cap-more;inset:auto;top:calc(anchor(bottom) + 6px);right:12px;margin:0}
   }
-  /* barra inferior fija: borde inferior de la hoja; el área segura va dentro de la barra */
-  #capture{padding-bottom:0}
+  /* barra inferior fija; el área segura va dentro de la barra */
   #capFoot{
     position:fixed;left:0;right:0;bottom:0;z-index:2;display:flex;gap:10px;
     padding:10px max(12px,env(safe-area-inset-right)) calc(10px + env(safe-area-inset-bottom)) max(12px,env(safe-area-inset-left));
