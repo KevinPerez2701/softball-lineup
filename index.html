@@ -502,6 +502,8 @@ dialog::backdrop{background:rgba(10,16,11,.55)}
 #teamRoster{width:min(520px,calc(100vw - 28px))}
 #capture{width:min(980px,calc(100vw - 28px))}
 #capture .dlg-body{overflow-x:hidden}
+#capBar,#capTools,#capFoot{display:contents} /* RF-40: en escritorio los envoltorios desaparecen y la cabecera se ve como antes */
+#capMore{display:none}
 
 /* hoja de estadísticas: solo la tabla se desplaza a los lados; la columna del bateador queda fija */
 .sheet-scroll{overflow-x:auto}
@@ -734,6 +736,39 @@ body.locked .gate{
   .toast{bottom:calc(84px + env(safe-area-inset-bottom))}
   /* RF-13: el aviso fijo ocupa 84 (bottom) + 54 (alto: botón 36 + 2×9) + 4 (translateY) = 142 px sobre el borde; 150 deja aire */
   #capture:has(.toast.on) .dlg-body{padding-bottom:150px}
+
+  /* RF-40: hoja de captura — cabecera de una fila (título + ⋯), panel con fecha/innings/guía y barra fija abajo */
+  #capBar{display:flex;align-items:center;gap:8px;flex:1 1 100%;min-width:0}
+  #capBar h3{flex:1 1 auto;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  #capMore{display:inline-flex;justify-content:center;min-width:44px;min-height:44px;font-size:20px;line-height:1;anchor-name:--cap-more}
+  /* sin popover nativo los controles quedan a la vista en la cabecera (envoltorio display:contents) */
+  @supports selector(:popover-open){
+    #capTools{display:none}
+    #capTools:popover-open{display:flex}
+  }
+  #capTools{
+    flex-direction:column;gap:8px;padding:12px;width:min(300px,calc(100vw - 24px));
+    background:var(--surface);color:var(--ink);border:1px solid var(--line-2);border-radius:14px;box-shadow:var(--shadow-2);
+  }
+  #capTools .btn{min-height:44px;justify-content:center}
+  /* sin anchor() el panel queda centrado (margen automático del popover) */
+  @supports (top:anchor(bottom)){
+    #capTools{position-anchor:--cap-more;inset:auto;top:calc(anchor(bottom) + 6px);right:12px;margin:0}
+  }
+  /* barra inferior fija: borde inferior de la hoja; el área segura va dentro de la barra */
+  #capture{padding-bottom:0}
+  #capFoot{
+    position:fixed;left:0;right:0;bottom:0;z-index:2;display:flex;gap:10px;
+    padding:10px max(12px,env(safe-area-inset-right)) calc(10px + env(safe-area-inset-bottom)) max(12px,env(safe-area-inset-left));
+    background:var(--surface);border-top:1px solid var(--line);
+  }
+  #capFoot .btn{flex:1 1 0;min-height:44px;justify-content:center}
+  #capFoot span{display:none}
+  /* barra = 10 + 44 + 10 = 64 px + área segura; 76 deja aire para la última fila y el marcador */
+  #capture .dlg-body{padding-bottom:calc(76px + env(safe-area-inset-bottom))}
+  /* aviso 12 px sobre la barra: ocupa hasta 12 + 54 + 4 = 70 px sobre ella; 150 mantiene el margen de RF-13 */
+  #capture .toast{bottom:calc(76px + env(safe-area-inset-bottom))}
+  #capture:has(.toast.on) .dlg-body{padding-bottom:calc(150px + env(safe-area-inset-bottom))}
 
   /* diálogos como hojas que suben desde abajo */
   dialog,#teamRoster,#capture,#statsView{
@@ -1342,14 +1377,21 @@ body.locked .gate{
 
 <dialog id="capture">
   <div class="dlg-head">
-    <h3 id="capTitle">Estadísticas</h3>
-    <input class="inp" id="capDate" type="date" aria-label="Fecha del juego" style="width:auto">
-    <button class="btn btn-sm" id="capAddInn" type="button" aria-label="Agregar un inning">+ Inning</button>
-    <button class="btn btn-sm" id="capDelInn" type="button" aria-label="Quitar un inning">− Inning</button>
-    <button class="btn btn-sm" id="capGuide" type="button">Anotar por inning</button>
-    <button class="btn btn-sm" id="capSave" type="button">Guardar estadísticas</button>
-    <span style="margin-left:auto"></span>
-    <button class="btn btn-sm" id="capClose" type="button">Cerrar</button>
+    <div id="capBar">
+      <h3 id="capTitle">Estadísticas</h3>
+      <button class="btn btn-sm" id="capMore" type="button" popovertarget="capTools" aria-label="Más opciones de la hoja">⋯</button>
+    </div>
+    <div id="capTools" popover>
+      <input class="inp" id="capDate" type="date" aria-label="Fecha del juego" style="width:auto">
+      <button class="btn btn-sm" id="capAddInn" type="button" aria-label="Agregar un inning">+ Inning</button>
+      <button class="btn btn-sm" id="capDelInn" type="button" aria-label="Quitar un inning">− Inning</button>
+      <button class="btn btn-sm" id="capGuide" type="button">Anotar por inning</button>
+    </div>
+    <div id="capFoot">
+      <button class="btn btn-sm" id="capSave" type="button">Guardar estadísticas</button>
+      <span style="margin-left:auto"></span>
+      <button class="btn btn-sm" id="capClose" type="button">Cerrar</button>
+    </div>
   </div>
   <div class="dlg-body">
     <div class="sheet-scroll"><table class="sheet" id="capTable"></table></div>
