@@ -3,10 +3,10 @@
 Single source of truth for what is in flight and what is left. Update it in the same commit as the
 work it describes. Dates come from `date`, never from memory.
 
-Last updated: 2026-11-06 15:32 UTC-4 by Claude
+Last updated: 2026-11-08 15:30 UTC-4 by Claude
 
 ## Now (one line)
-Specs 001–009 live (009: 0769e89). Critique after 008+009: 30/40 (no change; P1: empty-game attendance — CTA plus an open 26-row list, no batch check-in). Nothing in flight.
+Spec 010 (game view + public share + the 30/40 critique fixes) in clarify. Data op 2026-11-08: game "MSO vs Call · 06/11/2026" loaded from the paper sheet (43 PAs, 8–17), Mauricio Salazar added to the team.
 
 ## Active specs
 | Spec | Phase | Current task | Next task | Blocked by |
@@ -20,11 +20,12 @@ Specs 001–009 live (009: 0769e89). Critique after 008+009: 30/40 (no change; P
 | 007-critique-rest | done | — | — | — |
 | 008-critique-third | done | — | — | — |
 | 009-bench-attendance | done | — | — | — |
+| 010-game-view-share | clarify (G1) | — | plan | G1 (Kevin) |
 
 Phases: constitution · spec · clarify · plan · tasks · implement · validate · done
 
 ## Open questions (block work until answered)
-- (none)
+- 010: G1 pending — spec clarified (43 RFs; clarifier 8 blocking + 14 minor resolved; rules exception OK by Kevin)
 
 ## Known gaps (not blocking)
 - Demos: decided by Kevin 2026-11-06 — localhost:8001 (own origin; 127.0.0.1 is blocked by the key's referrer list), read-only; recorded in CLAUDE.md.
@@ -43,4 +44,4 @@ Phases: constitution · spec · clarify · plan · tasks · implement · validat
 - 2026-11-06 · 005+006 · Browser demo on localhost:8000 (Kevin signed in; 127.0.0.1 cannot sign in: the API key's referrer list blocks it): picker 4 labeled rows, JS title/aria-label, chips 44 px, JS → 1 out with "Más detalles" closed; delete → "Turno borrado · Deshacer" restores the turn and its numbering; a later change drops the undo; runner out delete/undo; close + reopen shows no stale notice; Jugadores in RF-1 order with Equipo and key; detail AVE/OBP/OPS between K and Turnos = table (.400/.500/1.400 for Kevin); at 360 px AVE/OBP/SLG visible on open. Fix found in the demo (D2): at 360×640 the picker scrolled and "Listo" sat below the fold → row labels moved to the left of each row (.pa-row); now 413 px, no scroll. Also found: the working lineup on localhost had lost its roster/field/order (saved game intact); reopened the saved game
 
 ## Backlog (ideas not yet specified)
-- Next spec (010), decided by Kevin 2026-11-06 after the 30/40 critique — scope "P1 + P2": (1) empty-game check-in: tap names to select, one "Agregar (n)" + "Vinieron todos", drop the duplicate "Marcar asistencia" CTA; (2) phone capture header: date/±Inning/guide in a ⋯ menu, "Guardar estadísticas" + "Cerrar" in a bottom bar; (3) "Anotar estadísticas" lime only with batters in the order; (4) phone player detail: two-line rows so Turnos is not cut; (5) placeholder contrast on "Nombre del equipo"/"Rival". Start with /sdd:spec.
+- (critique "P1 + P2" scope folded into spec 010 by Kevin 2026-11-08)
