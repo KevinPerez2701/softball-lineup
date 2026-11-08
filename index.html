@@ -680,6 +680,7 @@ body.locked .gate{
 }
 .toast.on{opacity:1;visibility:visible;transform:translateX(-50%) translateY(-4px)}
 .toast .toast-x{min-width:36px;color:var(--bar-ink);opacity:.75}
+.toast span{overflow-wrap:anywhere} /* 010 RF-20: el enlace largo se corta dentro del aviso; el texto normal sigue cortando entre palabras */
 
 @media (max-width:1080px){
   .work{grid-template-columns:minmax(0,1fr)}
@@ -1688,7 +1689,8 @@ var ICONS = {
   logout:'<path d="M14 4.5h4A1.5 1.5 0 0 1 19.5 6v12a1.5 1.5 0 0 1-1.5 1.5h-4"/><path d="M10 16.5L5.5 12 10 7.5M5.5 12H15"/>',
   chart:'<path d="M4 20h16M7 20v-7M12 20V5M17 20v-10"/>',
   dots:'<circle cx="5.5" cy="12" r="1.2"/><circle cx="12" cy="12" r="1.2"/><circle cx="18.5" cy="12" r="1.2"/>',
-  grip:'<circle cx="9" cy="6" r="1.1"/><circle cx="15" cy="6" r="1.1"/><circle cx="9" cy="12" r="1.1"/><circle cx="15" cy="12" r="1.1"/><circle cx="9" cy="18" r="1.1"/><circle cx="15" cy="18" r="1.1"/>'
+  grip:'<circle cx="9" cy="6" r="1.1"/><circle cx="15" cy="6" r="1.1"/><circle cx="9" cy="12" r="1.1"/><circle cx="15" cy="12" r="1.1"/><circle cx="9" cy="18" r="1.1"/><circle cx="15" cy="18" r="1.1"/>',
+  link:'<path d="M10 14a4.5 4.5 0 0 0 6.4 0l3-3a4.5 4.5 0 0 0-6.4-6.4l-1.2 1.2"/><path d="M14 10a4.5 4.5 0 0 0-6.4 0l-3 3a4.5 4.5 0 0 0 6.4 6.4l1.2-1.2"/>'
 };
 function svgIcon(name){
   return '<svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" ' +
@@ -3358,6 +3360,9 @@ function saveCapture(){
   var rec = JSON.parse(JSON.stringify(cap.rec));
   rec.savedAt = new Date().toISOString();
   var prev = lsGet(K_STATS, []), wasDirty = !!dirty().stats;
+  /* 010 RF-17: el shareId lo manda la última entrada guardada, no la copia de la hoja (pudo publicarse o despublicarse mientras tanto) */
+  var last = Stats.live(prev).filter(function(e){ return e.id === rec.id; })[0];
+  if(last && last.shareId) rec.shareId = last.shareId; else delete rec.shareId;
   if(!lsSet(K_STATS, Stats.merge(prev, [rec]))){ toast("No se pudo guardar en este navegador"); return; }
   var gameName = null; // RF-26: nombre del juego ligado si RF-6 lo actualizó
   if(cap.fromCurrent && (S.statsId || null) === cap.linkId){
@@ -3384,6 +3389,8 @@ function saveCapture(){
       gameName = g.name;
     }
   }
+  // 010 RF-17: ya no hay vuelta atrás; la copia pública se reescribe sin esperar (Firestore la entrega al volver la señal)
+  if(rec.shareId) cloud.putPublic(rec.shareId, JSON.stringify(Stats.publicCopy(rec))).catch(noop);
   closeCapture();
   renderAll();
   if($("statsView").open) openStats(statsViewName);
@@ -3396,6 +3403,98 @@ function tryCloseCapture(){
   askChoice("¿Guardar las estadísticas?", "Hay cambios sin guardar.", "Guardar y salir", "Salir sin guardar", function(c){
     if(c === "yes") saveCapture(); else closeCapture(); // saveCapture solo cierra si guarda; si no, avisa y se queda (RF-12)
   }, false, "alt");
+}
+/* ============ compartir un juego (010 RF-11 a RF-22) ============
+   Publicado = la entrada tiene shareId. La copia pública se escribe primero y
+   el shareId entra en la entrada solo con la escritura confirmada (al
+   despublicar, al revés); lo que llegue tarde lo limpia el barrido (RF-21). */
+var shareBusy = false; // RF-14: publicando, reescribiendo o despublicando desde el menú
+var SHARE_FAIL = "No se pudo publicar. Revisa la conexión y vuelve a intentar.";
+function noop(){}
+function shareRec(id){ return Stats.live(lsGet(K_STATS, [])).filter(function(r){ return r.id === id; })[0]; }
+/* true si el servidor confirmó en 6 s; como en cloud.signOut, la escritura sigue aunque se acabe el tiempo */
+function within6s(p){
+  return Promise.race([
+    p.then(function(){ return true; }, function(){ return false; }),
+    new Promise(function(r){ setTimeout(function(){ r(false); }, 6000); })
+  ]);
+}
+function publicDir(){ return location.origin + location.pathname.replace(/[^/]*$/, ""); }
+/* Pone (sid) o quita (null) el shareId de la última entrada guardada, con savedAt nuevo para que la mezcla lo conserve. */
+function storeShare(id, sid){
+  var all = lsGet(K_STATS, []), rec = Stats.live(all).filter(function(r){ return r.id === id; })[0];
+  if(!rec) return false;
+  var e = JSON.parse(JSON.stringify(rec)), at = new Date().toISOString();
+  /* reloj atrasado: con un savedAt igual o menor la mezcla se quedaría con la entrada vieja */
+  if(e.savedAt && e.savedAt >= at) at = new Date(Date.parse(e.savedAt) + 1).toISOString();
+  if(sid) e.shareId = sid; else delete e.shareId;
+  e.savedAt = at;
+  if(!lsSet(K_STATS, Stats.merge(all, [e]))) return false;
+  if($("statsView").open) openStats(statsViewName);
+  return true;
+}
+function shareGame(id){
+  var rec = shareRec(id);
+  if(!rec) return;
+  var items = [
+    {icon:"link", label:"Copiar enlace público", sub:"Cualquiera con el enlace ve este juego", fn:function(){ copyLink(id); }},
+    {icon:"image", label:"Compartir imagen", sub:"Marcador y box score", fn:function(){ shareGameImage(rec, false); }},
+    {icon:"image", label:"Compartir imagen con más columnas", sub:"Con OBP, SLG, OPS, BR y AR", fn:function(){ shareGameImage(rec, true); }}
+  ];
+  if(rec.shareId) items.push({icon:"x", label:"Dejar de publicar", sub:"El enlace dejará de funcionar", danger:true, fn:function(){ unpublish(id); }});
+  openActions("Compartir", items);
+}
+/* RF-12/13/15/16/20/22: sin shareId se publica uno nuevo; con shareId (aunque la copia no exista) se reescribe esa */
+function copyLink(id){
+  var rec = shareRec(id);
+  if(!rec || shareBusy) return;
+  var pub = !!rec.shareId;
+  if(!pub && navigator.onLine === false){ toast(SHARE_FAIL); return; }
+  shareBusy = true;
+  var sid = rec.shareId || Stats.shareId(crypto.getRandomValues(new Uint8Array(16)));
+  var link = Stats.shareLink(publicDir(), cloud.uid, sid);
+  var w = within6s(cloud.putPublic(sid, JSON.stringify(Stats.publicCopy(rec))));
+  /* sin señal el reescrito queda en cola (Firestore lo entrega al volver): no se esperan los 6 s */
+  var done = (navigator.onLine === false ? Promise.resolve(false) : w).then(function(ok){
+    if(!pub && !(ok && storeShare(id, sid))) throw new Error("publish");
+    return ok;
+  });
+  /* F4: el ClipboardItem recibe la promesa, así el copiado sigue dentro del gesto (Safari) */
+  var copied = navigator.clipboard && window.ClipboardItem
+    ? navigator.clipboard.write([new ClipboardItem({"text/plain": done.then(function(){ return new Blob([link], {type:"text/plain"}); })})])
+    : done.then(function(){ return navigator.clipboard.writeText(link); });
+  copied.catch(noop); // si no se publicó también falla; el aviso sale de done
+  done.then(function(ok){
+    return copied.then(function(){
+      toast(ok ? "Enlace copiado: cualquiera con el enlace ve este juego"
+        : "Enlace copiado, pero el juego publicado no está al día. Vuelve a intentar con señal.");
+    }, function(){ toast(link, null, true); }); // RF-20: el enlace a la vista, seleccionable, hasta cerrarlo
+  }, function(){ toast(SHARE_FAIL); }).then(function(){ shareBusy = false; });
+}
+/* RF-18: se borra la copia y solo con el borrado confirmado se quita el shareId */
+function unpublish(id){
+  askConfirm("¿Dejar de publicar este juego?", "El enlace dejará de funcionar.", "Dejar de publicar", function(){
+    var rec = shareRec(id), fail = "No se pudo dejar de publicar. Revisa la conexión y vuelve a intentar.";
+    if(!rec || !rec.shareId || shareBusy) return;
+    if(navigator.onLine === false){ toast(fail); return; }
+    shareBusy = true;
+    within6s(cloud.deletePublic(rec.shareId)).then(function(ok){
+      shareBusy = false;
+      if(!ok) toast(fail);
+      else if(!storeShare(id, null)) toast("No se pudo guardar en este navegador");
+    });
+  }, true);
+}
+/* RF-19: al borrar las estadísticas se pide borrar la copia sin esperar; si sobrevive, la quita el barrido */
+function unpublishQuiet(rec){
+  if(rec && rec.shareId) cloud.deletePublic(rec.shareId).catch(noop);
+}
+/* RF-21: borra las copias públicas que ninguna entrada viva reclama (F2: nunca durante una publicación) */
+function sweepPublic(){
+  cloud.listPublic().then(function(ids){
+    if(shareBusy) return; // empezó una publicación mientras se listaba: su copia aún no está en la entrada
+    Stats.orphans(ids, lsGet(K_STATS, [])).forEach(function(sid){ cloud.deletePublic(sid).catch(noop); });
+  }).catch(noop);
 }
 $("capSave").addEventListener("click", saveCapture);
 $("capClose").addEventListener("click", tryCloseCapture);
@@ -4353,6 +4452,9 @@ function firstSnapshot(name, remote, local){
 }
 ["current", "team", "saved", "stats"].forEach(function(name){
   cloud.watch(name, function(remote, meta){
+    /* 010 RF-21 (F2): estadísticas del servidor sin escrituras pendientes ⇒ barrido de copias huérfanas,
+       después de que este mismo aviso mezcle lo que trae */
+    if(name === "stats" && !meta.fromCache && !meta.pending && !shareBusy) setTimeout(sweepPublic, 0);
     var local = localStorage.getItem(KEY_OF[name]);
     if(!ready[name]){
       /* Sin documento en la caché todavía no se sabe si existe en el servidor:
@@ -4447,7 +4549,8 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/12.19.0/fireba
 import { getAuth, onAuthStateChanged, signInWithEmailAndPassword, sendPasswordResetEmail, signOut }
   from "https://www.gstatic.com/firebasejs/12.19.0/firebase-auth.js";
 import { initializeFirestore, persistentLocalCache, persistentMultipleTabManager, memoryLocalCache,
-  doc, onSnapshot, setDoc, runTransaction, serverTimestamp, waitForPendingWrites, terminate, clearIndexedDbPersistence }
+  doc, onSnapshot, setDoc, runTransaction, serverTimestamp, waitForPendingWrites, terminate, clearIndexedDbPersistence,
+  collection, getDocsFromServer, deleteDoc }
   from "https://www.gstatic.com/firebasejs/12.19.0/firebase-firestore.js";
 
 const app = initializeApp({
@@ -4515,6 +4618,18 @@ function cloudFor(user){
         t.set(ref(name), {json: merged, updatedAt: serverTimestamp()});
         return merged;
       });
+    },
+    /* 010: copias públicas de juegos en users/{uid}/public/{shareId}; cualquiera las lee por la ruta exacta (reglas) */
+    putPublic(id, json){
+      return setDoc(doc(db, "users", user.uid, "public", id), {json, updatedAt: serverTimestamp()});
+    },
+    deletePublic(id){
+      return deleteDoc(doc(db, "users", user.uid, "public", id));
+    },
+    /* solo del servidor: el barrido (RF-21) no debe decidir con la caché */
+    async listPublic(){
+      const snap = await getDocsFromServer(collection(db, "users", user.uid, "public"));
+      return snap.docs.map(d => d.id);
     },
     /* Antes de salir todo tiene que estar confirmado por el servidor. Luego se
        cortan los listeners (para que nada vuelva a escribir), se borra la
