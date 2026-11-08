@@ -3956,13 +3956,13 @@ function buildLineupSvg(){
   return o.join("");
 }
 
-function lineupPngBlob(){
+function svgToPng(svg, w, h){
   return new Promise(function(resolve, reject){
-    var url = URL.createObjectURL(new Blob([buildLineupSvg()], {type:"image/svg+xml;charset=utf-8"}));
+    var url = URL.createObjectURL(new Blob([svg], {type:"image/svg+xml;charset=utf-8"}));
     var img = new Image();
     img.onload = function(){
       var k = 2, c = document.createElement("canvas");
-      c.width = IMG_W*k; c.height = IMG_H*k;
+      c.width = w*k; c.height = h*k;
       var ctx = c.getContext("2d");
       ctx.scale(k, k);
       ctx.drawImage(img, 0, 0);
@@ -3972,6 +3972,107 @@ function lineupPngBlob(){
     img.onerror = function(){ URL.revokeObjectURL(url); reject(new Error("svg")); };
     img.src = url;
   });
+}
+
+function lineupPngBlob(){ return svgToPng(buildLineupSvg(), IMG_W, IMG_H); }
+
+/* ---- imagen del partido (010 RF-23/24) ----
+   Siempre tema claro: los colores van fijos (los mismos de :root) y no se lee
+   getComputedStyle, así el modo oscuro no se cuela en la imagen. */
+var GAME_W = 1080;
+var GAME_PAL = {bg:"#ffffff", surf2:"#e6eae1", ink:"#141c16", ink2:"#4c5a4e", line:"#d2d9cd",
+                bar:"#141c16", barInk:"#f3f6ee", accSoft:"#eef5b4"};
+
+/* recorta con "…" hasta que el texto quepa en maxW (no se comprime con textLength) */
+function cortarTexto(t, maxW, size, fam, peso){
+  t = String(t == null ? "" : t);
+  if(anchoTexto(t, size, fam, peso) <= maxW) return t;
+  while(t.length > 1 && anchoTexto(t + "…", size, fam, peso) > maxW) t = t.slice(0, -1);
+  return t + "…";
+}
+
+function buildGameSvg(rec, more){
+  var P = GAME_PAL, FONT = "Arial, Helvetica, sans-serif", PAD = 24, IW = GAME_W - PAD*2;
+  var g = rec.game, ls = Stats.lineScore(g), tb = Stats.imageTable(rec, more);
+  var o = [], y = 0;
+  function txt(t, x, yy, size, color, peso, anchor, maxW){
+    if(maxW) t = cortarTexto(t, maxW, size, FONT, peso);
+    return '<text x="' + x + '" y="' + yy + '"' + (anchor ? ' text-anchor="' + anchor + '"' : "") +
+           ' font-family="' + FONT + '" font-size="' + size + '" font-weight="' + peso + '" fill="' + color + '">' + esc(t) + '</text>';
+  }
+  /* una fila de tabla de ancho rw; celdas {t, x, w, a}: "middle" centra y nunca se corta (RF-23 solo corta nombres); a la izquierda se corta con "…" */
+  function fila(cells, yy, rh, rw, fill, color, peso, size, stroke){
+    o.push('<rect x="' + PAD + '" y="' + yy + '" width="' + rw + '" height="' + rh + '" fill="' + fill + '"' +
+           (stroke ? ' stroke="' + stroke + '"' : "") + '/>');
+    cells.forEach(function(c){
+      var mid = c.a === "middle";
+      o.push(txt(c.t, mid ? c.x + c.w/2 : c.x + 10, yy + rh/2 + size*0.35, size, color, peso, mid ? "middle" : "", mid ? 0 : c.w - 16));
+    });
+  }
+
+  /* título y resultado */
+  y = 54;
+  o.push(txt(Stats.viewTitle(g), PAD, y, 30, P.ink, "bold", "", IW));
+  y += 38;
+  o.push(txt(Stats.resultLine(g), PAD, y, 22, P.ink2, "bold", "", IW));
+  y += 26;
+
+  /* línea de carreras: con muchas entradas las columnas se angostan y el ancho total no pasa de IW */
+  var nameW = 220, totW = 70, n = ls.innings, cw = Math.min(64, Math.floor((IW - nameW - totW) / Math.max(n, 1)));
+  var lsW = nameW + n*cw + totW;
+  function lsCells(label, vals, total){
+    var c = [{t:label, x:PAD, w:nameW}];
+    vals.forEach(function(v, j){ c.push({t:String(v), x:PAD + nameW + j*cw, w:cw, a:"middle"}); });
+    c.push({t:String(total), x:PAD + nameW + n*cw, w:totW, a:"middle"});
+    return c;
+  }
+  var nums = [], i;
+  for(i = 1; i <= n; i++) nums.push(i);
+  fila(lsCells("", nums, "C"), y, 36, lsW, P.bar, P.barInk, "bold", 18);
+  y += 36;
+  ls.rows.forEach(function(r, k){
+    fila(lsCells(r.name, r.runs, r.total), y, 40, lsW, k % 2 ? P.surf2 : P.bg, P.ink, "bold", 20, P.line);
+    y += 40;
+  });
+  y += 30;
+
+  /* box score: 10 u 15 columnas de estadística; el nombre toma el resto del ancho */
+  var statW = more ? 52 : 64, fs = more ? 18 : 20, firstW = IW - (tb.cols.length - 1)*statW;
+  function celdas(arr){
+    return arr.map(function(t, j){
+      return j ? {t:t, x:PAD + firstW + (j - 1)*statW, w:statW, a:"middle"} : {t:t, x:PAD, w:firstW};
+    });
+  }
+  fila(celdas(tb.cols), y, 38, IW, P.bar, P.barInk, "bold", 18);
+  y += 38;
+  tb.rows.forEach(function(r, k){
+    fila(celdas(r), y, 40, IW, k % 2 ? P.surf2 : P.bg, P.ink, "normal", fs, P.line);
+    y += 40;
+  });
+  fila(celdas(tb.team), y, 42, IW, P.accSoft, P.ink, "bold", fs, P.line);
+  y += 42 + PAD;
+
+  return '<svg xmlns="http://www.w3.org/2000/svg" width="' + GAME_W + '" height="' + y + '" viewBox="0 0 ' + GAME_W + ' ' + y + '">' +
+         '<rect width="' + GAME_W + '" height="' + y + '" fill="' + P.bg + '"/>' + o.join("") + '</svg>';
+}
+
+function gamePngBlob(rec, more){
+  var svg = buildGameSvg(rec, more);
+  return svgToPng(svg, GAME_W, parseInt(/height="(\d+)"/.exec(svg)[1], 10));
+}
+
+/* RF-24: compartir si el navegador comparte archivos; cancelar no hace nada; otro fallo o sin soporte → descarga */
+function shareGameImage(rec, more){
+  var nombre = Stats.fileName(rec.game);
+  return gamePngBlob(rec, more).then(function(blob){
+    var file = new File([blob], nombre, {type:"image/png"});
+    if(navigator.canShare && navigator.canShare({files:[file]})){
+      return navigator.share({files:[file], title:Stats.viewTitle(rec.game)}).catch(function(e){
+        if(!e || e.name !== "AbortError") descargarPng(blob, nombre);
+      });
+    }
+    descargarPng(blob, nombre);
+  }).catch(function(){ toast("No se pudo generar la imagen"); });
 }
 
 function descargarPng(blob, nombre){
