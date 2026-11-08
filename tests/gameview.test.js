@@ -12,7 +12,7 @@ function pa(inn, code, extra){
 function rec(over){
   var r = {
     id: "g1", savedAt: 1000, shareId: "AAAAAAAAAAAAAAAA", extra: "x",
-    game: {team: "MSO", opp: "Call", date: "2026-11-05", home: false, innings: 3, us: [2, 0, 3], them: [1, 0, 0], dh: true, at: 5},
+    game: {team: "MSO", opp: "Call", date: "2026-11-05", home: "them", innings: 3, us: [2, 0, 3], them: [1, 0, 0], dh: true, at: 5},
     rows: [
       {pid: "a", num: "1", name: "Ana", pos: "SS", pas: [
         pa(1, "HR", {run: true, rbi: 2, ord: 1, outs: 0, junk: 1}), pa(2, "K", {ord: 1, outs: 1}), pa(3, "BB", {ord: 1, sb: 1, outs: 0})]},
@@ -102,14 +102,14 @@ test("RF-3 lineScore: visitante arriba (home nosotros => ellos primero), totales
   assert.deepStrictEqual(l.rows.map(function(r){ return r.name; }), ["MSO", "Call"]);
   assert.deepStrictEqual(l.rows[0].runs, [2, 0, 3]); assert.strictEqual(l.rows[0].total, 5);
   assert.deepStrictEqual(l.rows[1].runs, [1, 0, 0]); assert.strictEqual(l.rows[1].total, 1);
-  g.home = true;
+  g.home = "us";
   l = Stats.lineScore(g);
   assert.deepStrictEqual(l.rows.map(function(r){ return r.name; }), ["Call", "MSO"]);
   assert.strictEqual(l.rows[0].total, 1); assert.strictEqual(l.rows[1].total, 5);
 });
 
 test("RF-3 lineScore: nombres vacíos Nosotros/Ellos; carreras de texto y largo = innings", function(){
-  var l = Stats.lineScore({team: " ", opp: "", home: false, innings: 4, us: ["2", 1], them: []});
+  var l = Stats.lineScore({team: " ", opp: "", home: "them", innings: 4, us: ["2", 1], them: []});
   assert.deepStrictEqual(l.rows.map(function(r){ return r.name; }), ["Nosotros", "Ellos"]);
   assert.deepStrictEqual(l.rows[0].runs, [2, 1, 0, 0]); assert.strictEqual(l.rows[0].total, 3);
   assert.deepStrictEqual(l.rows[1].runs, [0, 0, 0, 0]); assert.strictEqual(l.rows[1].total, 0);
@@ -119,7 +119,7 @@ test("RF-3 lineScore: nombres vacíos Nosotros/Ellos; carreras de texto y largo 
 test("RF-25 publicCopy: solo la lista blanca, nada más", function(){
   var c = Stats.publicCopy(rec());
   assert.deepStrictEqual(c, {
-    game: {team: "MSO", opp: "Call", date: "2026-11-05", home: false, innings: 3, us: [2, 0, 3], them: [1, 0, 0]},
+    game: {team: "MSO", opp: "Call", date: "2026-11-05", home: "them", innings: 3, us: [2, 0, 3], them: [1, 0, 0]},
     rows: [
       {num: "1", name: "Ana", pos: "SS", pas: [
         {inn: 1, ord: 1, code: "HR", run: true, rbi: 2, sb: 0, outs: 0},

@@ -523,7 +523,7 @@ Stats.lineScore = function(g){
     return {name: (name || "").trim() || fallback, runs: runs, total: total};
   }
   var us = side(g.team, "Nosotros", g.us), them = side(g.opp, "Ellos", g.them);
-  return {innings: n, rows: g.home ? [them, us] : [us, them]};
+  return {innings: n, rows: g.home === "us" ? [them, us] : [us, them]};
 };
 
 // Copia pública (RF-25): lista blanca por clave; lo ausente se omite y nada se comparte con la entrada.
