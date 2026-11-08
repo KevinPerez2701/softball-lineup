@@ -1,6 +1,6 @@
 # Spec 010 — Game view, public share, and the 30/40 critique fixes
 
-Status: clarified (awaiting G1)
+Status: clarified — G1 approved by Kevin 2026-11-08 ("Si apruebo la spec 010")
 Created: 2026-11-08 · Clarified: 2026-11-08 (clarifier NEEDS WORK: 8 blocking, 14 minor, 6 missing edge cases — all
 resolved below; Kevin's answers in Decisions, the rest decided by the orchestrator and listed there for G1)
 

@@ -6,7 +6,7 @@ work it describes. Dates come from `date`, never from memory.
 Last updated: 2026-11-08 15:30 UTC-4 by Claude
 
 ## Now (one line)
-Spec 010 (game view + public share + the 30/40 critique fixes) in clarify. Data op 2026-11-08: game "MSO vs Call · 06/11/2026" loaded from the paper sheet (43 PAs, 8–17), Mauricio Salazar added to the team.
+Spec 010 (game view + public share + the 30/40 critique fixes): G1 approved; plan + tasks ready (11 tasks, 3 parallel waves), awaiting G2 and the Firestore rules (T0). Data op 2026-11-08: game "MSO vs Call · 06/11/2026" loaded from the paper sheet (43 PAs, 8–17), Mauricio Salazar added to the team.
 
 ## Active specs
 | Spec | Phase | Current task | Next task | Blocked by |
@@ -20,12 +20,12 @@ Spec 010 (game view + public share + the 30/40 critique fixes) in clarify. Data 
 | 007-critique-rest | done | — | — | — |
 | 008-critique-third | done | — | — | — |
 | 009-bench-attendance | done | — | — | — |
-| 010-game-view-share | clarify (G1) | — | plan | G1 (Kevin) |
+| 010-game-view-share | tasks (G2) | — | T0 (Kevin) ‖ T1–T5 | G2 (Kevin) |
 
 Phases: constitution · spec · clarify · plan · tasks · implement · validate · done
 
 ## Open questions (block work until answered)
-- 010: G1 pending — spec clarified (43 RFs; clarifier 8 blocking + 14 minor resolved; rules exception OK by Kevin)
+- (none)
 
 ## Known gaps (not blocking)
 - Demos: decided by Kevin 2026-11-06 — localhost:8001 (own origin; 127.0.0.1 is blocked by the key's referrer list), read-only; recorded in CLAUDE.md.
