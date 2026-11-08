@@ -610,6 +610,12 @@ table.stat thead th:first-child button{text-align:left}
 table.stat th:first-child .nm{display:block;max-width:150px;overflow:hidden;text-overflow:ellipsis}
 table.stat tbody button.nm{padding:0;border:0;background:transparent;color:inherit;font:inherit;cursor:pointer;text-align:left}
 table.stat tfoot th,table.stat tfoot td{font-weight:700;border-top:2px solid var(--line-2);border-bottom:0}
+/* vista de un juego (010): solo lectura, sin botones de orden ni celdas que se toquen */
+table.stat.view thead th{padding:0 6px;height:40px}
+table.stat.view tbody tr{cursor:default}
+div.sheet-cell{cursor:default}
+div.sheet-cell:hover{background:transparent}
+#statsBody .chips{margin:12px 0 8px}
 
 /* ---------- entrada (login) ---------- */
 .gate{display:none}
@@ -1443,6 +1449,7 @@ body.locked .gate{
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
 <script src="stats.js"></script>
+<script src="view.js"></script>
 <script>
 /* La app arranca solo con sesión iniciada: el módulo de Firebase (al final)
    llama a D10.start con el adaptador de nube del usuario. */
@@ -3560,12 +3567,55 @@ $("savedClose").addEventListener("click", function(){ $("saved").close(); });
 var statsViewName = "players";
 var statsSort = {key:"avg", desc:true};
 var statsDetail = null; /* pid del jugador abierto en Jugadores, o null */
+var statsGame = null; /* {id, tab} del juego abierto en Juegos (tab: "box" | "inn"), o null */
 function openPlayerDetail(pid){
   statsDetail = pid; openStats("players");
   var h = $("statsBody").querySelector("h3"); /* solo aquí: los redibujados de openStats no mueven el foco */
   if(h) h.focus();
 }
-function closePlayerDetail(view){ statsDetail = null; openStats(view); }
+function closePlayerDetail(view){ statsDetail = null; statsGame = null; openStats(view); }
+/* "Editar" (fila y vista del juego): abre la hoja de captura del juego */
+function editStatsGame(id){
+  var rec = Stats.live(lsGet(K_STATS, [])).filter(function(r){ return r.id === id; })[0];
+  if(!rec) return;
+  $("statsView").close(); /* para no apilar la captura sobre la vista */
+  openCapture(rec, rec.id === S.statsId);
+}
+/* Vista de un juego (010 RF-2 a RF-10); false si ya no tiene estadísticas vivas (RF-9) */
+function renderGameView(body, entries){
+  var rec = Stats.live(entries).filter(function(r){ return r.id === statsGame.id; })[0];
+  if(!rec) return false;
+  var back = el("button", "btn btn-sm", "← Juegos");
+  back.type = "button";
+  back.addEventListener("click", function(){
+    var id = statsGame.id;
+    statsGame = null; openStats("games");
+    var vb = $("statsBody").querySelector('button[data-gid="' + id + '"]');
+    if(vb) vb.focus();
+  });
+  body.appendChild(back);
+  var h3 = el("h3", null, Stats.viewTitle(rec.game));
+  h3.tabIndex = -1;
+  body.appendChild(h3);
+  body.appendChild(el("p", null, Stats.resultLine(rec.game) + (rec.shareId ? " · Publicado" : "")));
+  body.appendChild(View.lineScore(rec.game));
+  body.appendChild(View.switcher(statsGame.tab, function(t){
+    statsGame.tab = t; openStats("games");
+    var tb = $("statsBody").querySelector('button[data-tab="' + t + '"]'); /* el redibujado reemplaza el botón */
+    if(tb) tb.focus();
+  }));
+  body.appendChild(statsGame.tab === "inn" ? View.innGrid(rec) : View.boxScore(rec));
+  var acts = el("div", "chips");
+  var bs = el("button", "btn btn-sm", "Compartir");
+  bs.type = "button";
+  bs.addEventListener("click", function(){ shareGame(rec.id); });
+  var be = el("button", "btn btn-sm", "Editar");
+  be.type = "button";
+  be.addEventListener("click", function(){ editStatsGame(rec.id); });
+  acts.appendChild(bs); acts.appendChild(be);
+  body.appendChild(acts);
+  return true;
+}
 /* Juegos (RF-23 a RF-25): resumen, lista, abrir en la captura y borrar con marcador */
 function renderStatsGames(body){
   var g = Stats.games(lsGet(K_STATS, []));
@@ -3582,14 +3632,16 @@ function renderStatsGames(body){
     var d = el("div", "where", x.text);
     info.appendChild(t); info.appendChild(d);
     var acts = el("span", "rowacts");
-    var bo = el("button", "btn btn-sm", "Abrir");
-    bo.type = "button";
-    bo.addEventListener("click", function(){
-      var rec = Stats.live(lsGet(K_STATS, [])).filter(function(r){ return r.id === x.id; })[0];
-      if(!rec) return;
-      $("statsView").close(); /* para no apilar la captura sobre la vista */
-      openCapture(rec, rec.id === S.statsId);
+    var bv = el("button", "btn btn-sm", "Ver");
+    bv.type = "button"; bv.setAttribute("data-gid", x.id);
+    bv.addEventListener("click", function(){
+      statsGame = {id: x.id, tab: "box"}; openStats("games");
+      var h = $("statsBody").querySelector("h3"); /* solo aquí: los redibujados de openStats no mueven el foco */
+      if(h) h.focus();
     });
+    var bo = el("button", "btn btn-sm", "Editar");
+    bo.type = "button";
+    bo.addEventListener("click", function(){ editStatsGame(x.id); });
     var bd = iconBtn("btn btn-sm btn-icon btn-danger", "x", "Borrar estadísticas del juego");
     bd.addEventListener("click", function(){
       askConfirm("¿Borrar las estadísticas de este juego?", "No se puede deshacer.", "Borrar", function(){
@@ -3600,10 +3652,10 @@ function renderStatsGames(body){
         if(rec && rec.savedAt > at) at = rec.savedAt;
         var ok = lsSet(K_STATS, Stats.merge(all, [{id: x.id, deletedAt: at}]));
         if(!ok) toast("No se pudo guardar en este navegador");
-        else openStats("games");
+        else { openStats("games"); if(rec) unpublishQuiet(rec); } /* RF-19: retira el enlace público */
       }, true);
     });
-    acts.appendChild(bo); acts.appendChild(bd);
+    acts.appendChild(bv); acts.appendChild(bo); acts.appendChild(bd);
     it.appendChild(info); it.appendChild(el("span")); it.appendChild(acts);
     body.appendChild(it);
   });
@@ -3716,8 +3768,9 @@ function openStats(view){
   $("statsTabGames").classList.toggle("btn-default", statsViewName === "games");
   body.innerHTML = "";
   if(!Stats.live(entries).length) body.appendChild(el("p", "empty-note", "Todavía no hay juegos anotados"));
+  else if(statsViewName === "games" && statsGame && renderGameView(body, entries)){ /* vista de un juego */ }
   else if(statsViewName !== "players" || !statsDetail || !renderPlayerDetail(body, entries, statsDetail)){
-    if(statsViewName === "games") renderStatsGames(body);
+    if(statsViewName === "games"){ statsGame = null; renderStatsGames(body); }
     else { statsDetail = null; renderStatsPlayers(body, entries); }
   }
   if(!dlg.open) dlg.showModal();
@@ -3726,6 +3779,8 @@ $("btnStats").addEventListener("click", function(){ closePlayerDetail("players")
 $("statsTabPlayers").addEventListener("click", function(){ closePlayerDetail("players"); });
 $("statsTabGames").addEventListener("click", function(){ closePlayerDetail("games"); });
 $("statsClose").addEventListener("click", function(){ statsDetail = null; $("statsView").close(); });
+/* RF-8: Cerrar, Esc o tocar afuera: se olvida el juego (y el jugador) abierto */
+$("statsView").addEventListener("close", function(){ statsGame = statsDetail = null; });
 
 /* ============ respaldo ============ */
 $("btnBackup").addEventListener("click", function(){
