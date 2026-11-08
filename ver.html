@@ -1,0 +1,283 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#141c16" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#36452f" media="(prefers-color-scheme: dark)">
+<link rel="icon" href="icons/favicon-32.png" sizes="32x32" type="image/png">
+<!-- 010 RF-31: página pública; sin manifest y sin service worker -->
+<title>Diamante 10</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=Barlow:wght@400;500;600;700&display=swap">
+<style>
+/* copiado de index.html (010): si cambia allá, cambia aquí */
+/* ---------- tokens ---------- */
+:root{
+  --bg:#eff2ec;
+  --surface:#ffffff;
+  --surface-2:#e6eae1;
+  --surface-3:#dbe1d5;
+  --ink:#141c16;
+  --ink-2:#4c5a4e;
+  --ink-3:#5f6c62;
+  --line:#d2d9cd;
+  --line-2:#b7c1b3;
+  --accent:#c3d600;
+  --accent-ink:#1b2410;
+  --accent-soft:#eef5b4;
+  --accent-text:#5d6b00;
+  --focus:var(--ink);
+  --bar:#141c16;
+  --bar-ink:#f3f6ee;
+  --grass-a:#4e8a55;
+  --grass-b:#45804c;
+  --dirt:#c28f63;
+  --dirt-2:#ab7a52;
+  --chalk:#ffffff;
+  --foul:#dfe5d9;
+  --bad:#a83a2c;
+  --good:#2c7a4b;
+  --shadow-1:0 1px 2px rgba(20,28,22,.07);
+  --shadow-2:0 2px 4px rgba(20,28,22,.06),0 14px 30px -18px rgba(20,28,22,.35);
+  --r:10px;
+  --sans:"Barlow","Helvetica Neue",Helvetica,Arial,sans-serif;
+  --cond:"Barlow Condensed","Barlow","Arial Narrow",sans-serif;
+  color-scheme:light;
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --bg:#111611;
+    --surface:#1a211a;
+    --surface-2:#232b22;
+    --surface-3:#2c352b;
+    --ink:#e7ede4;
+    --ink-2:#aab5a8;
+    --ink-3:#8a958a;
+    --line:#2e382d;
+    --line-2:#3f4b3e;
+    --accent:#cbdd22;
+    --accent-ink:#141a06;
+    --accent-soft:#3a4410;
+    --accent-text:#cbdd22;
+    --bar:#36452f;
+    --bar-ink:#eef3e6;
+    --grass-a:#2f5636;
+    --grass-b:#2a4e31;
+    --dirt:#7d5c41;
+    --dirt-2:#674b35;
+    --chalk:#dbe5d8;
+    --foul:#171d16;
+    --bad:#d9705f;
+    --good:#5bb383;
+    --shadow-1:0 1px 2px rgba(0,0,0,.4);
+    --shadow-2:0 2px 4px rgba(0,0,0,.3),0 14px 30px -18px rgba(0,0,0,.8);
+    color-scheme:dark;
+  }
+}
+}
+
+/* ---------- base ---------- */
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%;scrollbar-color:var(--line-2) transparent}
+[hidden]{display:none !important}
+::selection{background:var(--accent);color:var(--accent-ink)}
+body{
+  margin:0;background:var(--bg);color:var(--ink);
+  font-family:var(--sans);font-size:15px;line-height:1.45;
+  -webkit-font-smoothing:antialiased;
+}
+button,input,select,textarea{font:inherit;color:inherit}
+button,input,select,textarea,label{touch-action:manipulation}
+button{-webkit-tap-highlight-color:transparent}
+input,textarea{caret-color:var(--accent-text)}
+:where(button,[tabindex],input,select,textarea,a):focus-visible{
+  outline:3px solid var(--focus);outline-offset:2px;border-radius:6px;
+}
+.ico{width:15px;height:15px;flex:none;display:block}
+.wrap{max-width:1360px;margin:0 auto;padding:0 18px 56px}
+/* ---------- buttons ---------- */
+.btn{
+  display:inline-flex;align-items:center;gap:6px;
+  background:var(--surface);color:var(--ink);border:1px solid var(--line-2);
+  padding:6px 11px;border-radius:8px;cursor:pointer;
+  font-weight:600;font-size:13.5px;line-height:1.2;
+  transition:background .13s,border-color .13s,transform .06s;
+}
+.btn:hover{background:var(--surface-2);border-color:var(--ink-3)}
+.btn:active{transform:translateY(1px)}
+.btn:disabled{opacity:.4;cursor:not-allowed;transform:none}
+/* chip con el valor por defecto: borde de 2 px sin relleno (el borde extra sale del padding, no cambia el tamaño) */
+.btn-default{background:transparent;border:2px solid var(--accent);padding:5px 10px}
+.btn-default:hover{background:var(--surface-2);border-color:var(--accent)}
+.btn-sm{padding:3px 8px;font-size:12.5px;border-radius:6px}
+.btn-sm.btn-default{padding:2px 7px}
+.chips{display:flex;gap:6px;flex-wrap:wrap}
+.hint{margin:0 0 10px;font-size:12.5px;color:var(--ink-3)}
+.hint summary{
+  cursor:pointer;font-weight:600;color:var(--ink-2);width:max-content;max-width:100%;
+  list-style:none;display:flex;align-items:center;gap:6px;padding:2px 0;
+}
+.hint summary::-webkit-details-marker{display:none}
+.hint summary::before{
+  content:"";width:7px;height:7px;border:solid currentColor;border-width:0 2px 2px 0;
+  transform:rotate(-45deg);transition:transform .15s;margin-right:2px;
+}
+.hint[open] summary::before{transform:rotate(45deg)}
+.hint p{margin:6px 0 0;line-height:1.5}
+/* hoja de estadísticas: solo la tabla se desplaza a los lados; la columna del bateador queda fija */
+.sheet-scroll{overflow-x:auto}
+table.sheet{border-collapse:separate;border-spacing:0;width:100%}
+table.sheet th,table.sheet td{padding:0;border-bottom:1px solid var(--line)}
+table.sheet thead th{
+  font-family:var(--cond);font-weight:700;font-size:12.5px;letter-spacing:.08em;
+  text-transform:uppercase;color:var(--ink-2);padding:4px;text-align:center;min-width:44px;
+}
+table.sheet th:first-child{
+  position:sticky;left:0;z-index:1;background:var(--surface);border-right:1px solid var(--line);
+  text-align:left;min-width:112px;max-width:150px;padding:2px 8px 2px 0;
+}
+table.sheet tbody th{font-size:13.5px;font-weight:600;color:var(--ink);line-height:1.15}
+/* max-width no limita una celda de tabla: el recorte va en un bloque adentro */
+table.sheet th .nm{display:block;max-width:150px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+table.sheet th .rh{display:flex;align-items:center}
+table.sheet th .rh-txt{flex:1;min-width:0}
+table.sheet tbody th .nm{max-width:100px}
+table.sheet tbody th small{display:block;font-size:11px;letter-spacing:.1em;color:var(--ink-3);font-weight:400}
+.sheet-cell{
+  display:block;width:100%;min-width:44px;min-height:44px;padding:2px;cursor:pointer;
+  background:transparent;color:var(--ink);border:0;white-space:pre-line;line-height:1.15;
+  font-family:var(--cond);font-weight:700;font-size:15px;
+}
+.sheet-cell:hover{background:var(--surface-2)}
+table.sheet thead th small{display:block;min-height:13px;font-size:11px;letter-spacing:0}
+table.sheet thead th small.outs{color:var(--ink-3);font-weight:400;white-space:nowrap}
+table.sheet thead th small.outs-warn{color:var(--bad);font-weight:700}
+table.sheet thead th.inn-bad{color:var(--bad)}
+.sheet-cell small.ord{display:inline;font-size:11px;font-weight:400;color:var(--ink-3)}
+.sheet-cell > div{white-space:nowrap} /* "#10 Rol•" no se parte: la columna se ensancha como antes */
+table.stat{border-collapse:separate;border-spacing:0;width:100%;font-variant-numeric:tabular-nums}
+table.stat th,table.stat td{padding:0 6px;border-bottom:1px solid var(--line);text-align:right;white-space:nowrap}
+table.stat thead th{padding:0;font-family:var(--cond);font-weight:700;font-size:12.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-2)}
+table.stat thead button{
+  display:block;width:100%;min-width:40px;min-height:40px;padding:0 6px;cursor:pointer;background:transparent;
+  border:0;color:inherit;font:inherit;letter-spacing:inherit;text-transform:inherit;
+}
+table.stat thead button:hover{background:var(--surface-2)}
+table.stat th[aria-sort] button{color:var(--ink)}
+table.stat td{height:40px}
+table.stat tbody tr{cursor:pointer}
+table.stat.det tbody tr{cursor:default}
+table.stat.det thead th{padding:0 6px;height:40px}
+table.stat.det td:nth-child(-n+2),table.stat.det td:last-child{text-align:left}
+table.stat tbody tr:hover td,table.stat tbody tr:hover th{background:var(--surface-2)}
+table.stat th:first-child{
+  position:sticky;left:0;z-index:1;background:var(--surface);border-right:1px solid var(--line);
+  text-align:left;min-width:112px;max-width:150px;font-size:13.5px;font-weight:600;color:var(--ink);
+}
+table.stat thead th:first-child button{text-align:left}
+table.stat th:first-child .nm{display:block;max-width:150px;overflow:hidden;text-overflow:ellipsis}
+table.stat tbody button.nm{padding:0;border:0;background:transparent;color:inherit;font:inherit;cursor:pointer;text-align:left}
+table.stat tfoot th,table.stat tfoot td{font-weight:700;border-top:2px solid var(--line-2);border-bottom:0}
+@media (prefers-reduced-motion:reduce){
+  *{transition:none !important;animation:none !important}
+}
+@media (pointer:coarse){
+  .btn-sm{min-height:44px}
+  .btn:active{filter:brightness(.94)}
+}
+/* fin de lo copiado de index.html */
+
+/* vista de solo lectura (view.js): sin botones de orden ni celdas que se toquen */
+table.stat.view thead th{padding:0 6px;height:40px}
+table.stat.view tbody tr{cursor:default}
+div.sheet-cell{cursor:default}
+div.sheet-cell:hover{background:transparent}
+
+/* propio de esta página */
+body{background:var(--surface)}
+h1{margin:18px 0 2px;font-family:var(--cond);font-weight:700;font-size:24px;letter-spacing:.03em;text-transform:uppercase;line-height:1.15}
+.result{margin:0 0 12px;color:var(--ink-2);font-weight:600}
+.msg{margin:28px 0 12px;color:var(--ink-2)}
+#root .chips{margin:16px 0 10px}
+#root .hint{margin-top:10px}
+@media (max-width:680px){
+  .wrap{padding:0 10px 40px}
+  h1{font-size:21px}
+}
+</style>
+</head>
+<body>
+<main class="wrap"><div id="root"><p class="msg">Cargando…</p></div></main>
+<script src="stats.js"></script>
+<script src="view.js"></script>
+<script type="module">
+/* Enlace público de un juego (010 RF-26–29): lee una sola vez users/{uid}/public/{shareId}, sin cuenta.
+   Firebase se carga con import() para que un fallo de red también caiga en "Reintentar" (RF-28).
+   Configuración y versión del SDK: las mismas de index.html; si cambian allá, cambian aquí. */
+const SDK = "https://www.gstatic.com/firebasejs/12.19.0/";
+const root = document.getElementById("root"), el = View.el;
+
+function show(nodes){
+  root.innerHTML = "";
+  nodes.forEach(n => root.appendChild(n));
+}
+// RF-27: solo este texto
+function notFound(){
+  show([el("p", "msg", "Este juego no está publicado o el enlace no es válido.")]);
+}
+// RF-28
+function failed(){
+  const b = el("button", "btn", "Reintentar");
+  b.type = "button";
+  b.addEventListener("click", () => location.reload());
+  show([el("p", "msg", "No se pudo cargar el juego. Revisa la conexión y vuelve a intentar."), b]);
+}
+// RF-26: título, resultado (sin "Publicado"), marcador, Totales | Por inning
+function render(rec){
+  let tab = "box";
+  const body = el("div");
+  const draw = () => {
+    body.innerHTML = "";
+    body.appendChild(tab === "box" ? View.boxScore(rec) : View.innGrid(rec));
+  };
+  show([
+    el("h1", null, Stats.viewTitle(rec.game)),
+    el("p", "result", Stats.resultLine(rec.game)),
+    View.lineScore(rec.game),
+    View.switcher(tab, t => { tab = t; draw(); }),
+    body
+  ]);
+  draw();
+}
+
+const share = Stats.parseShare(location.hash);
+if(!share) notFound();
+else {
+  // RF-28: 10 s para todo (SDK + lectura); la lectura va al servidor, nunca a una caché (RF-29)
+  const slow = new Promise((resolve, reject) => setTimeout(() => reject(new Error("timeout")), 10000));
+  const load = Promise.all([import(SDK + "firebase-app.js"), import(SDK + "firebase-firestore.js")]).then(([fa, fs]) => {
+    const app = fa.initializeApp({
+      apiKey: "AIzaSyChl8rxjfQTuqnaGj8QLUfy6GkoSASXk9Q",
+      authDomain: "artful-zone-461419-t1.firebaseapp.com",
+      projectId: "artful-zone-461419-t1",
+      storageBucket: "artful-zone-461419-t1.firebasestorage.app",
+      messagingSenderId: "1034744499324",
+      appId: "1:1034744499324:web:b863202d729af253758df9"
+    });
+    const db = fs.initializeFirestore(app, {localCache: fs.memoryLocalCache()});
+    return fs.getDocFromServer(fs.doc(db, "users", share.uid, "public", share.shareId));
+  });
+  Promise.race([load, slow]).then(snap => {
+    if(!snap.exists()) notFound();
+    else render(JSON.parse(snap.data().json));
+  }).catch(e => {
+    // F8: sin la regla pública (o copia ajena) Firestore niega la lectura: para el visitante es "no publicado"
+    if(e && e.code === "permission-denied") notFound();
+    else failed();
+  });
+}
+</script>
+</body>
+</html>
