@@ -49,3 +49,32 @@ test("RF-6/9 absentTitle: 'Equipo (n)' sin jugadores en el partido", function(){
   assert.strictEqual(Stats.absentTitle([A, B, C], []), "Equipo (3)");
   assert.strictEqual(Stats.absentTitle([A], null), "Equipo (1)");
 });
+
+// ---------- spec 010 RF-36: agregar varios de golpe ----------
+test("RF-36 batchAdd: agrega al final del roster en orden del equipo, no en el de los ids", function(){
+  var r = Stats.batchAdd([{id: "b", num: "2", name: "Bea"}], [A, B, C], ["c", "a"]);
+  assert.deepStrictEqual(r.roster.map(function(p){ return p.id; }), ["b", "a", "c"]);
+  assert.deepStrictEqual(r.added, ["Ana", "Cris"]);
+  assert.deepStrictEqual(r.roster[1], {id: "a", num: "1", name: "Ana"});
+});
+
+test("RF-36 batchAdd: omite presentes e ids que no están en el equipo; no muta el roster", function(){
+  var roster = [{id: "a", num: "1", name: "Ana"}];
+  var r = Stats.batchAdd(roster, [A, B], ["a", "zz", "b"]);
+  assert.deepStrictEqual(r.added, ["Bea"]);
+  assert.strictEqual(r.roster.length, 2);
+  assert.strictEqual(roster.length, 1);
+  assert.deepStrictEqual(Stats.batchAdd(roster, [A, B], []).added, []);
+  assert.deepStrictEqual(Stats.batchAdd(null, null, null), {roster: [], added: []});
+});
+
+test("RF-36 batchAdd: número vacío queda como cadena vacía", function(){
+  var r = Stats.batchAdd([], [{id: "n", name: "Nora"}], ["n"]);
+  assert.deepStrictEqual(r.roster, [{id: "n", num: "", name: "Nora"}]);
+});
+
+test("RF-36 addedMsg: singular con nombre, plural con cuenta", function(){
+  assert.strictEqual(Stats.addedMsg(["Ana"]), "Ana agregado al partido");
+  assert.strictEqual(Stats.addedMsg(["Ana", "Bea"]), "2 agregados al partido");
+  assert.strictEqual(Stats.addedMsg(["a", "b", "c"]), "3 agregados al partido");
+});

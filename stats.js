@@ -578,6 +578,25 @@ Stats.absentTitle = function(absent, roster){
   return ((roster || []).length ? "No vinieron" : "Equipo") + " (" + (absent || []).length + ")";
 };
 
+// Spec 010 RF-36: suma al partido los ids pedidos, al final del roster y en orden del equipo; no muta; omite presentes y ajenos
+Stats.batchAdd = function(roster, team, ids){
+  var want = Object.create(null), have = Object.create(null), out = (roster || []).slice(), added = [];
+  (ids || []).forEach(function(id){ want[id] = true; });
+  out.forEach(function(p){ have[p.id] = true; });
+  (team || []).forEach(function(tp){
+    if(!want[tp.id] || have[tp.id]) return;
+    have[tp.id] = true;
+    out.push({id: tp.id, num: tp.num || "", name: tp.name});
+    added.push(tp.name);
+  });
+  return {roster: out, added: added};
+};
+
+// "<nombre> agregado al partido" / "<n> agregados al partido"
+Stats.addedMsg = function(names){
+  return names.length === 1 ? names[0] + " agregado al partido" : names.length + " agregados al partido";
+};
+
 // "aaaa-mm-dd" -> "dd/mm/aaaa"
 Stats.fmtDate = function(iso){
   if(!iso) return "";
