@@ -3697,7 +3697,17 @@ function renderGameView(body, entries){
     var vb = $("statsBody").querySelector('button[data-gid="' + id + '"]');
     if(vb) vb.focus();
   });
-  body.appendChild(back);
+  /* Kevin 2026-11-08: Compartir y Editar arriba, al lado de "← Juegos" */
+  var acts = el("div", "chips");
+  acts.style.marginTop = "0";
+  var bs = el("button", "btn btn-sm", "Compartir");
+  bs.type = "button";
+  bs.addEventListener("click", function(){ shareGame(rec.id); });
+  var be = el("button", "btn btn-sm", "Editar");
+  be.type = "button";
+  be.addEventListener("click", function(){ editStatsGame(rec.id); });
+  acts.appendChild(back); acts.appendChild(bs); acts.appendChild(be);
+  body.appendChild(acts);
   var h3 = el("h3", null, Stats.viewTitle(rec.game));
   h3.tabIndex = -1;
   body.appendChild(h3);
@@ -3709,15 +3719,6 @@ function renderGameView(body, entries){
     if(tb) tb.focus();
   }));
   body.appendChild(statsGame.tab === "inn" ? View.innGrid(rec) : View.boxScore(rec));
-  var acts = el("div", "chips");
-  var bs = el("button", "btn btn-sm", "Compartir");
-  bs.type = "button";
-  bs.addEventListener("click", function(){ shareGame(rec.id); });
-  var be = el("button", "btn btn-sm", "Editar");
-  be.type = "button";
-  be.addEventListener("click", function(){ editStatsGame(rec.id); });
-  acts.appendChild(bs); acts.appendChild(be);
-  body.appendChild(acts);
   return true;
 }
 /* Juegos (RF-23 a RF-25): resumen, lista, abrir en la captura y borrar con marcador */
