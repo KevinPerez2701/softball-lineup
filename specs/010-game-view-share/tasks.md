@@ -7,7 +7,7 @@ agents (own test file only); the orchestrator merges, runs `node --test 'tests/*
 the browser checks on http://localhost:8001 (never 127.0.0.1, read-only unless Kevin OKs a write).
 
 ## Wave 0 — Kevin
-- [ ] T0. Firestore rules: Kevin pastes the plan's rules in the Firebase console and runs the 4 playground checks;
+- [x] T0. Firestore rules: Kevin pastes the plan's rules in the Firebase console and runs the 4 playground checks;
       STATUS gets the constitution §5 exception note. (RF-30) Deps: —
       Done when: anonymous get public allow; anonymous list public deny; anonymous get data/stats deny; anonymous
       create public deny.
