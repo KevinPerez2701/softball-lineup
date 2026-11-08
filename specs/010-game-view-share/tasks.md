@@ -42,23 +42,23 @@ the browser checks on http://localhost:8001 (never 127.0.0.1, read-only unless K
       v8 + both assets + the navigate branch.
 
 ## Wave 2 — in parallel, after T1 and T5 are merged
-- [ ] T6. [parallel-ok] Game view in Estadísticas: Juegos row Ver/Editar/✕, `statsGame`, `renderGameView`, close
+- [x] T6. [parallel-ok] Game view in Estadísticas: Juegos row Ver/Editar/✕, `statsGame`, `renderGameView`, close
       listener, `<script src="view.js">`, the `unpublishQuiet(rec)` and `shareGame(rec.id)` calls. (RF-1–10, 19 hook)
       Deps: T1, T5
       Files: `index.html` (1380, 3471–3511, 3609–3629, CSS after 604)
       Done when: `node --check` OK; trace of open, switch, ← Juegos, close forgets, RF-9 redraw / list.
-- [ ] T7a. [parallel-ok] Share link: menu, publish/rewrite/unpublish, 6 s race, clipboard (F4), RF-17 hook, sweep, cloud
+- [x] T7a. [parallel-ok] Share link: menu, publish/rewrite/unpublish, 6 s race, clipboard (F4), RF-17 hook, sweep, cloud
       methods, `ICONS.link`. (RF-11–22) Deps: T1, T0 for the live check
       Files: `index.html` (1625, 3259–3262, block after tryCloseCapture ~3302, 4265–4271, 4345–4347, 4390–4434)
       Done when: `node --check` OK; trace of every RF-11–22 branch; live check deferred to T9 (D4).
-- [ ] T7b. [parallel-ok] Game image: `svgToPng`, `buildGameSvg`, `gamePngBlob`, `shareGameImage`. (RF-23, RF-24)
+- [x] T7b. [parallel-ok] Game image: `svgToPng`, `buildGameSvg`, `gamePngBlob`, `shareGameImage`. (RF-23, RF-24)
       Deps: T1
       Files: `index.html` (3800–3840)
       Done when: `node --check` OK; trace of 11/16 columns, light palette, 12 innings, long names, share/download paths;
       lineup "Copiar imagen" path unchanged.
 
 ## Wave 3 — orchestrator
-- [ ] T8. Merge all, full suite, `node --check` of inline scripts, STATUS. Deps: T1–T7b
+- [x] T8. Merge all, full suite, `node --check` of inline scripts, STATUS. Deps: T1–T7b
       Done when: suite green on main.
 - [ ] T9. Browser demo on localhost:8001 (360×640 + desktop, light + dark): every RF; one real-game publish/unpublish
       with Kevin's OK; public link in a private window; ends unpublished. Deps: T0, T8

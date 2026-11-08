@@ -3,10 +3,10 @@
 Single source of truth for what is in flight and what is left. Update it in the same commit as the
 work it describes. Dates come from `date`, never from memory.
 
-Last updated: 2026-11-08 19:50 UTC-4 by Claude
+Last updated: 2026-11-08 20:03 UTC-4 by Claude
 
 ## Now (one line)
-Spec 010: G2 approved by Kevin 2026-11-08. Wave 1 T0–T5 done (rules live; T5 BLOCK→stray brace fixed at merge). Wave 2 T6 ‖ T7a ‖ T7b running in worktrees.
+Spec 010: T0–T8 done (all opus reviews APPROVE after fixes: T1 home us/them, T2 toast in #ask, T5 stray brace, T7b "C" column + no cut stats; T7a shareBusy freed when done settles). Suite 166/166. Next T9 browser demo (Kevin OK: publish "MSO vs Call · 06/11/2026" and leave it published), then T10 deploy.
 
 ## Active specs
 | Spec | Phase | Current task | Next task | Blocked by |
@@ -20,7 +20,7 @@ Spec 010: G2 approved by Kevin 2026-11-08. Wave 1 T0–T5 done (rules live; T5 B
 | 007-critique-rest | done | — | — | — |
 | 008-critique-third | done | — | — | — |
 | 009-bench-attendance | done | — | — | — |
-| 010-game-view-share | implement | wave 2: T6 (review) ‖ T7a ‖ T7b | T8 merge, T9 demo | — |
+| 010-game-view-share | implement | T9 demo | T10 deploy | — |
 
 Phases: constitution · spec · clarify · plan · tasks · implement · validate · done
 
@@ -28,6 +28,7 @@ Phases: constitution · spec · clarify · plan · tasks · implement · validat
 - (none)
 
 ## Known gaps (not blocking)
+- 010 limits (T7a review): (a) two devices — B's sweep on a server snapshot can delete A's just-published copy before A's stats upload lands (no stats lost; the link shows "no publicado" until the next Copiar enlace or capture save rewrites it); (b) publish/unpublish stamp savedAt = now, so a newer offline edit of the same game on another device loses the merge (same as a stale capture save today).
 - Constitution §5 exception (010, Kevin 2026-11-08): `users/{uid}/public/*` is readable by anyone who knows the exact path (public game copies, whitelisted by `Stats.publicCopy`); `data/*` stays owner-only. Rules published 2026-11-08 from the Google Cloud console (the Firebase console's Publicar did not render); anonymous REST checks: get public 404 (allowed, missing), list public 403, get data/stats 403, create public 403.
 - Demos: decided by Kevin 2026-11-06 — localhost:8001 (own origin; 127.0.0.1 is blocked by the key's referrer list), read-only; recorded in CLAUDE.md.
 - Not covered by the 004 demo: RF-13 backdrop tap and back button, RF-2 storage-failure toast.

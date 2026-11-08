@@ -3471,12 +3471,15 @@ function copyLink(id){
     ? navigator.clipboard.write([new ClipboardItem({"text/plain": done.then(function(){ return new Blob([link], {type:"text/plain"}); })})])
     : done.then(function(){ return navigator.clipboard.writeText(link); });
   copied.catch(noop); // si no se publicó también falla; el aviso sale de done
+  /* libre en cuanto done termina (storeShare ya corrió): un portapapeles que no responde no traba el menú ni la limpieza */
+  function free(){ shareBusy = false; }
+  done.then(free, free);
   done.then(function(ok){
     return copied.then(function(){
       toast(ok ? "Enlace copiado: cualquiera con el enlace ve este juego"
         : "Enlace copiado, pero el juego publicado no está al día. Vuelve a intentar con señal.");
     }, function(){ toast(link, null, true); }); // RF-20: el enlace a la vista, seleccionable, hasta cerrarlo
-  }, function(){ toast(SHARE_FAIL); }).then(function(){ shareBusy = false; });
+  }, function(){ toast(SHARE_FAIL); });
 }
 /* RF-18: se borra la copia y solo con el borrado confirmado se quita el shareId */
 function unpublish(id){
