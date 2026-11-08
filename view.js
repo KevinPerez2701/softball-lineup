@@ -14,7 +14,7 @@ View.el = function(tag, cls, txt){
 // RF-3: visitante arriba, una columna por inning y "C"; la columna de nombres queda fija (RF-6)
 View.lineScore = function(game){
   var el = View.el, ls = Stats.lineScore(game);
-  var wrap = el("div", "sheet-scroll"), tb = el("table", "stat view"), hr = el("tr"), i;
+  var wrap = el("div", "sheet-scroll"), tb = el("table", "stat view ls"), hr = el("tr"), i;
   tb.setAttribute("aria-label", "Marcador");
   hr.appendChild(el("th"));
   for(i = 1; i <= ls.innings; i++) hr.appendChild(el("th", null, String(i)));
@@ -35,14 +35,25 @@ View.lineScore = function(game){
   return wrap;
 };
 
-// RF-4: columnas de Jugadores sin JJ, fila "Equipo" y la clave; sin ordenar
+// RF-4: columnas de Jugadores sin JJ, fila "Equipo" y la clave; sin ordenar.
+// En el teléfono (CSS) solo se ven las columnas de la imagen (Stats.IMG_COLS); "Más columnas" muestra el resto.
 View.boxScore = function(rec){
-  var el = View.el, box = Stats.boxScore(rec), out = el("div");
+  var el = View.el, box = Stats.boxScore(rec), out = el("div", "box");
+  function extra(c){ return Stats.IMG_COLS.indexOf(c[0]) < 0; }
   // como statCell() de index.html: enteros tal cual, tasas con Stats.fmt
-  function viewCell(tag, o, c){ return el(tag, null, c[2] ? String(o[c[0]]) : Stats.fmt(o[c[0]])); }
+  function viewCell(tag, o, c){ return el(tag, extra(c) ? "xc" : null, c[2] ? String(o[c[0]]) : Stats.fmt(o[c[0]])); }
+  var more = el("button", "btn btn-sm box-more", "Más columnas");
+  more.type = "button";
+  more.setAttribute("aria-pressed", "false");
+  more.addEventListener("click", function(){
+    var on = out.classList.toggle("more");
+    more.textContent = on ? "Menos columnas" : "Más columnas";
+    more.setAttribute("aria-pressed", String(on));
+  });
+  out.appendChild(more);
   var wrap = el("div", "sheet-scroll"), tb = el("table", "stat view"), hr = el("tr");
   [["name", "Jugador"]].concat(Stats.BOX_COLS).forEach(function(c){
-    var th = el("th", null, c[1]);
+    var th = el("th", c[0] !== "name" && extra(c) ? "xc" : null, c[1]);
     th.scope = "col";
     if(Stats.COL_TITLES[c[1]]) th.title = Stats.COL_TITLES[c[1]];
     hr.appendChild(th);

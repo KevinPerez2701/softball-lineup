@@ -612,9 +612,20 @@ table.stat tbody button.nm{padding:0;border:0;background:transparent;color:inher
 table.stat tfoot th,table.stat tfoot td{font-weight:700;border-top:2px solid var(--line-2);border-bottom:0}
 /* vista de un juego (010): solo lectura, sin botones de orden ni celdas que se toquen */
 table.stat.view thead th{padding:0 6px;height:40px}
+/* vista del juego en el teléfono (Kevin 2026-11-08): columnas de la imagen, "Más columnas" para el resto, marcador compacto */
+.box-more{display:none}
+@media (max-width:680px){
+  .box-more{display:inline-flex;margin:0 0 8px}
+  .box:not(.more) .xc{display:none}
+  table.stat.view th,table.stat.view td,table.stat.view thead th{padding:0 3px}
+  .box table.stat.view th:first-child{min-width:0;max-width:92px}
+  .box table.stat.view th:first-child .nm{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  table.stat.view.ls th:first-child{min-width:0;max-width:none}
+}
 table.stat.view tbody tr{cursor:default}
 div.sheet-cell{cursor:default}
 div.sheet-cell:hover{background:transparent}
+#statsBody h3:focus{outline:none} /* foco por código al abrir (lectores de pantalla); no es un control, sin recuadro */
 #statsBody .chips{margin:12px 0 8px}
 
 /* ---------- entrada (login) ---------- */
@@ -3445,8 +3456,8 @@ function shareGame(id){
   if(!rec) return;
   var items = [
     {icon:"link", label:"Copiar enlace público", sub:"Cualquiera con el enlace ve este juego", fn:function(){ copyLink(id); }},
-    {icon:"image", label:"Compartir imagen", sub:"Marcador y box score", fn:function(){ shareGameImage(rec, false); }},
-    {icon:"image", label:"Compartir imagen con más columnas", sub:"Con OBP, SLG, OPS, BR y AR", fn:function(){ shareGameImage(rec, true); }}
+    {icon:"image", label:"Copiar imagen", sub:"Marcador y box score, al portapapeles", fn:function(){ copyGameImage(rec, false); }},
+    {icon:"image", label:"Copiar imagen con más columnas", sub:"Con OBP, SLG, OPS, BR y AR", fn:function(){ copyGameImage(rec, true); }}
   ];
   if(rec.shareId) items.push({icon:"x", label:"Dejar de publicar", sub:"El enlace dejará de funcionar", danger:true, fn:function(){ unpublish(id); }});
   openActions("Compartir", items);
@@ -4180,6 +4191,17 @@ function shareGameImage(rec, more){
     }
     descargarPng(blob, nombre);
   }).catch(function(){ toast("No se pudo generar la imagen"); });
+}
+
+/* Kevin 2026-11-08: la imagen del juego va al portapapeles, como "Copiar imagen" de la alineación;
+   si el navegador no deja copiar, se comparte o se descarga (RF-24) */
+function copyGameImage(rec, more){
+  var pending = gamePngBlob(rec, more); // la promesa va dentro del ClipboardItem: el copiado sigue en el gesto
+  if(navigator.clipboard && window.ClipboardItem){
+    navigator.clipboard.write([new ClipboardItem({"image/png": pending})])
+      .then(function(){ toast("Imagen copiada — pégala donde quieras"); })
+      .catch(function(){ shareGameImage(rec, more); });
+  }else shareGameImage(rec, more);
 }
 
 function descargarPng(blob, nombre){

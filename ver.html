@@ -190,6 +190,16 @@ table.stat tfoot th,table.stat tfoot td{font-weight:700;border-top:2px solid var
 
 /* vista de solo lectura (view.js): sin botones de orden ni celdas que se toquen */
 table.stat.view thead th{padding:0 6px;height:40px}
+/* vista del juego en el teléfono (Kevin 2026-11-08): columnas de la imagen, "Más columnas" para el resto, marcador compacto */
+.box-more{display:none}
+@media (max-width:680px){
+  .box-more{display:inline-flex;margin:0 0 8px}
+  .box:not(.more) .xc{display:none}
+  table.stat.view th,table.stat.view td,table.stat.view thead th{padding:0 3px}
+  .box table.stat.view th:first-child{min-width:0;max-width:92px}
+  .box table.stat.view th:first-child .nm{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  table.stat.view.ls th:first-child{min-width:0;max-width:none}
+}
 table.stat.view tbody tr{cursor:default}
 div.sheet-cell{cursor:default}
 div.sheet-cell:hover{background:transparent}

@@ -203,3 +203,12 @@ configuration. On the same day he asked to fold into this spec the five fixes le
 
 ## Open questions
 - (none)
+
+## Changes after deploy (Kevin 2026-11-08)
+- RF-23/24 amended: the menu items are "Copiar imagen" / "Copiar imagen con más columnas"; the PNG goes to the
+  clipboard (ClipboardItem with the promise, as the lineup "Copiar imagen"), toast "Imagen copiada — pégala donde
+  quieras"; if the browser refuses, the RF-24 share-or-download path runs.
+- RF-4/RF-6 amended for the phone layout: the box score shows only the image columns (VB, H, 2B, 3B, HR, CA, CI, BB,
+  K, AVE) with a "Más columnas" / "Menos columnas" toggle; the line score is compact (9 innings + C fit at 360 px);
+  names cut with "…" at 92 px. Same in ver.html.
+- Game view: "Compartir" and "Editar" sit in the top row next to "← Juegos"; the title gets no focus outline.
