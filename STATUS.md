@@ -6,7 +6,7 @@ work it describes. Dates come from `date`, never from memory.
 Last updated: 2026-11-08 20:24 UTC-4 by Claude
 
 ## Now (one line)
-Spec 010: T0–T9 done; T10 deploy (push) in progress. "MSO vs Call · 06/11/2026" published (Kevin OK) and left published.
+Specs 001–010 live (010: b130c00, Pages built). "MSO vs Call · 06/11/2026" published; its link opens on Pages from a browser that has the app (F1 ok on desktop). Pending: Kevin opens the link on his Pixel with the app installed.
 
 ## Active specs
 | Spec | Phase | Current task | Next task | Blocked by |
@@ -20,7 +20,7 @@ Spec 010: T0–T9 done; T10 deploy (push) in progress. "MSO vs Call · 06/11/202
 | 007-critique-rest | done | — | — | — |
 | 008-critique-third | done | — | — | — |
 | 009-bench-attendance | done | — | — | — |
-| 010-game-view-share | validate | T10 deploy | live check of ver.html on Pages + phone | — |
+| 010-game-view-share | done | — | — | — |
 
 Phases: constitution · spec · clarify · plan · tasks · implement · validate · done
 

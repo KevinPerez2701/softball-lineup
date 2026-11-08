@@ -63,6 +63,6 @@ the browser checks on http://localhost:8001 (never 127.0.0.1, read-only unless K
 - [x] T9. Browser demo on localhost:8001 (360×640 + desktop, light + dark): every RF; one real-game publish/unpublish
       with Kevin's OK; public link in a private window; ends unpublished. Deps: T0, T8
       Done when: checklist ✔/✘ per RF recorded in STATUS.
-- [ ] T10. Deploy (push with Kevin's OK) and live check of `ver.html` from a phone with the app installed (F1).
+- [x] T10. Deploy (push with Kevin's OK) and live check of `ver.html` from a phone with the app installed (F1).
       Deps: T9
       Done when: the public link opens the game there.
