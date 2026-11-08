@@ -13,25 +13,25 @@ the browser checks on http://localhost:8001 (never 127.0.0.1, read-only unless K
       create public deny.
 
 ## Wave 1 — in parallel
-- [ ] T1. [parallel-ok] stats.js view/share functions (`tally` refactor of `players`, `boxScore`, `BOX_COLS`,
+- [x] T1. [parallel-ok] stats.js view/share functions (`tally` refactor of `players`, `boxScore`, `BOX_COLS`,
       `resultLine` (ties "Empate", D1), `viewTitle`, `lineScore`, `publicCopy`, `IMG_COLS`, `IMG_COLS_MORE`,
       `imageTable`, `fileName`, `shareId`, `shareLink`, `parseShare`, `orphans`). Tests first. (RF-2–5, 12, 21, 23–27)
       Deps: —
       Files: `stats.js` (players 367–414, append after playerGames ~475), `tests/gameview.test.js` (new)
       Done when: `tests/gameview.test.js` green with the plan's cases; existing players tests unchanged and green.
-- [ ] T2. [parallel-ok] Batch check-in + "Anotar estadísticas" state: `Stats.batchAdd`/`addedMsg` (tests first),
+- [x] T2. [parallel-ok] Batch check-in + "Anotar estadísticas" state: `Stats.batchAdd`/`addedMsg` (tests first),
       absent rows with checkboxes, "Agregar (n)"/"Vinieron todos", sticky toast + Deshacer (`undoBench`), focus, CTA
       note without button, RF-41 lime rule. (RF-32–39, RF-41) Deps: —
       Files: `stats.js` (after 579), `tests/bench.test.js` (append), `index.html` (1890–1900, 2232–2254, 2583–2629,
       CSS 466–468)
       Done when: bench tests green; `node --check` of the inline script OK; trace of select 2 → Agregar (2) → toast →
       Deshacer, Vinieron todos, selection kept through a redraw and cleared at a game switch, lime off/on.
-- [ ] T3. [parallel-ok] Capture sheet phone header: `#capBar`/`#capMore`/`#capTools[popover]`/`#capFoot`, phone CSS,
+- [x] T3. [parallel-ok] Capture sheet phone header: `#capBar`/`#capMore`/`#capTools[popover]`/`#capFoot`, phone CSS,
       toast above the bar. (RF-40) Deps: —
       Files: `index.html` (1321–1336, CSS after 734)
       Done when: `node --check` OK; desktop layout identical (trace of display:contents); phone CSS trace for one-row
       header, popover panel, bottom bar with safe area.
-- [ ] T4. [parallel-ok] CSS fixes: placeholder contrast (light and dark ≥ 4.5:1, computed), phone player detail two-line
+- [x] T4. [parallel-ok] CSS fixes: placeholder contrast (light and dark ≥ 4.5:1, computed), phone player detail two-line
       rows. (RF-42, RF-43) Deps: —
       Files: `index.html` (CSS after 224, CSS after 749)
       Done when: contrast numbers for both themes in the report; grid trace for 360 px.

@@ -3,10 +3,10 @@
 Single source of truth for what is in flight and what is left. Update it in the same commit as the
 work it describes. Dates come from `date`, never from memory.
 
-Last updated: 2026-11-08 15:30 UTC-4 by Claude
+Last updated: 2026-11-08 19:50 UTC-4 by Claude
 
 ## Now (one line)
-Spec 010 (game view + public share + the 30/40 critique fixes): G1 approved; plan + tasks ready (11 tasks, 3 parallel waves), awaiting G2 and the Firestore rules (T0). Data op 2026-11-08: game "MSO vs Call · 06/11/2026" loaded from the paper sheet (43 PAs, 8–17), Mauricio Salazar added to the team.
+Spec 010: G2 approved by Kevin 2026-11-08; wave 1 T1–T4 merged (opus reviews: T1 BLOCK→fixed home "us"/"them", T2 BLOCK→orchestrator fix toast trapped in #ask, T3/T4 APPROVE + tidy), T5 in review; rules typed in the console, Publicar pending (Kevin). Data op 2026-11-08: game "MSO vs Call · 06/11/2026" loaded from the paper sheet (43 PAs, 8–17), Mauricio Salazar added to the team.
 
 ## Active specs
 | Spec | Phase | Current task | Next task | Blocked by |
@@ -20,7 +20,7 @@ Spec 010 (game view + public share + the 30/40 critique fixes): G1 approved; pla
 | 007-critique-rest | done | — | — | — |
 | 008-critique-third | done | — | — | — |
 | 009-bench-attendance | done | — | — | — |
-| 010-game-view-share | tasks (G2) | — | T0 (Kevin) ‖ T1–T5 | G2 (Kevin) |
+| 010-game-view-share | implement | T5 (review) | T0 (Kevin), then wave 2 (T6 ‖ T7a ‖ T7b) | T0 rules publish (Kevin) |
 
 Phases: constitution · spec · clarify · plan · tasks · implement · validate · done
 

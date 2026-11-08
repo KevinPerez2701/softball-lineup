@@ -3775,7 +3775,12 @@ $("askAlt").addEventListener("click", function(){
 });
 $("ask").addEventListener("cancel", function(ev){ if(askLocked) ev.preventDefault(); });
 /* Chromium deja pasar un segundo Esc sin cancelar: si se cerró trabado, se vuelve a abrir */
-$("ask").addEventListener("close", function(){ if(askLocked) this.showModal(); });
+$("ask").addEventListener("close", function(){
+  if(askLocked){ this.showModal(); return; }
+  /* 010 RF-36/39: un aviso que se mostró con la pregunta abierta vuelve a la página, así no queda atrapado en #ask */
+  var t = $("toast");
+  if(t.parentNode === this) (document.querySelector("dialog[open]") || document.body).appendChild(t);
+});
 $("askInput").addEventListener("keydown", function(ev){
   if(ev.key === "Enter"){ ev.preventDefault(); $("askYes").click(); }
 });
