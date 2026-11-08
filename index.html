@@ -3475,7 +3475,9 @@ function copyLink(id){
   function free(){ shareBusy = false; }
   done.then(free, free);
   done.then(function(ok){
-    return copied.then(function(){
+    /* un portapapeles que no contesta (permiso pendiente) no deja al usuario sin aviso: a los 3 s sale el enlace a la vista */
+    var late = new Promise(function(res, rej){ setTimeout(rej, 3000); });
+    return Promise.race([copied, late]).then(function(){
       toast(ok ? "Enlace copiado: cualquiera con el enlace ve este juego"
         : "Enlace copiado, pero el juego publicado no está al día. Vuelve a intentar con señal.");
     }, function(){ toast(link, null, true); }); // RF-20: el enlace a la vista, seleccionable, hasta cerrarlo
@@ -3724,6 +3726,8 @@ function renderStatsGames(body){
   var sum = el("p", null, Stats.recordText(g) + " · Carreras " + g.runsFor + " a favor, " + g.runsAgainst + " en contra");
   sum.style.fontWeight = "600";
   body.appendChild(sum);
+  var pubIds = {}; // 010 RF-16: "Publicado" también en la fila
+  Stats.live(lsGet(K_STATS, [])).forEach(function(e){ if(e.shareId) pubIds[e.id] = true; });
   g.list.forEach(function(x){
     var it = el("div", "pickitem");
     it.style.cursor = "default";
@@ -3731,7 +3735,7 @@ function renderStatsGames(body){
     info.style.minWidth = "0";
     var t = el("div", null, Stats.gameTitle(x));
     t.style.fontWeight = "600";
-    var d = el("div", "where", x.text);
+    var d = el("div", "where", x.text + (pubIds[x.id] ? " · Publicado" : ""));
     info.appendChild(t); info.appendChild(d);
     var acts = el("span", "rowacts");
     var bv = el("button", "btn btn-sm", "Ver");

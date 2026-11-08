@@ -3,10 +3,10 @@
 Single source of truth for what is in flight and what is left. Update it in the same commit as the
 work it describes. Dates come from `date`, never from memory.
 
-Last updated: 2026-11-08 20:03 UTC-4 by Claude
+Last updated: 2026-11-08 20:24 UTC-4 by Claude
 
 ## Now (one line)
-Spec 010: T0–T8 done (all opus reviews APPROVE after fixes: T1 home us/them, T2 toast in #ask, T5 stray brace, T7b "C" column + no cut stats; T7a shareBusy freed when done settles). Suite 166/166. Next T9 browser demo (Kevin OK: publish "MSO vs Call · 06/11/2026" and leave it published), then T10 deploy.
+Spec 010: T0–T9 done; T10 deploy (push) in progress. "MSO vs Call · 06/11/2026" published (Kevin OK) and left published.
 
 ## Active specs
 | Spec | Phase | Current task | Next task | Blocked by |
@@ -20,7 +20,7 @@ Spec 010: T0–T8 done (all opus reviews APPROVE after fixes: T1 home us/them, T
 | 007-critique-rest | done | — | — | — |
 | 008-critique-third | done | — | — | — |
 | 009-bench-attendance | done | — | — | — |
-| 010-game-view-share | implement | T9 demo | T10 deploy | — |
+| 010-game-view-share | validate | T10 deploy | live check of ver.html on Pages + phone | — |
 
 Phases: constitution · spec · clarify · plan · tasks · implement · validate · done
 
@@ -34,6 +34,7 @@ Phases: constitution · spec · clarify · plan · tasks · implement · validat
 - Not covered by the 004 demo: RF-13 backdrop tap and back button, RF-2 storage-failure toast.
 
 ## Recently done (keep last 10)
+- 2026-11-08 20:24 · 010 · T9 browser demo on localhost:8001 (Kevin signed in): RF-32 note without button; RF-33/34 Equipo (27) checkboxes (aria name, ink), Agregar (0) disabled → (2) → (3) by tapping a name, Vinieron todos, all plain; RF-41 Anotar estadísticas not lime with empty order; RF-1 Ver/Editar/✕; RF-2–5 view (title, Perdido 8–17, line score MSO visitor on top with C, Totales 16 cols + Equipo, Por inning read-only 9 rows 3 out each, legend), focus on h3, switch keeps the dialog top (80→80); RF-11 menu (3 items unpublished, 4 published); RF-23/24 both PNGs captured via a stubbed share: light, 1080, C column, no cut stats, file MSO-vs-Call-06-11-2026.png; RF-12 publish → shareId 16, ' · Publicado', synced; anonymous REST read of the copy: keys game/rows only, no pid/savedAt/shareId; ver.html desktop + 360 px (sideways scroll), RF-27 for #p=x.y and a missing id; RF-18 unpublish confirm (danger, focus Cancelar) → old copy 404; republished (new id) and left published; RF-40 phone header one row + ⋯ popover (date, ±Inning, guide) + bottom bar; desktop header unchanged (one row, date ink); RF-42 phone detail two lines; RF-43 placeholder ink-2. Fixes found in the demo: (1) a clipboard that never answers left no feedback → 3 s fallback shows the link (RF-20), observed; (2) RF-16 'Publicado' was missing in the Juegos row → added, observed. Not observed live: batch add/undo (writes; traced by the T2 review), light theme of ver.html, RF-15/16/28 offline paths.
 - 2026-11-06 15:32 · critique · Impeccable re-measure after 008+009 on live prod (dual-agent): 30/40 (30 → 30; H2 −1 for the AVE ranking without an AP qualifier, the rest steady). P0 0, P1 1: empty-game attendance has two paths (Marcar asistencia CTA + open Equipo (26) list) and no batch check-in. P2: phone capture header 3 rows with Guardar at the top; Anotar estadísticas always solid lime; AVE ranking without a qualifier; phone player detail cuts the Turnos column. Detector 22, unchanged; overlay: placeholder contrast 3.2:1 on Nombre del equipo/Rival. Snapshot .impeccable/critique/2026-11-06T19-32-04Z__index-html.md
 - 2026-11-06 15:17 · 009 · Deployed with Kevin's OK (0769e89, Pages built). Live check in Chrome: the page under the service worker already runs the new code on a normal load (btn-novino, Stats.absentTitle, RF-20 rule, 4 tabs; "Equipo (26)" on the fresh lineup). sw.js is network-first (no-cache, 3.5 s) for index.html and stats.js, so a reload with signal gets the new version
 - 2026-11-06 · 009 · T1–T4 done (parallel worktrees T1–T3, then T4; opus reviewers APPROVE all; orchestrator fixes at merge: toast padding rule screen-only, any toast drops the No vino undo, Descartar keeps the fold (D1 revised), late toggle guard). T5 demo on localhost:8001 (Kevin's session; started by Abrir "MSO vs Call · 06/11/2026", every press reverted, ends "Guardado ✓"): fresh lineup → "Equipo (26)" open; Abrir → "No vinieron (17)" folded (bench 0, all 9 in the lineup); Enter on Vino → Simon to the bench, section stays open, focus to the next Vino, toast "agregado al partido", header Guardar; Enter on No vino → toast sticky after 7 s with Deshacer + ✕ "Cerrar aviso", focus on the summary (bench empty), header back to "Guardado ✓"; Deshacer → Simon back, header Guardar; No vino then Vino Cachin → no Deshacer left; folded section stays folded through No vino; ✕ closes. Phone 360×640 (iframe) dark and light: bench row one line 43 px, name cut at 83 px, "No vino" 61 px + "Agregar" 64 px; with the toast on, .wrap padding 150 px and the card bottom (477) clears the toast top (498). 144/144. Not observed: RF-8 (no Recuperar banner on this origin; traced by the T4 reviewer), print (section has no-print)
