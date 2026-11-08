@@ -364,9 +364,29 @@ Stats.summaryLine = function(p){
   return "AVE " + Stats.fmt(p.avg) + " · OBP " + Stats.fmt(p.obp) + " · OPS " + Stats.fmt(p.ops) + " · " + p.pa + " AP · " + p.g + " JJ";
 };
 
-Stats.players = function(entries, team){
-  var COUNT_KEYS = ["pa", "ab", "h", "b2", "b3", "hr", "r", "rbi", "bb", "k", "sb", "sf", "tb", "cs"];
+// Contadores de una fila de la hoja sumados sobre acc (spec 010): la única regla de conteo, de players y boxScore.
+// No toca ab (pa − bb − sf, lo calcula quien llama al final) ni g.
+Stats.COUNT_KEYS = ["pa", "ab", "h", "b2", "b3", "hr", "r", "rbi", "bb", "k", "sb", "sf", "tb", "cs"];
+Stats.tally = function(row, acc){
   var TB_WEIGHT = {"1B": 1, "2B": 2, "3B": 3, "HR": 4};
+  (row.ro || []).forEach(function(o){ if(o.kind === "CS") acc.cs++; });
+  row.pas.forEach(function(p){
+    acc.pa++;
+    if(p.run) acc.r++;
+    acc.rbi += p.rbi; acc.sb += p.sb;
+    if(p.code === "BB") acc.bb++;
+    else if(p.code === "SF") acc.sf++;
+    else if(p.code === "K") acc.k++;
+    if(TB_WEIGHT[p.code]){ acc.h++; acc.tb += TB_WEIGHT[p.code]; }
+    if(p.code === "2B") acc.b2++;
+    else if(p.code === "3B") acc.b3++;
+    else if(p.code === "HR") acc.hr++;
+  });
+  return acc;
+};
+
+Stats.players = function(entries, team){
+  var COUNT_KEYS = Stats.COUNT_KEYS;
   function withRates(o){
     var r = Stats.rates(o);
     o.avg = r.avg; o.obp = r.obp; o.slg = r.slg; o.ops = r.ops;
@@ -388,19 +408,7 @@ Stats.players = function(entries, team){
         rows.push(a);
       }
       a.g++;
-      ros.forEach(function(o){ if(o.kind === "CS") a.cs++; });
-      row.pas.forEach(function(p){
-        a.pa++;
-        if(p.run) a.r++;
-        a.rbi += p.rbi; a.sb += p.sb;
-        if(p.code === "BB") a.bb++;
-        else if(p.code === "SF") a.sf++;
-        else if(p.code === "K") a.k++;
-        if(TB_WEIGHT[p.code]){ a.h++; a.tb += TB_WEIGHT[p.code]; }
-        if(p.code === "2B") a.b2++;
-        else if(p.code === "3B") a.b3++;
-        else if(p.code === "HR") a.hr++;
-      });
+      Stats.tally(row, a);
     });
   });
   rows.forEach(function(a){
@@ -472,6 +480,117 @@ Stats.playerGames = function(entries, pid){
     });
   });
   return out;
+};
+
+/* ============ vista de un juego y enlace público (spec 010) ============ */
+// Totales de un solo juego: una fila por fila de la hoja, en su orden, sin pid ni lookup del equipo.
+Stats.boxScore = function(rec){
+  function zero(o){ Stats.COUNT_KEYS.forEach(function(k){ o[k] = 0; }); return o; }
+  function rated(o){
+    var r = Stats.rates(o);
+    o.avg = r.avg; o.obp = r.obp; o.slg = r.slg; o.ops = r.ops;
+    return o;
+  }
+  var tot = zero({});
+  var rows = rec.rows.map(function(row){
+    var a = Stats.tally(row, zero({num: row.num, name: row.name}));
+    a.ab = a.pa - a.bb - a.sf;
+    Stats.COUNT_KEYS.forEach(function(k){ tot[k] += a[k]; });
+    return rated(a);
+  });
+  return {rows: rows, team: rated(tot)};
+};
+
+Stats.BOX_COLS = Stats.STAT_COLS.filter(function(c){ return c[0] !== "g"; });
+
+// Igual que la lista de Juegos (Stats.result, empate = "Empate"); 0–0 = "Sin marcador".
+Stats.resultLine = function(game){
+  return Stats.result(game) || "Sin marcador";
+};
+
+// "Equipo vs Rival · dd/mm/aaaa"; los nombres como sheetTitle, la fecha completa y solo si es válida.
+Stats.viewTitle = function(g){
+  var t = Stats.sheetTitle({team: g.team, opp: g.opp});
+  return Stats.validIso(g.date) ? t + " · " + Stats.fmtDate(g.date) : t;
+};
+
+// Dos filas, visitante primero (si somos locales, ellos van arriba); carreras como enteros, largo = innings.
+Stats.lineScore = function(g){
+  var n = g.innings;
+  function side(name, fallback, list){
+    var runs = [], i, total = 0;
+    for(i = 0; i < n; i++){ runs.push(parseInt((list || [])[i], 10) || 0); total += runs[i]; }
+    return {name: (name || "").trim() || fallback, runs: runs, total: total};
+  }
+  var us = side(g.team, "Nosotros", g.us), them = side(g.opp, "Ellos", g.them);
+  return {innings: n, rows: g.home ? [them, us] : [us, them]};
+};
+
+// Copia pública (RF-25): lista blanca por clave; lo ausente se omite y nada se comparte con la entrada.
+Stats.publicCopy = function(rec){
+  function pick(o, keys){
+    var out = {};
+    keys.forEach(function(k){ if(o[k] !== undefined) out[k] = o[k]; });
+    return out;
+  }
+  var g = pick(rec.game, ["team", "opp", "date", "home", "innings", "us", "them"]);
+  if(g.us) g.us = g.us.slice();
+  if(g.them) g.them = g.them.slice();
+  return {game: g, rows: rec.rows.map(function(row){
+    var r = pick(row, ["num", "name", "pos", "sub"]);
+    r.pas = row.pas.map(function(p){ return pick(p, ["inn", "ord", "code", "run", "rbi", "sb", "outs"]); });
+    if(row.ro) r.ro = row.ro.map(function(o){ return pick(o, ["inn", "kind"]); });
+    return r;
+  })};
+};
+
+// Columnas de la imagen (RF-23), por clave de fila; "más" repite las básicas y agrega las otras cinco al final.
+Stats.IMG_COLS = ["ab", "h", "b2", "b3", "hr", "r", "rbi", "bb", "k", "avg"];
+Stats.IMG_COLS_MORE = Stats.IMG_COLS.concat(["obp", "slg", "ops", "sb", "cs"]);
+
+// {cols: rótulos con "Jugador" primero, rows: [[nombre, ...]], team: ["Equipo", ...]}, todo texto; tasas con fmt.
+Stats.imageTable = function(rec, more){
+  var keys = more ? Stats.IMG_COLS_MORE : Stats.IMG_COLS, b = Stats.boxScore(rec), label = {}, isInt = {};
+  Stats.STAT_COLS.forEach(function(c){ label[c[0]] = c[1]; isInt[c[0]] = c[2]; });
+  function cells(name, o){
+    return [name].concat(keys.map(function(k){ return isInt[k] ? String(o[k]) : Stats.fmt(o[k]); }));
+  }
+  return {cols: ["Jugador"].concat(keys.map(function(k){ return label[k]; })), rows: b.rows.map(function(r){ return cells(r.name, r); }),
+    team: cells("Equipo", b.team)};
+};
+
+// "<equipo>-vs-<rival>-<dd-mm-aaaa>.png" (RF-24): vacío o solo inválidos = "equipo"/"rival"; sin fecha válida, sin esa parte.
+Stats.fileName = function(g){
+  function part(s, fallback){
+    s = (s || "").replace(/[\\\/:*?"<>|\u0000-\u001f]/g, "").trim().replace(/\s+/g, "-");
+    return s || fallback;
+  }
+  return part(g.team, "equipo") + "-vs-" + part(g.opp, "rival") +
+    (Stats.validIso(g.date) ? "-" + Stats.fmtDate(g.date).replace(/\//g, "-") : "") + ".png";
+};
+
+// 16 caracteres [A-Za-z0-9] a partir de 16 bytes (la página pasa crypto.getRandomValues); bytes[i] % 62.
+Stats.shareId = function(bytes){
+  var ALPHA = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789", out = "", i;
+  for(i = 0; i < 16; i++) out += ALPHA.charAt(bytes[i] % 62);
+  return out;
+};
+
+// dir termina en "/" (carpeta de la app); el hash lleva los ids para que no viajen al servidor.
+Stats.shareLink = function(dir, uid, id){
+  return dir + "ver.html#p=" + uid + "." + id;
+};
+
+Stats.parseShare = function(hash){
+  var m = /^#?p=([\w-]{1,128})\.([A-Za-z0-9]{16})$/.exec(hash || "");
+  return m ? {uid: m[1], shareId: m[2]} : null;
+};
+
+// RF-21: ids de copias públicas que ninguna entrada viva reclama (la lápida no cuenta).
+Stats.orphans = function(ids, entries){
+  var keep = {};
+  Stats.live(entries).forEach(function(e){ if(e.shareId) keep[e.shareId] = true; });
+  return (ids || []).filter(function(id){ return !keep[id]; });
 };
 
 /* ============ juegos guardados (spec 003) ============ */
