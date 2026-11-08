@@ -222,6 +222,8 @@ dialog .btn-ghost:hover{background:var(--surface-2);border-color:var(--ink-3)}
   border-radius:7px;padding:7px 9px;font-size:15px;min-width:0;
 }
 .inp:hover{border-color:var(--line-2)}
+/* RF-43: el gris por defecto del navegador no llega a 4.5:1; ink-2 da 5.98 (claro) y 6.86 (oscuro) sobre surface-2 */
+.inp::placeholder{color:var(--ink-2);opacity:1}
 .inp:-webkit-autofill,.inp:-webkit-autofill:hover,.inp:-webkit-autofill:focus{
   -webkit-box-shadow:0 0 0 100px var(--surface-2) inset;-webkit-text-fill-color:var(--ink);
   caret-color:var(--ink);
@@ -747,6 +749,26 @@ body.locked .gate{
   }
   .dlg-body{max-height:calc(90vh - 90px)}
   #statsView[open]{height:90vh}
+  /* RF-42: detalle del jugador en dos líneas por fila. Línea 1: fecha, rival (…), VB H CA CI BB K; línea 2: Turnos a todo el ancho.
+     Ancho útil a 360 px: 360 - 2 (borde) - 30 (relleno) = 328 = 82 fecha + 90 rival + 6×26 columnas. */
+  table.stat.det,table.stat.det thead,table.stat.det tbody,table.stat.det tfoot{display:block}
+  table.stat.det tr{
+    display:grid;grid-template-columns:82px minmax(0,1fr) repeat(6,26px);
+    border-bottom:1px solid var(--line);
+  }
+  table.stat.det tfoot tr{border-top:2px solid var(--line-2);border-bottom:0}
+  table.stat.det th,table.stat.det td{padding:0 2px;border:0}
+  table.stat.det td{height:34px}
+  table.stat.det thead th{padding:0 2px}
+  table.stat.det thead th:nth-child(2){padding:0 3px}
+  table.stat.det th:first-child{position:static;min-width:0;max-width:none;border-right:0;padding:0 3px}
+  table.stat.det td:nth-child(2){overflow:hidden;text-overflow:ellipsis;padding:0 3px}
+  /* el encabezado solo rotula la línea 1; la fila vacía de Turnos (Total) no ocupa línea */
+  table.stat.det thead th:last-child,table.stat.det td:last-child:empty{display:none}
+  table.stat.det tbody td:last-child{
+    grid-column:1/-1;height:auto;padding:0 3px 8px;white-space:normal;overflow-wrap:anywhere;
+    font-size:12.5px;line-height:1.35;color:var(--ink-2);
+  }
 
   .scorecard{margin:12px 0;padding:11px;gap:9px;grid-template-columns:repeat(2,minmax(0,1fr))}
   .scorecard .fieldset:nth-child(1),
