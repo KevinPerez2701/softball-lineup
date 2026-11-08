@@ -3925,8 +3925,8 @@ function lineupPngBlob(){ return svgToPng(buildLineupSvg(), IMG_W, IMG_H); }
    Siempre tema claro: los colores van fijos (los mismos de :root) y no se lee
    getComputedStyle, así el modo oscuro no se cuela en la imagen. */
 var GAME_W = 1080;
-var GAME_PAL = {bg:"#ffffff", surf2:"#e6eae1", ink:"#141c16", ink2:"#4c5a4e", ink3:"#5f6c62", line:"#d2d9cd",
-                bar:"#141c16", barInk:"#f3f6ee", acc:"#c3d600", accSoft:"#eef5b4"};
+var GAME_PAL = {bg:"#ffffff", surf2:"#e6eae1", ink:"#141c16", ink2:"#4c5a4e", line:"#d2d9cd",
+                bar:"#141c16", barInk:"#f3f6ee", accSoft:"#eef5b4"};
 
 /* recorta con "…" hasta que el texto quepa en maxW (no se comprime con textLength) */
 function cortarTexto(t, maxW, size, fam, peso){
@@ -3945,13 +3945,13 @@ function buildGameSvg(rec, more){
     return '<text x="' + x + '" y="' + yy + '"' + (anchor ? ' text-anchor="' + anchor + '"' : "") +
            ' font-family="' + FONT + '" font-size="' + size + '" font-weight="' + peso + '" fill="' + color + '">' + esc(t) + '</text>';
   }
-  /* una fila de tabla de ancho rw; celdas {t, x, w, a}: "middle" centra, si no va a la izquierda */
+  /* una fila de tabla de ancho rw; celdas {t, x, w, a}: "middle" centra y nunca se corta (RF-23 solo corta nombres); a la izquierda se corta con "…" */
   function fila(cells, yy, rh, rw, fill, color, peso, size, stroke){
     o.push('<rect x="' + PAD + '" y="' + yy + '" width="' + rw + '" height="' + rh + '" fill="' + fill + '"' +
            (stroke ? ' stroke="' + stroke + '"' : "") + '/>');
     cells.forEach(function(c){
       var mid = c.a === "middle";
-      o.push(txt(c.t, mid ? c.x + c.w/2 : c.x + 10, yy + rh/2 + size*0.35, size, color, peso, mid ? "middle" : "", c.w - 16));
+      o.push(txt(c.t, mid ? c.x + c.w/2 : c.x + 10, yy + rh/2 + size*0.35, size, color, peso, mid ? "middle" : "", mid ? 0 : c.w - 16));
     });
   }
 
@@ -3973,7 +3973,7 @@ function buildGameSvg(rec, more){
   }
   var nums = [], i;
   for(i = 1; i <= n; i++) nums.push(i);
-  fila(lsCells("", nums, "R"), y, 36, lsW, P.bar, P.barInk, "bold", 18);
+  fila(lsCells("", nums, "C"), y, 36, lsW, P.bar, P.barInk, "bold", 18);
   y += 36;
   ls.rows.forEach(function(r, k){
     fila(lsCells(r.name, r.runs, r.total), y, 40, lsW, k % 2 ? P.surf2 : P.bg, P.ink, "bold", 20, P.line);
@@ -3982,7 +3982,7 @@ function buildGameSvg(rec, more){
   y += 30;
 
   /* box score: 10 u 15 columnas de estadística; el nombre toma el resto del ancho */
-  var statW = more ? 52 : 64, firstW = IW - (tb.cols.length - 1)*statW;
+  var statW = more ? 52 : 64, fs = more ? 18 : 20, firstW = IW - (tb.cols.length - 1)*statW;
   function celdas(arr){
     return arr.map(function(t, j){
       return j ? {t:t, x:PAD + firstW + (j - 1)*statW, w:statW, a:"middle"} : {t:t, x:PAD, w:firstW};
@@ -3991,10 +3991,10 @@ function buildGameSvg(rec, more){
   fila(celdas(tb.cols), y, 38, IW, P.bar, P.barInk, "bold", 18);
   y += 38;
   tb.rows.forEach(function(r, k){
-    fila(celdas(r), y, 40, IW, k % 2 ? P.surf2 : P.bg, P.ink, "normal", 20, P.line);
+    fila(celdas(r), y, 40, IW, k % 2 ? P.surf2 : P.bg, P.ink, "normal", fs, P.line);
     y += 40;
   });
-  fila(celdas(tb.team), y, 42, IW, P.accSoft, P.ink, "bold", 20, P.line);
+  fila(celdas(tb.team), y, 42, IW, P.accSoft, P.ink, "bold", fs, P.line);
   y += 42 + PAD;
 
   return '<svg xmlns="http://www.w3.org/2000/svg" width="' + GAME_W + '" height="' + y + '" viewBox="0 0 ' + GAME_W + ' ' + y + '">' +
