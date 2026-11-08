@@ -467,7 +467,11 @@ ul.list{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;ga
 .hint p{margin:6px 0 0;line-height:1.5}
 #absent{margin:10px 0 0}
 #absent .list{margin-top:6px;font-size:15px;color:var(--ink)}
-#absent .row{grid-template-columns:auto minmax(0,1fr) auto}
+#absent .row{grid-template-columns:minmax(0,1fr)}
+/* 010 RF-33: la etiqueta envuelve casilla, camiseta y nombre; tocar cualquiera marca la fila */
+.nm-check{display:flex;align-items:center;gap:9px;min-width:0;cursor:pointer}
+.nm-check .nm{flex:1}
+.absent-acts{display:flex;gap:6px;margin-top:8px}
 /* hoja de acciones (menús del teléfono) */
 .sheet-list{display:flex;flex-direction:column;gap:6px}
 .sheet-item{
@@ -1949,13 +1953,17 @@ $("recoverNo").addEventListener("click", function(){
 function saveTeam(){ lsSet(K_TEAM, TEAM); }
 
 var toastT;
-/* Deshacer de "No vino": una sola foto {id, roster, dh}; la suelta el primer save() posterior (RF-4). */
+/* Deshacer de la banca: una sola foto {kind, ids, roster, dh}; la suelta el primer save() posterior (009 RF-4).
+   kind "remove" = "No vino" (ids: el que salió); "add" = Agregar (n) / Vinieron todos (ids: los que entraron). */
 var benchUndo = null;
-function undoNoVino(){
+function undoBench(){
   var u = benchUndo; benchUndo = null;
   if(!u) return;
-  /* RF-5: ya está en el partido o salió del equipo: no se cambia nada */
-  if(player(u.id) || !TEAM.some(function(t){ return t.id === u.id; })) return;
+  /* 009 RF-5: remove, ya está en el partido o salió del equipo; 010 RF-37: add, alguno ya no está en el partido: no se cambia nada */
+  var ok = u.kind === "add"
+    ? u.ids.every(function(id){ return player(id); })
+    : !player(u.ids[0]) && TEAM.some(function(t){ return t.id === u.ids[0]; });
+  if(!ok) return;
   S.roster = u.roster; S.dh = u.dh;
   renderAll();
 }
@@ -2298,18 +2306,22 @@ function renderRoster(){
   $("btnClearOrder").disabled = !S.order.length;
   $("btnAutoField").disabled = !S.roster.length;
   $("btnClearField").disabled = !assignedIds().length;
+  /* 010 RF-41: lima solo cuando hay algo que anotar (un bateador en el orden o estadísticas ligadas) */
+  $("btnCapture").classList.toggle("btn-key", S.order.length > 0 || !!S.statsId);
   if(!S.roster.length){
-    /* Primer paso de cada partido: sin asistencia no hay nada que armar, así
-       que el panel vacío lleva directo a marcarla. */
+    /* Primer paso de cada partido: sin asistencia no hay nada que armar. Con equipo, la asistencia
+       se marca en la banca (010 RF-32); sin equipo, el panel lleva a agregar jugadores. */
     var cta = el("li", "empty-cta");
     var blank = !TEAM.length;
     cta.appendChild(el("p", null, blank
       ? "Tu equipo está vacío. Agrega a tus jugadores una vez y quedan guardados para cada partido."
-      : "Todavía no has marcado quién vino a este partido."));
-    var go = el("button", "btn", blank ? "Agregar jugadores" : "Marcar asistencia");
-    go.type = "button";
-    go.addEventListener("click", openTeamRoster);
-    cta.appendChild(go);
+      : "Marca en la banca quién vino a este partido."));
+    if(blank){
+      var go = el("button", "btn", "Agregar jugadores");
+      go.type = "button";
+      go.addEventListener("click", openTeamRoster);
+      cta.appendChild(go);
+    }
     ul.appendChild(cta);
     return;
   }
@@ -2643,46 +2655,72 @@ function refocusRow(listSel, btnSel, i){
 }
 /* RF-9: abierta/plegada de "No vinieron"; solo se reinicia al cambiar de juego (S es otro objeto), no en cada dibujo */
 var absentOpen = true, absentFor = null;
-/* RF-6: sección plegable al final de Banca con los del equipo que no están en el partido, cada uno con "Vino" */
+/* 010 RF-35: los marcados de la lista, por id; se filtra en cada dibujo y se vacía al cambiar de juego */
+var absentSel = {};
+/* 010 RF-36 a RF-39: suma los ids al partido (fin de la banca, orden del equipo) con aviso fijo y Deshacer.
+   save() hace la pregunta de touched() (RF-39) y suelta cualquier Deshacer anterior. */
+function addAbsent(ids){
+  var before = S.roster, res = Stats.batchAdd(before, TEAM, ids);
+  if(!res.added.length) return;
+  S.roster = res.roster;
+  absentSel = {};
+  save();
+  renderAll();
+  toast(Stats.addedMsg(res.added), undoBench, true);
+  /* después de renderAll: su save() soltaría la foto */
+  benchUndo = {kind: "add", ids: res.roster.slice(before.length).map(function(p){ return p.id; }), roster: before, dh: S.dh};
+  /* RF-38: la fila con el foco desaparece; el foco va al título de la sección si sigue, si no al de Banca */
+  var h = document.querySelector("#absent summary") || $("benchTitle");
+  if(h) h.focus();
+}
+/* RF-6, RF-33 a RF-35: sección plegable al final de Banca con los del equipo que no están en el partido; cada fila lleva
+   casilla (tocar el nombre la marca) y debajo "Agregar (n)" y "Vinieron todos" */
 function renderAbsent(){
   var old = $("absent");
   if(old) old.remove();
   var abs = Stats.absent(TEAM, S.roster);
-  if(absentFor !== S){ absentFor = S; absentOpen = !S.roster.length; }
+  if(absentFor !== S){ absentFor = S; absentOpen = !S.roster.length; absentSel = {}; }
+  var keep = {};
+  abs.forEach(function(tp){ if(absentSel[tp.id]) keep[tp.id] = true; });
+  absentSel = keep;
   if(!abs.length) return;
   var d = el("details", "hint no-print");
   d.id = "absent";
   d.appendChild(el("summary", null, Stats.absentTitle(abs, S.roster)));
   var ul = el("ul", "list");
-  abs.forEach(function(tp, i){
+  var addSel = el("button", "btn btn-sm");
+  function refreshSel(){
+    var n = Object.keys(absentSel).length;
+    addSel.textContent = "Agregar (" + n + ")";
+    addSel.disabled = !n;
+  }
+  abs.forEach(function(tp){
     var li = el("li", "row");
-    li.appendChild(el("span", "jersey" + (tp.num ? "" : " ghost"), tp.num || "–"));
-    li.appendChild(el("span", "nm", tp.name));
-    var acts = el("span", "rowacts");
-    var yes = el("button", "btn btn-sm btn-vino", "Vino");
-    yes.type = "button";
-    yes.title = tp.name + " vino: agregarlo al partido";
-    yes.setAttribute("aria-label", yes.title);
-    yes.addEventListener("click", function(){
-      var hadFocus = document.activeElement === yes;
-      /* mismo bloque que la casilla del Roster (RF-7, RF-8): save() hace la pregunta de touched() */
-      var id = tp.id;
-      if(!S.roster.some(function(pl){ return pl.id === id; })){
-        S.roster.push({id:id, num:tp.num || "", name:tp.name});
-      }
-      save();
-      renderAll();
-      toast(tp.name + " agregado al partido");
-      if(hadFocus && !refocusRow("#absent", ".btn-vino", i)){
-        var h = $("benchTitle");
-        if(h) h.focus();
-      }
+    var lab = el("label", "nm-check");
+    var cb = document.createElement("input");
+    cb.type = "checkbox"; cb.className = "check"; cb.checked = !!absentSel[tp.id];
+    cb.setAttribute("aria-label", tp.name);
+    cb.addEventListener("change", function(){
+      if(cb.checked) absentSel[tp.id] = true; else delete absentSel[tp.id];
+      refreshSel();
     });
-    acts.appendChild(yes);
-    li.appendChild(acts);
+    lab.appendChild(cb);
+    lab.appendChild(el("span", "jersey" + (tp.num ? "" : " ghost"), tp.num || "–"));
+    lab.appendChild(el("span", "nm", tp.name));
+    li.appendChild(lab);
     ul.appendChild(li);
   });
   d.appendChild(ul);
+  var acts = el("div", "absent-acts");
+  addSel.type = "button";
+  addSel.addEventListener("click", function(){ addAbsent(Object.keys(absentSel)); });
+  var all = el("button", "btn btn-sm", "Vinieron todos");
+  all.type = "button";
+  all.addEventListener("click", function(){ addAbsent(abs.map(function(tp){ return tp.id; })); });
+  acts.appendChild(addSel);
+  acts.appendChild(all);
+  d.appendChild(acts);
+  refreshSel();
   d.open = absentOpen;
   d.addEventListener("toggle", function(){ if(d.isConnected) absentOpen = d.open; }); // un toggle tardío de una sección ya quitada no pisa el estado
   var bl = $("benchList");
@@ -2723,10 +2761,10 @@ function renderBench(){
     no.setAttribute("aria-label", no.title);
     no.addEventListener("click", function(){
       var hadFocus = document.activeElement === no;
-      var snap = {id: pl.id, roster: S.roster.slice(), dh: S.dh};
+      var snap = {kind: "remove", ids: [pl.id], roster: S.roster.slice(), dh: S.dh};
       removePlayerEverywhere(pl.id);
       renderAll();
-      toast(pl.name + " no vino", undoNoVino, true);
+      toast(pl.name + " no vino", undoBench, true);
       benchUndo = snap; // después de renderAll: su save() soltaría la foto
       if(hadFocus && !refocusRow("#benchList", ".btn-novino", i)){
         var h = document.querySelector("#absent summary") || $("benchTitle");
