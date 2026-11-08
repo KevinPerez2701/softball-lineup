@@ -1,15 +1,17 @@
 /* Diamante 10 — service worker.
-   En el dugout la señal va y viene. La página y stats.js se piden a la red primero (con
+   En el dugout la señal va y viene. La página, stats.js y view.js se piden a la red primero (con
    señal siempre se ve la última versión) y, si no responde en unos segundos,
    se abre desde la caché. El resto de archivos sale de la caché al instante
    y se actualiza por detrás. Sube VERSION cuando cambie la lista de archivos. */
-var VERSION = "v7";
+var VERSION = "v8";
 var SHELL = "diamante10-shell-" + VERSION;
 var CDN = "diamante10-cdn";
 var ASSETS = [
   "./",
   "index.html",
   "stats.js",
+  "view.js",
+  "ver.html",
   "manifest.webmanifest",
   "icons/icon-192.png",
   "icons/icon-512.png",
@@ -71,7 +73,12 @@ self.addEventListener("fetch", function(ev){
   var url = new URL(req.url);
 
   if(url.origin === self.location.origin){
-    /* Toda navegación dentro del alcance es la misma página. */
+    /* 010: el enlace público es otra página; sin esto se abría la app (y su login) en su lugar. */
+    if(req.mode === "navigate" && url.pathname.slice(-9) === "/ver.html"){
+      ev.respondWith(networkFirst(req, SHELL, "ver.html", 3500));
+      return;
+    }
+    /* Toda otra navegación dentro del alcance es la misma página. */
     if(req.mode === "navigate"){
       ev.respondWith(networkFirst(req, SHELL, "./", 3500));
       return;
@@ -79,6 +86,11 @@ self.addEventListener("fetch", function(ev){
     /* stats.js va con la página: página nueva con stats.js viejo de la caché rompe la hoja tras un deploy. */
     if(url.pathname.slice(-9) === "/stats.js"){
       ev.respondWith(networkFirst(req, SHELL, "stats.js", 3500));
+      return;
+    }
+    /* view.js también: lo usan la página y ver.html. */
+    if(url.pathname.slice(-8) === "/view.js"){
+      ev.respondWith(networkFirst(req, SHELL, "view.js", 3500));
       return;
     }
     ev.respondWith(staleWhileRevalidate(req, SHELL));
