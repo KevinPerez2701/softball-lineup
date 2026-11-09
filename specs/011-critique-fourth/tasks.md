@@ -20,7 +20,7 @@ only.
       (RF-1–4) Deps: —
       Done when: suite green; traced: hidden on fold / n = 0 / game switch / other phone tab, shown again with the same n;
       CSS offsets listed (64 / 148 / 214 / 120 / 86).
-- [ ] T3. Touch + focus: coarse block (`#statsBody .rowacts` gap 12, `.slot::before` + `--hit` per plan F1), h3
+- [x] T3. Touch + focus: coarse block (`#statsBody .rowacts` gap 12, `.slot::before` + `--hit` per plan F1), h3
       `tabindex="-1"` on the 5 dialogs, `h3:focus{outline:none}`, focus at the 5 open sites (3894 only when `!dlg.open`).
       (RF-6, 7, 8) Deps: —
       Done when: suite green; the 5 dialog h3 carry `tabindex="-1"`; report lists `--hit` per slot and states no
