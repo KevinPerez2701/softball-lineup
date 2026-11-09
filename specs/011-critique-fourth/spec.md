@@ -80,7 +80,9 @@ AP in rate rankings, and everything in one spec (P1 + P2 + P3 + minors).
 - RF-11: WHILE the viewport is wider than 760 px, THE SYSTEM SHALL limit `ver.html`'s content to 760 px wide, centered.
 - RF-12: THE SYSTEM SHALL give every numeric cell of the line score in `ver.html` and in the app's game view at least
   28 px of width including at least 4 px of horizontal padding. The phone box score keeps spec 010's compact layout
-  (Kevin checked it on his Pixel on 2026-11-09).
+  (Kevin checked it on his Pixel on 2026-11-09). On the phone layout the app's game view uses 26 px (clarified at the
+  T7 demo: at 28 px, 9 innings + C needed 313 px in the dialog's 294 px and scrolled sideways, which the 010 layout
+  avoided; ver.html has 321 px and keeps 28).
 - RF-13: THE SYSTEM SHALL carry static Open Graph tags in `ver.html`: `og:title` "Diamante 10 · Juego",
   `og:description` "Marcador y estadísticas del juego", `og:image` the absolute https URL of the app's 512 px icon,
   `og:type` "website". (The game lives in the hash, which never reaches the server, so the card cannot name the game.)
@@ -103,8 +105,10 @@ AP in rate rankings, and everything in one spec (P1 + P2 + P3 + minors).
 - RF-18: WHILE the phone layout is active, THE SYSTEM SHALL label empty field slots with these short names, with no
   ellipsis at 360 px: Campocorto → "Short", Jardín izquierdo → "Jardín izq.", Jardín central → "Jardín cen.", Jardín
   izquierdo central → "J. izq. cen.", Jardín derecho central → "J. der. cen.", Jardín derecho → "Jardín der.",
-  Short fielder → "Short field", Bateador designado → "Bat. desig.". Other names stay. The accessible name and the
-  title keep the full name.
+  Short fielder → "Short field", Bateador designado → "Bat. desig.", Primera / Segunda / Tercera base → "1ra base" /
+  "2da base" / "3ra base". Other names stay. The accessible name and the title keep the full name. (Clarified at the
+  T7 demo, 2026-11-09: "Primera base", "Segunda base" and "Tercera base" measured 56–61 px in a 51 px column at 360 px
+  and ended in an ellipsis too.)
 - RF-19: THE SYSTEM SHALL show, on screen, an empty jersey box (same width, no "–") for a player without a number in
   the lineup lists, bench, check-in and roster; the print sheet keeps "–".
 - RF-20: IF a saved game's name ends with " · " + its dateLabel, THEN THE SYSTEM SHALL show the name without that suffix

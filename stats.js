@@ -817,7 +817,7 @@ Stats.publicHeader = function(game){
 
 // Nombres cortos de las posiciones en el campo del teléfono (RF-18); el resto conserva su nombre
 Stats.SHORT_POS = {SS: "Short", LF: "Jardín izq.", CF: "Jardín cen.", LCF: "J. izq. cen.", RCF: "J. der. cen.",
-  RF: "Jardín der.", SF: "Short field", DH: "Bat. desig."};
+  RF: "Jardín der.", SF: "Short field", DH: "Bat. desig.", "1B": "1ra base", "2B": "2da base", "3B": "3ra base"};
 Stats.shortPos = function(k, es){ return Stats.SHORT_POS[k] || es; };
 
 // Nombre para el recuadro del campo: siempre inicial + apellido cuando hay

@@ -49,9 +49,9 @@ test("shortNames: empty names do not collide and input is not mutated", function
   assert.deepStrictEqual(input, ["", "  ", "Ana Gil"]);
 });
 
-test("shortPos: eight short names, anything else keeps the full name", function(){
+test("shortPos: eleven short names, anything else keeps the full name", function(){
   var want = {SS: "Short", LF: "Jardín izq.", CF: "Jardín cen.", LCF: "J. izq. cen.", RCF: "J. der. cen.",
-    RF: "Jardín der.", SF: "Short field", DH: "Bat. desig."};
+    RF: "Jardín der.", SF: "Short field", DH: "Bat. desig.", "1B": "1ra base", "2B": "2da base", "3B": "3ra base"};
   Object.keys(want).forEach(function(k){ assert.strictEqual(Stats.shortPos(k, "Largo " + k), want[k]); });
   assert.deepStrictEqual(Stats.SHORT_POS, want);
   assert.strictEqual(Stats.shortPos("P", "Lanzador"), "Lanzador");

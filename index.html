@@ -482,8 +482,9 @@ ul.list{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;ga
   position:fixed;left:0;right:0;bottom:0;z-index:50;background:var(--surface);border-top:1px solid var(--line);
   padding:0 env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
 }
-.checkbar-in{max-width:1360px;margin:0 auto;padding:10px 18px}
-#btnAddSel{width:100%;min-height:44px;justify-content:center}
+.checkbar-in{max-width:1360px;margin:0 auto;padding:10px 18px;display:flex;justify-content:flex-end}
+/* escritorio: el botón queda a la derecha, bajo la Banca; no una franja lima sobre el campo */
+#btnAddSel{min-width:240px;min-height:44px;justify-content:center}
 /* hoja de acciones (menús del teléfono) */
 .sheet-list{display:flex;flex-direction:column;gap:6px}
 .sheet-item{
@@ -637,6 +638,8 @@ table.stat.view.ls td,table.stat.view.ls th:not(:first-child){min-width:28px;pad
   .box table.stat.view th:first-child{min-width:0;max-width:92px}
   .box table.stat.view th:first-child .nm{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
   table.stat.view.ls th:first-child{min-width:0;max-width:none}
+  /* 011 RF-12: en el diálogo del teléfono (294 px) 9 innings + C caben sin desplazar con 26 px */
+  table.stat.view.ls td,table.stat.view.ls th:not(:first-child){min-width:26px}
 }
 table.stat.view tbody tr{cursor:default}
 div.sheet-cell{cursor:default}
@@ -780,10 +783,11 @@ body.locked .gate{
   .toast{bottom:calc(84px + env(safe-area-inset-bottom))}
   /* 011 RF-1/2: la barra va sobre la barra de pestañas (66 px) y solo en Orden; 66 + 64 = 130; el aviso 18 más arriba (148);
      la página deja 148 y 214 con aviso (148 + 54 + 4 + aire, como el 150 de 009 RF-12 sobre 84) */
-  #checkBar{bottom:calc(66px + env(safe-area-inset-bottom));padding:0 max(0px,env(safe-area-inset-right)) 0 max(0px,env(safe-area-inset-left))}
+  #checkBar{bottom:calc(68px + env(safe-area-inset-bottom));padding:0 max(0px,env(safe-area-inset-right)) 0 max(0px,env(safe-area-inset-left))}
   .checkbar-in{padding:10px 12px}
+  #btnAddSel{width:100%}
   body:not([data-tab="orden"]) #checkBar{display:none}
-  body[data-tab="orden"]:has(> #checkBar:not([hidden])) > .toast{bottom:calc(148px + env(safe-area-inset-bottom))}
+  body[data-tab="orden"]:has(> #checkBar:not([hidden])) > .toast{bottom:calc(150px + env(safe-area-inset-bottom))}
   /* 011 RF-4: la fila de "No vinieron" mide al menos 44 px */
   #absent .nm-check{min-height:44px;padding:7px 8px}
 
@@ -3852,10 +3856,14 @@ function renderStatsPlayers(body, entries){
       th.setAttribute("aria-sort", statsSort.desc ? "descending" : "ascending");
       b.textContent = c[1] + (statsSort.desc ? " ▼" : " ▲");
     }
+    b.dataset.k = c[0];
     b.addEventListener("click", function(){
       if(statsSort.key === c[0]) statsSort.desc = !statsSort.desc;
       else { statsSort.key = c[0]; statsSort.desc = (c[0] !== "name"); }
       openStats(statsViewName);
+      /* 011 RF-8: redibujar no mueve el foco; vuelve a la misma cabecera */
+      var nb = $("statsBody").querySelector('thead button[data-k="' + c[0] + '"]');
+      if(nb) nb.focus();
     });
     th.appendChild(b); hr.appendChild(th);
   });
