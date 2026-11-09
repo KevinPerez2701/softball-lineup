@@ -13,6 +13,12 @@ GitHub Pages (branch `main`, root): everything committed here is served on the w
   127.0.0.1, `[::1]` or `*.localhost`: the Firebase browser key's referrer list blocks them, so sign-in fails there.
   Signing in reaches Kevin's real Firestore data: demos stay read-only (close without saving, undo, reopen the saved
   game) unless Kevin asks for a write.
+- Phone/touch QA: the Chrome-extension iframe reports `pointer: fine`, so `@media (pointer:coarse)` never applies there
+  (a critique once scored 27 px targets that are 44 px on a phone). With the 8001 server up, run
+  `node tools/phone-touch.mjs <out dir> [url] [width] [height] < /dev/null`: headless Chrome via CDP with touch
+  emulation, the app started on a stub cloud and a 12-player test team (nothing reaches Firestore); it prints the
+  check-in bar and the real tap height of each field slot and saves screenshots. Pass a `ver.html#p=…` URL for the
+  public page. It kills Chrome and deletes its temp profile.
 - Tests: `node --test 'tests/*.test.js'` (Node stdlib, no npm).
 - Lint/build: none.
 
