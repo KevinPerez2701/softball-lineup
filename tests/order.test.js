@@ -33,3 +33,10 @@ test("RF-1/2/3 orderAfterAssign: BD reemplazado se queda en el orden", function(
 test("RF-1/2/3 orderAfterAssign: intercambio de dos ya en el orden no cambia nada", function(){
   assert.deepStrictEqual(Stats.orderAfterAssign(["a", "b", "c"], ["b", "a"]), ["a", "b", "c"]);
 });
+
+test("orderReason: roster empty first, then order empty, else nothing", function(){
+  assert.strictEqual(Stats.orderReason(0, 0), "Nadie marcado para este partido");
+  assert.strictEqual(Stats.orderReason(0, 3), "Nadie marcado para este partido");
+  assert.strictEqual(Stats.orderReason(5, 0), "El orden está vacío");
+  assert.strictEqual(Stats.orderReason(5, 2), "");
+});

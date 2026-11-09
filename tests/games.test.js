@@ -309,7 +309,18 @@ test("savedByDate: date desc, tie by at desc, no state or date last, input untou
   assert.strictEqual(JSON.stringify(list), before);
 });
 
-test("recordText: Récord G–P–E with en dashes", function(){
-  assert.strictEqual(Stats.recordText({w: 0, l: 0, t: 0}), "Récord 0–0–0");
-  assert.strictEqual(Stats.recordText({w: 3, l: 1, t: 2}), "Récord 3–1–2");
+test("recordText: Récord G · P · E", function(){
+  assert.strictEqual(Stats.recordText({w: 0, l: 0, t: 0}), "Récord 0 G · 0 P · 0 E");
+  assert.strictEqual(Stats.recordText({w: 3, l: 1, t: 2}), "Récord 3 G · 1 P · 2 E");
+});
+
+test("savedTitle: strips the trailing date suffix, otherwise the full name", function(){
+  function it(name, date){ return {name: name, state: {date: date}}; }
+  assert.strictEqual(Stats.savedTitle(it("MSO vs Call · 05/11/2026", "2026-11-05")), "MSO vs Call");
+  assert.strictEqual(Stats.savedTitle(it("MSO vs Call", "2026-11-05")), "MSO vs Call");
+  assert.strictEqual(Stats.savedTitle(it("MSO · 05/11/2026", "2026-11-06")), "MSO · 05/11/2026");
+  assert.strictEqual(Stats.savedTitle(it("Juego · Sin fecha", "basura")), "Juego");
+  assert.strictEqual(Stats.savedTitle(it("Juego · Sin fecha", undefined)), "Juego");
+  assert.strictEqual(Stats.savedTitle(it(" · 05/11/2026", "2026-11-05")), " · 05/11/2026");
+  assert.strictEqual(Stats.savedTitle({name: "Solo", state: {}}), "Solo");
 });

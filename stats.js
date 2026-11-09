@@ -435,6 +435,21 @@ Stats.sortPlayers = function(rows, key, desc){
   });
 };
 
+// Columnas de tasa: al ordenar por una, quienes tienen pocos AP van después (spec 011 RF-16).
+Stats.RATE_KEYS = ["avg", "obp", "slg", "ops"];
+
+// {rows, minAp}: minAp = ceil(máx AP / 2) si key es tasa, si no 0. Con minAp, primero los que tienen pa >= minAp y luego el
+// resto, cada grupo con sortPlayers; sin minAp, sortPlayers tal cual.
+Stats.rankPlayers = function(rows, key, desc){
+  var max = 0, minAp, hit;
+  if(Stats.RATE_KEYS.indexOf(key) < 0) return {rows: Stats.sortPlayers(rows, key, desc), minAp: 0};
+  rows.forEach(function(p){ if(p.pa > max) max = p.pa; });
+  minAp = Math.ceil(max / 2);
+  hit = rows.filter(function(p){ return p.pa >= minAp; });
+  return {rows: Stats.sortPlayers(hit, key, desc).concat(Stats.sortPlayers(rows.filter(function(p){ return p.pa < minAp; }), key, desc)),
+    minAp: minAp};
+};
+
 
 /* ============ juegos: historial y ficha del jugador ============ */
 // El marcador sale de game.us/them guardados, no de las marcas de carrera de la hoja.
@@ -775,12 +790,35 @@ Stats.savedByDate = function(list){
   });
 };
 
-// "Récord G–P–E" con rayas largas
+// "Récord G G · P P · E E" (ganados, perdidos, empates)
 Stats.recordText = function(g){
-  return "Récord " + g.w + "–" + g.l + "–" + g.t;
+  return "Récord " + g.w + " G · " + g.l + " P · " + g.t + " E";
+};
+
+// Título de "Abrir juego": el nombre sin el sufijo " · fecha" (RF-20); si no hay sufijo o no quedaría nada, el nombre completo
+Stats.savedTitle = function(item){
+  var suffix = " · " + Stats.dateLabel(item.state && item.state.date), name = item.name || "", cut = name.length - suffix.length;
+  return cut > 0 && name.slice(cut) === suffix ? name.slice(0, cut) : name;
+};
+
+// Razón visible cuando Completar/Vaciar orden están deshabilitados (RF-25); la primera que aplica o ""
+Stats.orderReason = function(rosterLen, orderLen){
+  return !rosterLen ? "Nadie marcado para este partido" : !orderLen ? "El orden está vacío" : "";
+};
+
+// Encabezado de la página pública (RF-10): visitante primero, y "Ganado/Perdido/Empate · dd/mm/aaaa" (sin fecha si no es válida)
+Stats.publicHeader = function(game){
+  var rows = Stats.lineScore(game).rows, word = Stats.result(game).split(" ")[0] || "Sin marcador";
+  return {visitor: rows[0].name, home: rows[1].name, v: rows[0].total, h: rows[1].total,
+    sub: Stats.validIso(game.date) ? word + " · " + Stats.fmtDate(game.date) : word};
 };
 
 // ---------- nombres ----------
+
+// Nombres cortos de las posiciones en el campo del teléfono (RF-18); el resto conserva su nombre
+Stats.SHORT_POS = {SS: "Short", LF: "Jardín izq.", CF: "Jardín cen.", LCF: "J. izq. cen.", RCF: "J. der. cen.",
+  RF: "Jardín der.", SF: "Short field", DH: "Bat. desig."};
+Stats.shortPos = function(k, es){ return Stats.SHORT_POS[k] || es; };
 
 // Nombre para el recuadro del campo: siempre inicial + apellido cuando hay
 // más de una palabra, para que todas las posiciones se lean igual y quepan.
