@@ -16,7 +16,7 @@ Overlap map (lines of 2b34624): T1 `stats.js`, `tests/order.test.js`, `tests/gam
       fill #eef5b4 / border #5d6b00, both dark blocks transparent / --accent, hover per theme.
 
 ## Wave 2 — in parallel, after T1 is merged
-- [ ] T3. `#fieldWhy` (1180), `#benchCard` (1331), `game-empty` toggle + `fieldReason` (2385–2388), comment 3184, note
+- [x] T3. `#fieldWhy` (1180), `#benchCard` (1331), `game-empty` toggle + `fieldReason` (2385–2388), comment 3184, note
       above the table (3891–3892). (RF-3, RF-7, RF-8) Deps: T1
       Done when: suite green; traced: the class is toggled on every renderAll, both reason strings, note before the
       table wrapper; the main inline script parses (`node --check` on an extracted copy).
