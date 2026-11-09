@@ -369,6 +369,9 @@ table.inn .tot{
   font-variant-numeric:tabular-nums;
 }
 .panel-head .spacer{margin-left:auto}
+/* 011 RF-25: el motivo de un botón apagado va en su propia línea; vacío no ocupa ni la separación */
+.panel-head .hint{flex-basis:100%;margin:0}
+.panel-head .hint:empty{display:none}
 .panel-body{padding:11px 13px 13px}
 
 .addrow{display:grid;grid-template-columns:58px minmax(0,1fr) auto;gap:7px;margin-bottom:11px}
@@ -390,7 +393,7 @@ ul.list{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;ga
   font-variant-numeric:tabular-nums;
 }
 .jersey.ghost{
-  background:transparent;color:var(--ink-3);
+  background:transparent;color:transparent; /* 011 RF-19: caja vacía en pantalla; al imprimir se pinta "–" (regla en @media print) */
   border:1px dashed var(--line-2);font-weight:600;
 }
 .row .nm{font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
@@ -1270,6 +1273,7 @@ body.locked .gate{
           <button class="btn btn-sm no-print" id="btnTeamRosterInline" type="button">Jugadores</button>
           <button class="btn btn-sm no-print" id="btnFillOrder" type="button">Completar orden</button>
           <button class="btn btn-sm no-print" id="btnClearOrder" type="button">Vaciar orden</button>
+          <span class="hint" id="orderWhy" aria-live="polite"></span>
         </div>
         <div class="panel-body">
           <details class="hint no-print">
@@ -1414,7 +1418,7 @@ body.locked .gate{
   </div>
   <div class="dlg-body">
     <div class="sheet-scroll"><table class="sheet" id="capTable"></table></div>
-    <p class="hint">• anotó carrera · número pequeño: orden del turno · rojo: no cuadra con el marcador · ⚠: outs del inning</p>
+    <p class="hint">• anotó carrera · número pequeño: orden del turno · rojo: no cuadra con el marcador · n out: outs del inning · ⚠: el inning no tiene 3 outs</p>
   </div>
 </dialog>
 
@@ -2019,6 +2023,8 @@ function toast(msg, undo, sticky){
 
 /* ============ campo ============ */
 var stage = $("stage");
+/* 011 RF-18: en el teléfono, los huecos vacíos usan nombres cortos (el aria-label y el title conservan el completo) */
+var phoneMq = window.matchMedia("(max-width:680px)");
 POS.forEach(function(p){
   var b = el("button", "slot empty");
   b.type = "button";
@@ -2058,7 +2064,7 @@ function renderField(){
   }else{
     dhb.className = "slot dh-slot empty";
     dhb.querySelector(".slot-key").textContent = "BD";
-    dhb.querySelector(".slot-name").textContent = "Bateador designado";
+    dhb.querySelector(".slot-name").textContent = phoneMq.matches ? Stats.shortPos("DH", "Bateador designado") : "Bateador designado";
     dhb.setAttribute("aria-label", "Bateador designado: sin asignar");
     dhb.title = "Bateador designado · sin asignar";
   }
@@ -2082,7 +2088,7 @@ function renderField(){
       b.title = p.es + " · " + pl.name;
     }else{
       b.className = "slot empty";
-      nm.textContent = p.es;
+      nm.textContent = phoneMq.matches ? Stats.shortPos(p.k, p.es) : p.es;
       b.setAttribute("aria-label", p.es + " (" + p.k + "): sin asignar");
       b.title = p.es + " · sin asignar";
     }
@@ -2324,6 +2330,7 @@ function renderRoster(){
   /* sin nada que hacer, el botón no invita a tocarlo */
   $("btnFillOrder").disabled = !S.roster.length;
   $("btnClearOrder").disabled = !S.order.length;
+  $("orderWhy").textContent = Stats.orderReason(S.roster.length, S.order.length);
   $("btnAutoField").disabled = !S.roster.length;
   $("btnClearField").disabled = !assignedIds().length;
   /* 010 RF-41: lima solo cuando hay algo que anotar (un bateador en el orden o estadísticas ligadas) */
