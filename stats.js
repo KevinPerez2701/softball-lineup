@@ -806,6 +806,16 @@ Stats.orderReason = function(rosterLen, orderLen){
   return !rosterLen ? "Nadie marcado para este partido" : !orderLen ? "El orden está vacío" : "";
 };
 
+// Razón visible cuando Autoasignar/Vaciar campo están deshabilitados (012 RF-7); la primera que aplica o ""
+Stats.fieldReason = function(rosterLen, assignedLen){
+  return !rosterLen ? "Nadie marcado para este partido" : !assignedLen ? "El campo está vacío" : "";
+};
+
+// Sufijo del pie de la página pública (012 RF-6): " · actualizado dd/mm/aaaa · h:mm a. m." o "" si ms no es un número finito
+Stats.updatedText = function(ms){
+  return typeof ms === "number" && isFinite(ms) ? " · actualizado " + Stats.fmtDateTime(new Date(ms)) : "";
+};
+
 // Encabezado de la página pública (RF-10): visitante primero, y "Ganado/Perdido/Empate · dd/mm/aaaa" (sin fecha si no es válida)
 Stats.publicHeader = function(game){
   var rows = Stats.lineScore(game).rows, word = Stats.result(game).split(" ")[0] || "Sin marcador";
