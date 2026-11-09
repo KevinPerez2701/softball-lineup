@@ -8,7 +8,7 @@ Overlap map (lines of 2b34624): T1 `stats.js`, `tests/order.test.js`, `tests/gam
 (CSS only) · T3 `index.html` 1180–3892 (HTML + JS) · T4 `ver.html`, `view.js` · T5 `sw.js`, `STATUS.md`, `tasks.md`.
 
 ## Wave 1 — in parallel
-- [ ] T1. `Stats.fieldReason`, `Stats.updatedText` after `orderReason`; tests first. (RF-6, RF-7) Deps: —
+- [x] T1. `Stats.fieldReason`, `Stats.updatedText` after `orderReason`; tests first. (RF-6, RF-7) Deps: —
       Done when: suite prints `# pass 178`, `# fail 0`.
 - [ ] T2. Selected-state tokens in the three index.html theme blocks, `.btn-default` + hover (190–192), `.game-empty`
       order rule after 361, `.field-head .hint` in 373–374. (RF-1, RF-2, RF-3 CSS, RF-7 CSS) Deps: —
