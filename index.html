@@ -2063,6 +2063,9 @@ function toast(msg, undo, sticky){
 var stage = $("stage");
 /* 011 RF-18: en el teléfono, los huecos vacíos usan nombres cortos (el aria-label y el title conservan el completo) */
 var phoneMq = window.matchMedia("(max-width:680px)");
+/* girar el teléfono cruza los 680 px: rotular otra vez.
+   shortcut: imprimir desde el teléfono saca los nombres cortos en huecos vacíos; pasar a beforeprint si molesta */
+if(phoneMq.addEventListener) phoneMq.addEventListener("change", function(){ renderField(); });
 POS.forEach(function(p){
   var b = el("button", "slot empty");
   b.type = "button";

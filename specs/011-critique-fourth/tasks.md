@@ -31,7 +31,7 @@ only.
       "estadísticas" 3459, phone `#statsView` h3 rule. (RF-16, 20, 22, 23, 24) Deps: T1
       Done when: suite green; dim ink contrast computed in light and dark (hover included) ≥ 4.5:1; header width at 360
       stated from the CSS.
-- [ ] T5. Field + order: `phoneMq` + `shortPos` at 2061/2085, `.jersey.ghost{color:transparent}` on screen, legend 1417,
+- [x] T5. Field + order: `phoneMq` + `shortPos` at 2061/2085, `.jersey.ghost{color:transparent}` on screen, legend 1417,
       `#orderWhy` + 2326. (RF-18, 19, 21, 25) Deps: T1
       Done when: suite green; print rule for `.jersey.ghost` still shows "–" (traced); label-width risk (plan F2) reported.
 - [x] T6. ver.html (og tags, 760 wrap, header via `publicHeader`, `<title>`, "Abrir Diamante 10", `load()` + `hashchange`
