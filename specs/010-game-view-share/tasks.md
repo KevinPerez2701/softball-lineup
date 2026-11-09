@@ -35,7 +35,7 @@ the browser checks on http://localhost:8001 (never 127.0.0.1, read-only unless K
       rows. (RF-42, RF-43) Deps: —
       Files: `index.html` (CSS after 224, CSS after 749)
       Done when: contrast numbers for both themes in the report; grid trace for 360 px.
-- [ ] T5. [parallel-ok] `view.js` + `ver.html` + `sw.js` (v8, ASSETS, `/ver.html` navigate branch, `view.js`
+- [x] T5. [parallel-ok] `view.js` + `ver.html` + `sw.js` (v8, ASSETS, `/ver.html` navigate branch, `view.js`
       network-first). (RF-26–29, 31, F1) Deps: T1 contracts (stub `Stats.*` calls by name; merged after T1)
       Files: `view.js` (new), `ver.html` (new), `sw.js`
       Done when: `node --check view.js` and ver.html's inline script OK; trace of the RF-27/RF-28 paths; sw.js diff shows
