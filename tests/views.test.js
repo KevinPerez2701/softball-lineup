@@ -351,3 +351,49 @@ test("RF-1 summaryLine: normal, 0 AP y tasas 1.000", function(){
   assert.strictEqual(Stats.summaryLine(by.p2), "AVE 1.000 · OBP 1.000 · OPS 2.000 · 1 AP · 1 JJ");
   assert.strictEqual(Stats.summaryLine(by.p3), "AVE — · OBP — · OPS — · 0 AP · 1 JJ");
 });
+
+function apRows(){
+  return [
+    {name: "Ana", pa: 10, avg: 0.2, hr: 1},
+    {name: "Beto", pa: 1, avg: 1, hr: 0},
+    {name: "Cai", pa: 6, avg: 0.4, hr: 2},
+    {name: "Dani", pa: 4, avg: null, hr: 0},
+    {name: "Eli", pa: 5, avg: 0.1, hr: 0}
+  ];
+}
+
+test("rankPlayers: rate key lists qualified first (pa >= ceil(max/2)), nulls last inside each group", function(){
+  var r = Stats.rankPlayers(apRows(), "avg", true);
+  assert.strictEqual(r.minAp, 5);
+  assert.deepStrictEqual(names(r.rows), ["Cai", "Ana", "Eli", "Beto", "Dani"]);
+});
+
+test("rankPlayers: asc keeps the same split; N = 2 dims a 1-AP sub; odd max rounds up", function(){
+  var r = Stats.rankPlayers(apRows(), "avg", false);
+  assert.deepStrictEqual(names(r.rows), ["Eli", "Ana", "Cai", "Beto", "Dani"]);
+  r = Stats.rankPlayers([{name: "A", pa: 3, avg: 0.5}, {name: "B", pa: 1, avg: 0.9}], "avg", true);
+  assert.strictEqual(r.minAp, 2);
+  assert.deepStrictEqual(names(r.rows), ["A", "B"]);
+});
+
+test("rankPlayers: equal AP means nobody is below minAp", function(){
+  var rows = [{name: "A", pa: 4, avg: 0.1}, {name: "B", pa: 4, avg: 0.3}], r = Stats.rankPlayers(rows, "avg", true);
+  assert.strictEqual(r.minAp, 2);
+  assert.ok(rows.every(function(p){ return p.pa >= r.minAp; }));
+  assert.deepStrictEqual(names(r.rows), ["B", "A"]);
+});
+
+test("rankPlayers: all-walks null rate goes last in its group; every rate key splits", function(){
+  var rows = [{name: "A", pa: 8, ops: null}, {name: "B", pa: 8, ops: 0.5}, {name: "C", pa: 1, ops: 2}];
+  assert.deepStrictEqual(Stats.RATE_KEYS, ["avg", "obp", "slg", "ops"]);
+  assert.deepStrictEqual(names(Stats.rankPlayers(rows, "ops", true).rows), ["B", "A", "C"]);
+});
+
+test("rankPlayers: non-rate key has minAp 0 and the sortPlayers order; input untouched", function(){
+  var rows = apRows(), before = names(rows), r = Stats.rankPlayers(rows, "hr", true);
+  assert.strictEqual(r.minAp, 0);
+  assert.deepStrictEqual(names(r.rows), names(Stats.sortPlayers(rows, "hr", true)));
+  assert.deepStrictEqual(names(Stats.rankPlayers(rows, "name", false).rows), ["Ana", "Beto", "Cai", "Dani", "Eli"]);
+  assert.deepStrictEqual(names(rows), before);
+  assert.strictEqual(Stats.rankPlayers([], "avg", true).minAp, 0);
+});

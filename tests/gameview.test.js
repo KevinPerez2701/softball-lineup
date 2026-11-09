@@ -220,3 +220,20 @@ test("RF-21 orphans: ids sin entrada viva con ese shareId; la lápida no cuenta"
   assert.deepStrictEqual(Stats.orphans(["a"], []), ["a"]);
   assert.deepStrictEqual(Stats.orphans(["a"], undefined), ["a"]);
 });
+
+/* ---- publicHeader ---- */
+test("011 publicHeader: visitante primero, marcador y resultado con fecha", function(){
+  var g = rec().game, h = Stats.publicHeader(g);
+  assert.deepStrictEqual(h, {visitor: "MSO", home: "Call", v: 5, h: 1, sub: "Ganado · 05/11/2026"});
+  g.home = "us";
+  assert.deepStrictEqual(Stats.publicHeader(g), {visitor: "Call", home: "MSO", v: 1, h: 5, sub: "Ganado · 05/11/2026"});
+});
+
+test("011 publicHeader: Perdido, Empate, Sin marcador y sin fecha válida", function(){
+  function hd(us, them, date){ return Stats.publicHeader({team: "A", opp: "B", home: "them", innings: 2, us: us, them: them, date: date}).sub; }
+  assert.strictEqual(hd([1, 0], [2, 0], "2026-11-05"), "Perdido · 05/11/2026");
+  assert.strictEqual(hd([1, 1], [2, 0], "2026-11-05"), "Empate · 05/11/2026");
+  assert.strictEqual(hd([0, 0], [0, 0], "2026-11-05"), "Sin marcador · 05/11/2026");
+  assert.strictEqual(hd([3, 0], [2, 0], ""), "Ganado");
+  assert.strictEqual(hd([0, 0], [0, 0], "basura"), "Sin marcador");
+});
