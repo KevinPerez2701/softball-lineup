@@ -20,7 +20,7 @@ Overlap map (lines of 2b34624): T1 `stats.js`, `tests/order.test.js`, `tests/gam
       above the table (3891–3892). (RF-3, RF-7, RF-8) Deps: T1
       Done when: suite green; traced: the class is toggled on every renderAll, both reason strings, note before the
       table wrapper; the main inline script parses (`node --check` on an extracted copy).
-- [ ] T4. ver.html: tokens + `.btn-default` copy, h1 header with text nodes, h1 reset, no uppercase, `render(rec, ms)` +
+- [x] T4. ver.html: tokens + `.btn-default` copy, h1 header with text nodes, h1 reset, no uppercase, `render(rec, ms)` +
       footer; view.js comment. (RF-1, RF-4, RF-5, RF-6) Deps: T1
       Done when: suite green; the module script parses (`node --check` on an extracted .mjs); traced: one h1 only from
       `render`, footer last in `show([...])`, `notFound`/`failed` untouched.
