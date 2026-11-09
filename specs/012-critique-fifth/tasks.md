@@ -10,7 +10,7 @@ Overlap map (lines of 2b34624): T1 `stats.js`, `tests/order.test.js`, `tests/gam
 ## Wave 1 — in parallel
 - [x] T1. `Stats.fieldReason`, `Stats.updatedText` after `orderReason`; tests first. (RF-6, RF-7) Deps: —
       Done when: suite prints `# pass 178`, `# fail 0`.
-- [ ] T2. Selected-state tokens in the three index.html theme blocks, `.btn-default` + hover (190–192), `.game-empty`
+- [x] T2. Selected-state tokens in the three index.html theme blocks, `.btn-default` + hover (190–192), `.game-empty`
       order rule after 361, `.field-head .hint` in 373–374. (RF-1, RF-2, RF-3 CSS, RF-7 CSS) Deps: —
       Done when: suite green; `grep -c -- '--sel-' index.html` = 9 (3 tokens × 3 blocks) + the uses; traced: light gives
       fill #eef5b4 / border #5d6b00, both dark blocks transparent / --accent, hover per theme.
