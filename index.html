@@ -38,6 +38,7 @@ window.addEventListener("beforeinstallprompt", function(e){ e.preventDefault(); 
   --accent-ink:#1b2410;
   --accent-soft:#eef5b4;
   --accent-text:#5d6b00;
+  --sel-bg:var(--accent-soft);--sel-line:var(--accent-text);--sel-hover:var(--accent-soft);
   --focus:var(--ink);
   --bar:#141c16;
   --bar-ink:#f3f6ee;
@@ -71,6 +72,7 @@ window.addEventListener("beforeinstallprompt", function(e){ e.preventDefault(); 
     --accent-ink:#141a06;
     --accent-soft:#3a4410;
     --accent-text:#cbdd22;
+    --sel-bg:transparent;--sel-line:var(--accent);--sel-hover:var(--surface-2);
     --bar:#36452f;
     --bar-ink:#eef3e6;
     --grass-a:#2f5636;
@@ -100,6 +102,7 @@ window.addEventListener("beforeinstallprompt", function(e){ e.preventDefault(); 
   --accent-ink:#141a06;
   --accent-soft:#3a4410;
   --accent-text:#cbdd22;
+  --sel-bg:transparent;--sel-line:var(--accent);--sel-hover:var(--surface-2);
   --bar:#36452f;
   --bar-ink:#eef3e6;
   --grass-a:#2f5636;
@@ -187,9 +190,9 @@ dialog .btn-ghost{color:var(--ink);border-color:var(--line-2)}
 dialog .btn-ghost:hover{background:var(--surface-2);border-color:var(--ink-3)}
 .btn-key{background:var(--accent);color:var(--accent-ink);border-color:transparent}
 .btn-key:hover{background:var(--accent);filter:brightness(1.06)}
-/* chip con el valor por defecto: borde de 2 px sin relleno (el borde extra sale del padding, no cambia el tamaño) */
-.btn-default{background:transparent;border:2px solid var(--accent);padding:5px 10px}
-.btn-default:hover{background:var(--surface-2);border-color:var(--accent)}
+/* 012 RF-1: control elegido = borde de 2 px (el extra sale del padding, no cambia el tamaño); en claro además relleno --accent-soft, también al pasar el puntero; en oscuro sin relleno (tokens --sel-*) */
+.btn-default{background:var(--sel-bg);border:2px solid var(--sel-line);color:var(--ink);padding:5px 10px}
+.btn-default:hover{background:var(--sel-hover);border-color:var(--sel-line)}
 .btn-sm{padding:3px 8px;font-size:12.5px;border-radius:6px}
 .btn-sm.btn-default{padding:2px 7px}
 .btn-icon{padding:3px 7px;font-family:var(--cond);font-weight:700;font-size:15px}
@@ -359,6 +362,8 @@ table.inn .tot{
 
 /* ---------- side rail ---------- */
 .rail{display:flex;flex-direction:column;gap:18px}
+/* 012 RF-3: con el partido vacío la Banca va primero; solo visual, el DOM y el orden de Tab no cambian */
+body.game-empty .rail > #benchCard{order:-1}
 .panel-head{
   display:flex;align-items:center;gap:9px;flex-wrap:wrap;
   padding:11px 13px;border-bottom:1px solid var(--line);
@@ -370,8 +375,8 @@ table.inn .tot{
 }
 .panel-head .spacer{margin-left:auto}
 /* 011 RF-25: el motivo de un botón apagado va en su propia línea; vacío no ocupa ni la separación */
-.panel-head .hint{flex-basis:100%;margin:0}
-.panel-head .hint:empty{display:none}
+.panel-head .hint,.field-head .hint{flex-basis:100%;margin:0}
+.panel-head .hint:empty,.field-head .hint:empty{display:none}
 .panel-body{padding:11px 13px 13px}
 
 .addrow{display:grid;grid-template-columns:58px minmax(0,1fr) auto;gap:7px;margin-bottom:11px}
