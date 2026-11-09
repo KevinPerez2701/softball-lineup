@@ -3,10 +3,10 @@
 Single source of truth for what is in flight and what is left. Update it in the same commit as the
 work it describes. Dates come from `date`, never from memory.
 
-Last updated: 2026-11-09 12:41 UTC-4 by Claude
+Last updated: 2026-11-09 12:43 UTC-4 by Claude
 
 ## Now (one line)
-Spec 012 done and committed (sw v11); deploy push pending (the harness blocked it; Kevin pushes or allows it). Specs 001–011 live (011: 5569511, Pages built; critique 31/40). "MSO vs Call · 06/11/2026" published; its link opens on Pages from a browser that has the app (F1 ok on desktop). Pixel check done 2026-11-09 08:51: the link opens the public game view (not the app) and reads well.
+Specs 001–012 live (012: d35d60f, Pages built, live sw v11; critique 31/40 before 012). "MSO vs Call · 06/11/2026" published; its link opens on Pages from a browser that has the app (F1 ok on desktop). Pixel check done 2026-11-09 08:51: the link opens the public game view (not the app) and reads well.
 
 ## Active specs
 | Spec | Phase | Current task | Next task | Blocked by |
@@ -22,7 +22,7 @@ Spec 012 done and committed (sw v11); deploy push pending (the harness blocked i
 | 009-bench-attendance | done | — | — | — |
 | 010-game-view-share | done | — | — | — |
 | 011-critique-fourth | done | — | — | — |
-| 012-critique-fifth | done (push pending) | — | — | Kevin (push) |
+| 012-critique-fifth | done | — | — | — |
 
 Phases: constitution · spec · clarify · plan · tasks · implement · validate · done
 
