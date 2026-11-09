@@ -40,3 +40,10 @@ test("orderReason: roster empty first, then order empty, else nothing", function
   assert.strictEqual(Stats.orderReason(5, 0), "El orden está vacío");
   assert.strictEqual(Stats.orderReason(5, 2), "");
 });
+
+test("fieldReason: roster empty first, then field empty, else nothing", function(){
+  assert.strictEqual(Stats.fieldReason(0, 0), "Nadie marcado para este partido");
+  assert.strictEqual(Stats.fieldReason(0, 2), "Nadie marcado para este partido");
+  assert.strictEqual(Stats.fieldReason(5, 0), "El campo está vacío");
+  assert.strictEqual(Stats.fieldReason(5, 3), "");
+});

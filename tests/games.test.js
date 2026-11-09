@@ -261,6 +261,14 @@ test("fmtDateTime: 12-hour clock with a. m. / p. m.", function(){
   assert.strictEqual(Stats.fmtDateTime(new Date(2026, 5, 15, 23, 59)), "15/06/2026 · 11:59 p. m.");
 });
 
+test("updatedText: ' · actualizado ' + fmtDateTime of ms, empty when not a finite number", function(){
+  assert.strictEqual(Stats.updatedText(new Date(2026, 10, 6, 20, 15).getTime()), " · actualizado 06/11/2026 · 8:15 p. m.");
+  assert.strictEqual(Stats.updatedText(new Date(2026, 0, 1, 0, 0).getTime()), " · actualizado 01/01/2026 · 12:00 a. m.");
+  assert.strictEqual(Stats.updatedText(null), "");
+  assert.strictEqual(Stats.updatedText(undefined), "");
+  assert.strictEqual(Stats.updatedText(NaN), "");
+});
+
 test("result: Ganado / Perdido / Empate, 0-0 empty, string scores", function(){
   assert.strictEqual(Stats.result({us: [0, 0, 0], them: [0, 0, 0]}), "");
   assert.strictEqual(Stats.result({us: [3, 0, 2], them: [1, 0, 0]}), "Ganado 5–1");
