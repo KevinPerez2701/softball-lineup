@@ -2280,7 +2280,7 @@ function openPicker(posKey, chained){
     body.appendChild(it);
   });
 
-  if(!$("picker").open){ $("picker").showModal(); focusHead("picker"); } /* encadenado: ya abierto, el foco no se mueve */
+  if(!$("picker").open){ $("picker").showModal(); focusHead("picker"); } /* el encadenado cierra y vuelve a abrir: cada apertura lleva el foco al título */
 }
 $("pickClose").addEventListener("click", function(){ $("picker").close(); });
 
