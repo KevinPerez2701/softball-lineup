@@ -27,7 +27,7 @@ only.
       pseudo-element crosses the stage edge.
 
 ## Wave 2 — in parallel, after T1 is merged
-- [ ] T4. Stats UI: `rankPlayers` in 3807–3835 + dim CSS + note, `savedTitle` 3637, plain status text 3644/3646,
+- [x] T4. Stats UI: `rankPlayers` in 3807–3835 + dim CSS + note, `savedTitle` 3637, plain status text 3644/3646,
       "estadísticas" 3459, phone `#statsView` h3 rule. (RF-16, 20, 22, 23, 24) Deps: T1
       Done when: suite green; dim ink contrast computed in light and dark (hover included) ≥ 4.5:1; header width at 360
       stated from the CSS.
