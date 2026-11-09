@@ -3,10 +3,10 @@
 Single source of truth for what is in flight and what is left. Update it in the same commit as the
 work it describes. Dates come from `date`, never from memory.
 
-Last updated: 2026-11-09 11:52 UTC-4 by Claude
+Last updated: 2026-11-09 11:58 UTC-4 by Claude
 
 ## Now (one line)
-Spec 011 (critique 2026-11-09 fixes): T1–T6 merged, T7 browser demo done on localhost:8001; waiting for Kevin's OK to push (deploy), then the Pixel check of RF-6/RF-7 and the critique re-run. Specs 001–010 live (010: b130c00, Pages built). "MSO vs Call · 06/11/2026" published; its link opens on Pages from a browser that has the app (F1 ok on desktop). Pixel check done 2026-11-09 08:51: the link opens the public game view (not the app) and reads well.
+Spec 011 deployed with Kevin's OK (5569511, Pages built, live sw v10, ver.html og tags live); left: Kevin's Pixel check of RF-6/RF-7 and the critique re-run. Specs 001–010 live (010: b130c00, Pages built). "MSO vs Call · 06/11/2026" published; its link opens on Pages from a browser that has the app (F1 ok on desktop). Pixel check done 2026-11-09 08:51: the link opens the public game view (not the app) and reads well.
 
 ## Active specs
 | Spec | Phase | Current task | Next task | Blocked by |
@@ -21,7 +21,7 @@ Spec 011 (critique 2026-11-09 fixes): T1–T6 merged, T7 browser demo done on lo
 | 008-critique-third | done | — | — | — |
 | 009-bench-attendance | done | — | — | — |
 | 010-game-view-share | done | — | — | — |
-| 011-critique-fourth | implement | T7 (deploy on Kevin's OK) | critique re-run | Kevin (push) |
+| 011-critique-fourth | validate | T7 (critique re-run, Pixel check) | — | Kevin (Pixel) |
 
 Phases: constitution · spec · clarify · plan · tasks · implement · validate · done
 
