@@ -709,8 +709,8 @@ body.locked .gate{
 .toast span{overflow-wrap:anywhere} /* 010 RF-20: el enlace largo se corta dentro del aviso; el texto normal sigue cortando entre palabras */
 /* 011 RF-2 (escritorio): barra = 10 + 44 + 10 = 64 px + área segura; el aviso sube 22 px sobre ella (86) y la página deja 120 */
 @media screen and (min-width:681px){
-  body:has(> #checkBar:not([hidden])) .toast{bottom:calc(86px + env(safe-area-inset-bottom))}
-  body:has(> #checkBar:not([hidden])) .wrap{padding-bottom:calc(120px + env(safe-area-inset-bottom))}
+  body:has(> #checkBar:not([hidden])) > .toast{bottom:calc(86px + env(safe-area-inset-bottom))}
+  body:has(> #checkBar:not([hidden])) .wrap{padding-bottom:calc(150px + env(safe-area-inset-bottom))}
 }
 
 @media (max-width:1080px){
@@ -775,9 +775,7 @@ body.locked .gate{
   #checkBar{bottom:calc(66px + env(safe-area-inset-bottom));padding:0 max(0px,env(safe-area-inset-right)) 0 max(0px,env(safe-area-inset-left))}
   .checkbar-in{padding:10px 12px}
   body:not([data-tab="orden"]) #checkBar{display:none}
-  body[data-tab="orden"]:has(> #checkBar:not([hidden])) .toast{bottom:calc(148px + env(safe-area-inset-bottom))}
-  body[data-tab="orden"]:has(> #checkBar:not([hidden])) .wrap{padding-bottom:calc(148px + env(safe-area-inset-bottom))}
-  body[data-tab="orden"]:has(> #checkBar:not([hidden])):has(> .toast.on) .wrap{padding-bottom:calc(214px + env(safe-area-inset-bottom))}
+  body[data-tab="orden"]:has(> #checkBar:not([hidden])) > .toast{bottom:calc(148px + env(safe-area-inset-bottom))}
   /* 011 RF-4: la fila de "No vinieron" mide al menos 44 px */
   #absent .nm-check{min-height:44px;padding:7px 8px}
 
@@ -925,6 +923,9 @@ body.locked .gate{
   /* 009 RF-12: mismos 142 px del aviso fijo (84 + 54 + 4); 150 deja aire para que la última fila de la Banca suba libre.
      Solo en pantalla: un aviso fijo encendido no debe dejar 150 px en blanco al imprimir. */
   body:has(> .toast.on) .wrap{padding-bottom:calc(150px + env(safe-area-inset-bottom))}
+  /* 011 RF-2: la barra de asistencia (65) sobre la pestaña; con aviso, también el aviso */
+  body[data-tab="orden"]:has(> #checkBar:not([hidden])) .wrap{padding-bottom:calc(148px + env(safe-area-inset-bottom))}
+  body[data-tab="orden"]:has(> #checkBar:not([hidden])):has(> .toast.on) .wrap{padding-bottom:calc(214px + env(safe-area-inset-bottom))}
   body[data-tab="juego"] [data-view]:not([data-view="juego"]),
   body[data-tab="campo"] [data-view]:not([data-view="campo"]),
   body[data-tab="orden"] [data-view]:not([data-view="orden"]){display:none}
