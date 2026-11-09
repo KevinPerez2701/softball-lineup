@@ -1,6 +1,6 @@
 # Spec 012 — Fixes from the 2026-11-09 critique after spec 011 (31/40)
 
-Status: planned — G1 approved by Kevin 2026-11-09 ("apruebo, comienza y haz el commit de una"; G2 and the deploy pre-approved by the same words)
+Status: done (committed 2026-11-09, deploy push pending) — G1 approved by Kevin 2026-11-09 ("apruebo, comienza y haz el commit de una"; G2 and the deploy pre-approved by the same words)
 Created: 2026-11-09 · Clarified: 2026-11-09 (clarifier NEEDS WORK: 3 blocking, 8 minor, 4 missing edge cases — all
 resolved below by the orchestrator; listed in Decisions for G1)
 

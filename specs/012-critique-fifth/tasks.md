@@ -26,6 +26,6 @@ Overlap map (lines of 2b34624): T1 `stats.js`, `tests/order.test.js`, `tests/gam
       `render`, footer last in `show([...])`, `notFound`/`failed` untouched.
 
 ## Wave 3 — orchestrator
-- [ ] T5. Merge, `sw.js` v11, full suite, browser demo light/dark × 360/desktop per Test strategy (contrasts stated),
+- [x] T5. Merge, `sw.js` v11, full suite, browser demo light/dark × 360/desktop per Test strategy (contrasts stated),
       `tasks.md` + `STATUS.md`, commit, push (pre-approved by Kevin), Pages built. Deps: T1–T4
       Done when: the deployed page serves v11 and STATUS.md records the deploy hash.
