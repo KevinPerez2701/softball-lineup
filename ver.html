@@ -8,6 +8,10 @@
 <link rel="icon" href="icons/favicon-32.png" sizes="32x32" type="image/png">
 <!-- 010 RF-31: página pública; sin manifest y sin service worker -->
 <title>Diamante 10</title>
+<meta property="og:title" content="Diamante 10 · Juego">
+<meta property="og:description" content="Marcador y estadísticas del juego">
+<meta property="og:image" content="https://kevinperez2701.github.io/softball-lineup/icons/icon-512.png">
+<meta property="og:type" content="website">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=Barlow:wght@400;500;600;700&display=swap">
@@ -191,6 +195,8 @@ table.stat tfoot th,table.stat tfoot td{font-weight:700;border-top:2px solid var
 /* vista de solo lectura (view.js): sin botones de orden ni celdas que se toquen */
 table.stat.view thead th{padding:0 6px;height:40px}
 /* vista del juego en el teléfono (Kevin 2026-11-08): columnas de la imagen, "Más columnas" para el resto, marcador compacto */
+/* RF-12 (011): celdas numéricas del marcador legibles; más específico que el relleno compacto del teléfono */
+table.stat.view.ls td,table.stat.view.ls th:not(:first-child){min-width:28px;padding:0 4px}
 .box-more{display:none}
 @media (max-width:680px){
   .box-more{display:inline-flex;margin:0 0 8px}
@@ -206,14 +212,21 @@ div.sheet-cell:hover{background:transparent}
 
 /* propio de esta página */
 body{background:var(--surface)}
-h1{margin:18px 0 2px;font-family:var(--cond);font-weight:700;font-size:24px;letter-spacing:.03em;text-transform:uppercase;line-height:1.15}
-.result{margin:0 0 12px;color:var(--ink-2);font-weight:600}
+.wrap{max-width:760px}
+/* RF-10: visitante, marcador y local en una fila que se parte; los nombres bajan de línea, nunca se cortan */
+.hd{margin:18px 0 12px}
+.hd-row{display:flex;flex-wrap:wrap;align-items:center;gap:2px 14px}
+.hd-name{font-family:var(--cond);font-weight:700;font-size:24px;letter-spacing:.03em;text-transform:uppercase;line-height:1.15;overflow-wrap:anywhere}
+.hd-score{font-family:var(--cond);font-weight:700;font-size:44px;line-height:1.1;font-variant-numeric:tabular-nums;white-space:nowrap}
+.hd-sub{margin:2px 0 0;color:var(--ink-2);font-weight:600}
 .msg{margin:28px 0 12px;color:var(--ink-2)}
+#root a{color:var(--accent-text);font-weight:600}
 #root .chips{margin:16px 0 10px}
 #root .hint{margin-top:10px}
 @media (max-width:680px){
   .wrap{padding:0 10px 40px}
-  h1{font-size:21px}
+  .hd-name{font-size:21px}
+  .hd-score{font-size:40px}
 }
 </style>
 </head>
@@ -232,9 +245,12 @@ function show(nodes){
   root.innerHTML = "";
   nodes.forEach(n => root.appendChild(n));
 }
-// RF-27: solo este texto
+// RF-27 + RF-14: el mismo texto y un enlace a la app
 function notFound(){
-  show([el("p", "msg", "Este juego no está publicado o el enlace no es válido.")]);
+  const a = el("a", null, "Abrir Diamante 10"), p = el("p");
+  a.href = "./";
+  p.appendChild(a);
+  show([el("p", "msg", "Este juego no está publicado o el enlace no es válido."), p]);
 }
 // RF-28
 function failed(){
@@ -243,7 +259,16 @@ function failed(){
   b.addEventListener("click", () => location.reload());
   show([el("p", "msg", "No se pudo cargar el juego. Revisa la conexión y vuelve a intentar."), b]);
 }
-// RF-26: título, resultado (sin "Publicado"), marcador, Totales | Por inning
+// RF-10: encabezado con el marcador; RF-26: marcador por inning, Totales | Por inning
+function header(game){
+  const h = Stats.publicHeader(game);
+  const box = el("div", "hd"), row = el("div", "hd-row");
+  [el("span", "hd-name", h.visitor), el("span", "hd-score", h.v + " – " + h.h), el("span", "hd-name", h.home)]
+    .forEach(n => row.appendChild(n));
+  box.appendChild(row);
+  box.appendChild(el("p", "hd-sub", h.sub));
+  return box;
+}
 function render(rec){
   let tab = "box";
   const body = el("div");
@@ -251,9 +276,9 @@ function render(rec){
     body.innerHTML = "";
     body.appendChild(tab === "box" ? View.boxScore(rec) : View.innGrid(rec));
   };
+  document.title = Stats.viewTitle(rec.game);
   show([
-    el("h1", null, Stats.viewTitle(rec.game)),
-    el("p", "result", Stats.resultLine(rec.game)),
+    header(rec.game),
     View.lineScore(rec.game),
     View.switcher(tab, t => { tab = t; draw(); }),
     body
@@ -261,12 +286,10 @@ function render(rec){
   draw();
 }
 
-const share = Stats.parseShare(location.hash);
-if(!share) notFound();
-else {
-  // RF-28: 10 s para todo (SDK + lectura); la lectura va al servidor, nunca a una caché (RF-29)
-  const slow = new Promise((resolve, reject) => setTimeout(() => reject(new Error("timeout")), 10000));
-  const load = Promise.all([import(SDK + "firebase-app.js"), import(SDK + "firebase-firestore.js")]).then(([fa, fs]) => {
+// RF-15: Firebase se importa e inicia una sola vez por página; si falla, se olvida para que el siguiente load() reintente
+let dbp = null;
+function db(){
+  if(!dbp) dbp = Promise.all([import(SDK + "firebase-app.js"), import(SDK + "firebase-firestore.js")]).then(([fa, fs]) => {
     const app = fa.initializeApp({
       apiKey: "AIzaSyChl8rxjfQTuqnaGj8QLUfy6GkoSASXk9Q",
       authDomain: "artful-zone-461419-t1.firebaseapp.com",
@@ -275,18 +298,36 @@ else {
       messagingSenderId: "1034744499324",
       appId: "1:1034744499324:web:b863202d729af253758df9"
     });
-    const db = fs.initializeFirestore(app, {localCache: fs.memoryLocalCache()});
-    return fs.getDocFromServer(fs.doc(db, "users", share.uid, "public", share.shareId));
-  });
-  Promise.race([load, slow]).then(snap => {
+    return {fs, d: fs.initializeFirestore(app, {localCache: fs.memoryLocalCache()})};
+  }).catch(e => { dbp = null; throw e; });
+  return dbp;
+}
+
+// RF-15: solo el resultado de la última carga se muestra (seq)
+let seq = 0;
+async function load(){
+  const my = ++seq;
+  document.title = "Diamante 10";
+  show([el("p", "msg", "Cargando…")]);
+  const share = Stats.parseShare(location.hash);
+  if(!share) return notFound();
+  try {
+    // RF-28: 10 s para todo (SDK + lectura); la lectura va al servidor, nunca a una caché (RF-29)
+    const slow = new Promise((resolve, reject) => setTimeout(() => reject(new Error("timeout")), 10000));
+    const read = db().then(({fs, d}) => fs.getDocFromServer(fs.doc(d, "users", share.uid, "public", share.shareId)));
+    const snap = await Promise.race([read, slow]);
+    if(my !== seq) return;
     if(!snap.exists()) notFound();
     else render(JSON.parse(snap.data().json));
-  }).catch(e => {
+  } catch(e) {
+    if(my !== seq) return;
     // F8: sin la regla pública (o copia ajena) Firestore niega la lectura: para el visitante es "no publicado"
     if(e && e.code === "permission-denied") notFound();
     else failed();
-  });
+  }
 }
+addEventListener("hashchange", load);
+load();
 </script>
 </body>
 </html>

@@ -622,6 +622,8 @@ table.stat tfoot th,table.stat tfoot td{font-weight:700;border-top:2px solid var
 /* vista de un juego (010): solo lectura, sin botones de orden ni celdas que se toquen */
 table.stat.view thead th{padding:0 6px;height:40px}
 /* vista del juego en el teléfono (Kevin 2026-11-08): columnas de la imagen, "Más columnas" para el resto, marcador compacto */
+/* RF-12 (011): celdas numéricas del marcador legibles; más específico que el relleno compacto del teléfono */
+table.stat.view.ls td,table.stat.view.ls th:not(:first-child){min-width:28px;padding:0 4px}
 .box-more{display:none}
 @media (max-width:680px){
   .box-more{display:inline-flex;margin:0 0 8px}
