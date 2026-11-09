@@ -32,6 +32,9 @@
   --accent-ink:#1b2410;
   --accent-soft:#eef5b4;
   --accent-text:#5d6b00;
+  --sel-bg:var(--accent-soft);
+  --sel-line:var(--accent-text);
+  --sel-hover:var(--accent-soft);
   --focus:var(--ink);
   --bar:#141c16;
   --bar-ink:#f3f6ee;
@@ -65,6 +68,9 @@
     --accent-ink:#141a06;
     --accent-soft:#3a4410;
     --accent-text:#cbdd22;
+    --sel-bg:transparent;
+    --sel-line:var(--accent);
+    --sel-hover:var(--surface-2);
     --bar:#36452f;
     --bar-ink:#eef3e6;
     --grass-a:#2f5636;
@@ -111,9 +117,9 @@ input,textarea{caret-color:var(--accent-text)}
 .btn:hover{background:var(--surface-2);border-color:var(--ink-3)}
 .btn:active{transform:translateY(1px)}
 .btn:disabled{opacity:.4;cursor:not-allowed;transform:none}
-/* chip con el valor por defecto: borde de 2 px sin relleno (el borde extra sale del padding, no cambia el tamaño) */
-.btn-default{background:transparent;border:2px solid var(--accent);padding:5px 10px}
-.btn-default:hover{background:var(--surface-2);border-color:var(--accent)}
+/* chip elegido: borde de 2 px (el borde extra sale del padding, no cambia el tamaño); relleno solo en el tema claro, por los tokens --sel-* */
+.btn-default{background:var(--sel-bg);border:2px solid var(--sel-line);color:var(--ink);padding:5px 10px}
+.btn-default:hover{background:var(--sel-hover);border-color:var(--sel-line)}
 .btn-sm{padding:3px 8px;font-size:12.5px;border-radius:6px}
 .btn-sm.btn-default{padding:2px 7px}
 .chips{display:flex;gap:6px;flex-wrap:wrap}
@@ -215,11 +221,12 @@ body{background:var(--surface)}
 .wrap{max-width:760px}
 /* RF-10: visitante, marcador y local en una fila que se parte; los nombres bajan de línea, nunca se cortan */
 .hd{margin:18px 0 12px}
-.hd-row{display:flex;flex-wrap:wrap;align-items:center;gap:2px 14px}
-.hd-name{font-family:var(--cond);font-weight:700;font-size:24px;letter-spacing:.03em;text-transform:uppercase;line-height:1.15;overflow-wrap:anywhere}
+.hd-row{display:flex;flex-wrap:wrap;align-items:center;gap:2px 14px;margin:0;font:inherit}
+.hd-name{font-family:var(--cond);font-weight:700;font-size:24px;letter-spacing:.03em;line-height:1.15;overflow-wrap:anywhere}
 .hd-score{font-family:var(--cond);font-weight:700;font-size:44px;line-height:1.1;font-variant-numeric:tabular-nums;white-space:nowrap}
 .hd-sub{margin:2px 0 0;color:var(--ink-2);font-weight:600}
 .msg{margin:28px 0 12px;color:var(--ink-2)}
+.pub-foot{margin:24px 0 0;font-size:12.5px;color:var(--ink-3)}
 #root a{color:var(--accent-text);font-weight:600}
 #root .chips{margin:16px 0 10px}
 #root .hint{margin-top:10px}
@@ -262,26 +269,33 @@ function failed(){
 // RF-10: encabezado con el marcador; RF-26: marcador por inning, Totales | Por inning
 function header(game){
   const h = Stats.publicHeader(game);
-  const box = el("div", "hd"), row = el("div", "hd-row");
+  const box = el("div", "hd"), row = el("h1", "hd-row");
+  // RF-4: el h1 es toda la fila; los espacios entre los tramos hacen que un lector de pantalla no los junte
   [el("span", "hd-name", h.visitor), el("span", "hd-score", h.v + " – " + h.h), el("span", "hd-name", h.home)]
-    .forEach(n => row.appendChild(n));
+    .forEach((n, i) => { if(i) row.appendChild(document.createTextNode(" ")); row.appendChild(n); });
   box.appendChild(row);
   box.appendChild(el("p", "hd-sub", h.sub));
   return box;
 }
-function render(rec){
+// RF-6: ms = updatedAt del documento público (fuera de json) o null; el pie va al final, bajo la tabla visible
+function render(rec, ms){
   let tab = "box";
   const body = el("div");
   const draw = () => {
     body.innerHTML = "";
     body.appendChild(tab === "box" ? View.boxScore(rec) : View.innGrid(rec));
   };
+  const foot = el("p", "pub-foot"), a = el("a", null, "Diamante 10");
+  a.href = "./";
+  foot.appendChild(a);
+  foot.appendChild(document.createTextNode(Stats.updatedText(ms)));
   document.title = Stats.viewTitle(rec.game);
   show([
     header(rec.game),
     View.lineScore(rec.game),
     View.switcher(tab, t => { tab = t; draw(); }),
-    body
+    body,
+    foot
   ]);
   draw();
 }
@@ -318,7 +332,10 @@ async function load(){
     const snap = await Promise.race([read, slow]);
     if(my !== seq) return;
     if(!snap.exists()) notFound();
-    else render(JSON.parse(snap.data().json));
+    else {
+      const d = snap.data();
+      render(JSON.parse(d.json), d.updatedAt && d.updatedAt.toMillis ? d.updatedAt.toMillis() : null);
+    }
   } catch(e) {
     if(my !== seq) return;
     // F8: sin la regla pública (o copia ajena) Firestore niega la lectura: para el visitante es "no publicado"
