@@ -15,7 +15,7 @@ only.
       `publicHeader`; tests first (views, games 312–314 + append, names, order, gameview). (RF-10, 16, 17, 18, 20, 25)
       Deps: —
       Done when: the plan's test cases exist, games.test.js 312–314 expect the new record text, suite green.
-- [ ] T2. Check-in bar: `#checkBar` HTML after 1461, CSS (468–474, new rules, offsets per plan RF-2), `renderAbsent`
+- [x] T2. Check-in bar: `#checkBar` HTML after 1461, CSS (468–474, new rules, offsets per plan RF-2), `renderAbsent`
       2698–2748 (bar text/aria/hidden, "Vinieron todos" first, in-list Agregar removed), static `#btnAddSel` listener.
       (RF-1–4) Deps: —
       Done when: suite green; traced: hidden on fold / n = 0 / game switch / other phone tab, shown again with the same n;
@@ -34,7 +34,7 @@ only.
 - [ ] T5. Field + order: `phoneMq` + `shortPos` at 2061/2085, `.jersey.ghost{color:transparent}` on screen, legend 1417,
       `#orderWhy` + 2326. (RF-18, 19, 21, 25) Deps: T1
       Done when: suite green; print rule for `.jersey.ghost` still shows "–" (traced); label-width risk (plan F2) reported.
-- [ ] T6. ver.html (og tags, 760 wrap, header via `publicHeader`, `<title>`, "Abrir Diamante 10", `load()` + `hashchange`
+- [x] T6. ver.html (og tags, 760 wrap, header via `publicHeader`, `<title>`, "Abrir Diamante 10", `load()` + `hashchange`
       + one cached Firebase init, stale responses dropped), line score cell rule in ver.html 195–201 and index.html
       620–623, `sw.js` v10. (RF-10–15) Deps: T1
       Done when: suite green; `grep -c 'property="og:' ver.html` = 4; traced: one `initializeApp` call, `seq` drops a stale
