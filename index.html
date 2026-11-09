@@ -602,6 +602,8 @@ table.stat.det tbody tr{cursor:default}
 table.stat.det thead th{padding:0 6px;height:40px}
 table.stat.det td:nth-child(-n+2),table.stat.det td:last-child{text-align:left}
 table.stat tbody tr:hover td,table.stat tbody tr:hover th{background:var(--surface-2)}
+/* RF-16: menos AP que el mínimo; --ink-3 mide 5.51:1 (claro) / 5.29:1 (oscuro) sobre la superficie y 4.52 / 4.68 sobre el hover */
+table.stat tbody tr.dim td,table.stat tbody tr.dim th{color:var(--ink-3)}
 table.stat th:first-child{
   position:sticky;left:0;z-index:1;background:var(--surface);border-right:1px solid var(--line);
   text-align:left;min-width:112px;max-width:150px;font-size:13.5px;font-weight:600;color:var(--ink);
@@ -879,6 +881,7 @@ body.locked .gate{
   .dlg-head{flex-wrap:wrap;padding:11px 12px;gap:8px}
   .dlg-head h3{font-size:17px;flex:0 1 auto}
   .dlg-head .sub{font-size:12.5px}
+  #statsView .dlg-head h3{font-size:14px;letter-spacing:.02em} /* RF-23: título sin elipsis a 360 px (≈73 px de título; sobran ≈9 px) */
   .row.editing{grid-template-columns:62px minmax(0,1fr);row-gap:7px}
   .row.editing .rowacts{grid-column:1/-1;justify-content:flex-end}
   .row.editing .inp{font-size:16px;padding:7px}
@@ -3456,7 +3459,7 @@ function shareGame(id){
   if(!rec) return;
   var items = [
     {icon:"link", label:"Copiar enlace público", sub:"Cualquiera con el enlace ve este juego", fn:function(){ copyLink(id); }},
-    {icon:"image", label:"Copiar imagen", sub:"Marcador y box score, al portapapeles", fn:function(){ copyGameImage(rec, false); }},
+    {icon:"image", label:"Copiar imagen", sub:"Marcador y estadísticas, al portapapeles", fn:function(){ copyGameImage(rec, false); }},
     {icon:"image", label:"Copiar imagen con más columnas", sub:"Con OBP, SLG, OPS, BR y AR", fn:function(){ copyGameImage(rec, true); }}
   ];
   if(rec.shareId) items.push({icon:"x", label:"Dejar de publicar", sub:"El enlace dejará de funcionar", danger:true, fn:function(){ unpublish(id); }});
@@ -3633,7 +3636,7 @@ $("btnLoad").addEventListener("click", function(){
     it.style.cursor = "default";
     var info = el("span");
     info.style.minWidth = "0";
-    var t = el("div", null, item.name);
+    var t = el("div", null, Stats.savedTitle(item));
     t.style.fontWeight = "600";
     t.style.whiteSpace = "nowrap";
     t.style.overflow = "hidden";
@@ -3641,9 +3644,9 @@ $("btnLoad").addEventListener("click", function(){
     var res = Stats.result(item.state || {});
     var d = el("div", "where", Stats.dateLabel((item.state || {}).date) + (res ? " · " + res : ""));
     if(item.state && item.state.statsId && liveStats[item.state.statsId]){
-      d.appendChild(document.createTextNode(" ")); d.appendChild(el("span", "pill", "Estadísticas"));
+      d.appendChild(document.createTextNode(" · Estadísticas"));
     }
-    if(isOpen){ d.appendChild(document.createTextNode(" ")); d.appendChild(el("span", "pill ok", "Abierto")); }
+    if(isOpen) d.appendChild(document.createTextNode(" · Abierto"));
     info.appendChild(t); info.appendChild(d);
     var spacer = el("span");
     var acts = el("span", "rowacts");
@@ -3804,10 +3807,12 @@ function renderStatsPlayers(body, entries){
   });
   var th0 = el("thead"); th0.appendChild(hr); tb.appendChild(th0);
   var tbody = el("tbody");
-  Stats.sortPlayers(players.rows, statsSort.key, statsSort.desc).forEach(function(p){
-    var tr = el("tr"), th = el("th");
+  var rk = Stats.rankPlayers(players.rows, statsSort.key, statsSort.desc), anyDim = false;
+  rk.rows.forEach(function(p){
+    var tr = el("tr"), th = el("th"), dim = rk.minAp && p.pa < rk.minAp;
     th.scope = "row";
     var nb = el("button", "nm", (p.num ? p.num + " · " : "") + p.name);
+    if(dim){ tr.className = "dim"; anyDim = true; nb.setAttribute("aria-label", nb.textContent + ", pocos AP"); } /* RF-16 */
     nb.type = "button"; nb.setAttribute("data-pid", p.pid); /* sin listener: su clic sube al tr */
     th.appendChild(nb);
     tr.appendChild(th);
@@ -3822,6 +3827,7 @@ function renderStatsPlayers(body, entries){
   Stats.STAT_COLS.forEach(function(c){ tr.appendChild(statCell("td", players.team, c)); });
   tf.appendChild(tr); tb.appendChild(tf);
   wrap.appendChild(tb); body.appendChild(wrap);
+  if(anyDim) body.appendChild(el("p", "hint", "Atenuados: menos de " + rk.minAp + " AP"));
   var key = el("details", "hint");
   key.appendChild(el("summary", null, "Qué significa cada columna"));
   Stats.STAT_COLS.forEach(function(c){ key.appendChild(el("p", null, c[1] + ": " + Stats.COL_TITLES[c[1]])); });
