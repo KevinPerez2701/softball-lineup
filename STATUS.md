@@ -6,7 +6,7 @@ work it describes. Dates come from `date`, never from memory.
 Last updated: 2026-11-09 12:19 UTC-4 by Claude
 
 ## Now (one line)
-Spec 012 (critique 31/40 leftovers) clarified, waiting for G1. Specs 001–011 live (011: 5569511, Pages built; critique 31/40). "MSO vs Call · 06/11/2026" published; its link opens on Pages from a browser that has the app (F1 ok on desktop). Pixel check done 2026-11-09 08:51: the link opens the public game view (not the app) and reads well.
+Spec 012 (critique 31/40 leftovers): G1+G2+deploy approved by Kevin, wave 1 running. Specs 001–011 live (011: 5569511, Pages built; critique 31/40). "MSO vs Call · 06/11/2026" published; its link opens on Pages from a browser that has the app (F1 ok on desktop). Pixel check done 2026-11-09 08:51: the link opens the public game view (not the app) and reads well.
 
 ## Active specs
 | Spec | Phase | Current task | Next task | Blocked by |
@@ -22,7 +22,7 @@ Spec 012 (critique 31/40 leftovers) clarified, waiting for G1. Specs 001–011 l
 | 009-bench-attendance | done | — | — | — |
 | 010-game-view-share | done | — | — | — |
 | 011-critique-fourth | done | — | — | — |
-| 012-critique-fifth | clarify (G1) | — | plan | G1 (Kevin) |
+| 012-critique-fifth | implement | T1, T2 (parallel) | T3, T4 | — |
 
 Phases: constitution · spec · clarify · plan · tasks · implement · validate · done
 
