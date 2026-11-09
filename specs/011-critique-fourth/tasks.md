@@ -11,7 +11,7 @@ Overlap map (index.html, lines of 5faccc2): T2 468–474, new after 700, after 7
 only.
 
 ## Wave 1 — in parallel
-- [ ] T1. stats.js: `RATE_KEYS`/`rankPlayers`, `recordText`, `SHORT_POS`/`shortPos`, `savedTitle`, `orderReason`,
+- [x] T1. stats.js: `RATE_KEYS`/`rankPlayers`, `recordText`, `SHORT_POS`/`shortPos`, `savedTitle`, `orderReason`,
       `publicHeader`; tests first (views, games 312–314 + append, names, order, gameview). (RF-10, 16, 17, 18, 20, 25)
       Deps: —
       Done when: the plan's test cases exist, games.test.js 312–314 expect the new record text, suite green.
