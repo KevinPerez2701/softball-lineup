@@ -467,11 +467,20 @@ ul.list{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;ga
 .hint p{margin:6px 0 0;line-height:1.5}
 #absent{margin:10px 0 0}
 #absent .list{margin-top:6px;font-size:15px;color:var(--ink)}
-#absent .row{grid-template-columns:minmax(0,1fr)}
-/* 010 RF-33: la etiqueta envuelve casilla, camiseta y nombre; tocar cualquiera marca la fila */
+#absent .row{grid-template-columns:minmax(0,1fr);padding:0}
+/* 010 RF-33: la etiqueta envuelve casilla, camiseta y nombre; tocar cualquiera marca la fila.
+   011 RF-4: la etiqueta ocupa toda la fila (el relleno de la fila pasa a ella) */
 .nm-check{display:flex;align-items:center;gap:9px;min-width:0;cursor:pointer}
 .nm-check .nm{flex:1}
-.absent-acts{display:flex;gap:6px;margin-top:8px}
+#absent .nm-check{padding:5px 8px}
+.absent-acts{display:flex;gap:6px;margin:6px 0 0}
+/* 011 RF-1: barra fija de "Agregar (n)"; escritorio: al pie, tan ancha como el contenido (copia de #capFoot) */
+#checkBar{
+  position:fixed;left:0;right:0;bottom:0;z-index:50;background:var(--surface);border-top:1px solid var(--line);
+  padding:0 env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+}
+.checkbar-in{max-width:1360px;margin:0 auto;padding:10px 18px}
+#btnAddSel{width:100%;min-height:44px;justify-content:center}
 /* hoja de acciones (menús del teléfono) */
 .sheet-list{display:flex;flex-direction:column;gap:6px}
 .sheet-item{
@@ -698,6 +707,11 @@ body.locked .gate{
 .toast.on{opacity:1;visibility:visible;transform:translateX(-50%) translateY(-4px)}
 .toast .toast-x{min-width:36px;color:var(--bar-ink);opacity:.75}
 .toast span{overflow-wrap:anywhere} /* 010 RF-20: el enlace largo se corta dentro del aviso; el texto normal sigue cortando entre palabras */
+/* 011 RF-2 (escritorio): barra = 10 + 44 + 10 = 64 px + área segura; el aviso sube 22 px sobre ella (86) y la página deja 120 */
+@media screen and (min-width:681px){
+  body:has(> #checkBar:not([hidden])) > .toast{bottom:calc(86px + env(safe-area-inset-bottom))}
+  body:has(> #checkBar:not([hidden])) .wrap{padding-bottom:calc(150px + env(safe-area-inset-bottom))}
+}
 
 @media (max-width:1080px){
   .work{grid-template-columns:minmax(0,1fr)}
@@ -756,6 +770,14 @@ body.locked .gate{
   }
   .tab-badge.ok{background:var(--accent);color:var(--accent-ink)}
   .toast{bottom:calc(84px + env(safe-area-inset-bottom))}
+  /* 011 RF-1/2: la barra va sobre la barra de pestañas (66 px) y solo en Orden; 66 + 64 = 130; el aviso 18 más arriba (148);
+     la página deja 148 y 214 con aviso (148 + 54 + 4 + aire, como el 150 de 009 RF-12 sobre 84) */
+  #checkBar{bottom:calc(66px + env(safe-area-inset-bottom));padding:0 max(0px,env(safe-area-inset-right)) 0 max(0px,env(safe-area-inset-left))}
+  .checkbar-in{padding:10px 12px}
+  body:not([data-tab="orden"]) #checkBar{display:none}
+  body[data-tab="orden"]:has(> #checkBar:not([hidden])) > .toast{bottom:calc(148px + env(safe-area-inset-bottom))}
+  /* 011 RF-4: la fila de "No vinieron" mide al menos 44 px */
+  #absent .nm-check{min-height:44px;padding:7px 8px}
 
   /* RF-40: hoja de captura — cabecera de una fila (título + ⋯), panel con fecha/innings/guía y barra fija abajo */
   #capBar{display:flex;align-items:center;gap:8px;flex:1 1 100%;min-width:0}
@@ -901,6 +923,9 @@ body.locked .gate{
   /* 009 RF-12: mismos 142 px del aviso fijo (84 + 54 + 4); 150 deja aire para que la última fila de la Banca suba libre.
      Solo en pantalla: un aviso fijo encendido no debe dejar 150 px en blanco al imprimir. */
   body:has(> .toast.on) .wrap{padding-bottom:calc(150px + env(safe-area-inset-bottom))}
+  /* 011 RF-2: la barra de asistencia (65) sobre la pestaña; con aviso, también el aviso */
+  body[data-tab="orden"]:has(> #checkBar:not([hidden])) .wrap{padding-bottom:calc(148px + env(safe-area-inset-bottom))}
+  body[data-tab="orden"]:has(> #checkBar:not([hidden])):has(> .toast.on) .wrap{padding-bottom:calc(214px + env(safe-area-inset-bottom))}
   body[data-tab="juego"] [data-view]:not([data-view="juego"]),
   body[data-tab="campo"] [data-view]:not([data-view="campo"]),
   body[data-tab="orden"] [data-view]:not([data-view="orden"]){display:none}
@@ -1459,6 +1484,7 @@ body.locked .gate{
 </dialog>
 
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
+<div id="checkBar" class="no-print" hidden><div class="checkbar-in"><button id="btnAddSel" class="btn btn-key" type="button"></button></div></div>
 
 <script src="stats.js"></script>
 <script src="view.js"></script>
@@ -2693,11 +2719,14 @@ function addAbsent(ids){
   var h = document.querySelector("#absent summary") || $("benchTitle");
   if(h) h.focus();
 }
-/* RF-6, RF-33 a RF-35: sección plegable al final de Banca con los del equipo que no están en el partido; cada fila lleva
-   casilla (tocar el nombre la marca) y debajo "Agregar (n)" y "Vinieron todos" */
+/* 011 RF-1: el botón de la barra fija agrega los marcados (mismo camino que el antiguo "Agregar (n)" de la lista) */
+$("btnAddSel").addEventListener("click", function(){ addAbsent(Object.keys(absentSel)); });
+/* RF-6, RF-33 a RF-35: sección plegable al final de Banca con los del equipo que no están en el partido; "Vinieron todos"
+   arriba y cada fila lleva casilla (tocar la fila la marca); 011 RF-1: "Agregar (n)" vive en #checkBar */
 function renderAbsent(){
   var old = $("absent");
   if(old) old.remove();
+  $("checkBar").hidden = true; // sin lista (o antes de dibujarla) no hay nada que agregar
   var abs = Stats.absent(TEAM, S.roster);
   if(absentFor !== S){ absentFor = S; absentOpen = !S.roster.length; absentSel = {}; }
   var keep = {};
@@ -2708,11 +2737,11 @@ function renderAbsent(){
   d.id = "absent";
   d.appendChild(el("summary", null, Stats.absentTitle(abs, S.roster)));
   var ul = el("ul", "list");
-  var addSel = el("button", "btn btn-sm");
   function refreshSel(){
-    var n = Object.keys(absentSel).length;
-    addSel.textContent = "Agregar (" + n + ")";
-    addSel.disabled = !n;
+    var n = Object.keys(absentSel).length, bar = $("checkBar");
+    $("btnAddSel").textContent = "Agregar (" + n + ")";
+    bar.hidden = !(n && d.open);
+    $("btnAddSel").setAttribute("aria-label", "Agregar " + n + " al partido");
   }
   abs.forEach(function(tp){
     var li = el("li", "row");
@@ -2730,19 +2759,20 @@ function renderAbsent(){
     li.appendChild(lab);
     ul.appendChild(li);
   });
-  d.appendChild(ul);
   var acts = el("div", "absent-acts");
-  addSel.type = "button";
-  addSel.addEventListener("click", function(){ addAbsent(Object.keys(absentSel)); });
   var all = el("button", "btn btn-sm", "Vinieron todos");
   all.type = "button";
   all.addEventListener("click", function(){ addAbsent(abs.map(function(tp){ return tp.id; })); });
-  acts.appendChild(addSel);
   acts.appendChild(all);
   d.appendChild(acts);
-  refreshSel();
+  d.appendChild(ul);
   d.open = absentOpen;
-  d.addEventListener("toggle", function(){ if(d.isConnected) absentOpen = d.open; }); // un toggle tardío de una sección ya quitada no pisa el estado
+  refreshSel();
+  d.addEventListener("toggle", function(){
+    if(!d.isConnected) return; // un toggle tardío de una sección ya quitada no pisa el estado
+    absentOpen = d.open;
+    refreshSel();
+  });
   var bl = $("benchList");
   bl.parentNode.appendChild(d);
 }
