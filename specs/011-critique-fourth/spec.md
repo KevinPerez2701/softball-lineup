@@ -1,6 +1,6 @@
 # Spec 011 — Fixes from the 2026-11-09 critique (30/40)
 
-Status: clarified (awaiting G1)
+Status: planned — G1 approved by Kevin 2026-11-09 ("la apruebo comienza en paralelo con todo"; G2 pre-approved by the same words)
 Created: 2026-11-09 · Clarified: 2026-11-09 (clarifier NEEDS WORK: 12 blocking, 13 minor, 6 missing edge cases — all
 resolved below by the orchestrator; listed in Decisions for G1)
 
