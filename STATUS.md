@@ -3,10 +3,10 @@
 Single source of truth for what is in flight and what is left. Update it in the same commit as the
 work it describes. Dates come from `date`, never from memory.
 
-Last updated: 2026-11-09 12:04 UTC-4 by Claude
+Last updated: 2026-11-09 12:19 UTC-4 by Claude
 
 ## Now (one line)
-Specs 001–011 live (011: 5569511, Pages built; critique 31/40). "MSO vs Call · 06/11/2026" published; its link opens on Pages from a browser that has the app (F1 ok on desktop). Pixel check done 2026-11-09 08:51: the link opens the public game view (not the app) and reads well.
+Spec 012 (critique 31/40 leftovers) clarified, waiting for G1. Specs 001–011 live (011: 5569511, Pages built; critique 31/40). "MSO vs Call · 06/11/2026" published; its link opens on Pages from a browser that has the app (F1 ok on desktop). Pixel check done 2026-11-09 08:51: the link opens the public game view (not the app) and reads well.
 
 ## Active specs
 | Spec | Phase | Current task | Next task | Blocked by |
@@ -22,6 +22,7 @@ Specs 001–011 live (011: 5569511, Pages built; critique 31/40). "MSO vs Call �
 | 009-bench-attendance | done | — | — | — |
 | 010-game-view-share | done | — | — | — |
 | 011-critique-fourth | done | — | — | — |
+| 012-critique-fifth | clarify (G1) | — | plan | G1 (Kevin) |
 
 Phases: constitution · spec · clarify · plan · tasks · implement · validate · done
 
