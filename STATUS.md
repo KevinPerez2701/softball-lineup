@@ -3,10 +3,10 @@
 Single source of truth for what is in flight and what is left. Update it in the same commit as the
 work it describes. Dates come from `date`, never from memory.
 
-Last updated: 2026-11-08 20:54 UTC-4 by Claude
+Last updated: 2026-11-09 08:51 UTC-4 by Claude
 
 ## Now (one line)
-Specs 001–010 live (010: b130c00, Pages built). "MSO vs Call · 06/11/2026" published; its link opens on Pages from a browser that has the app (F1 ok on desktop). Pending: Kevin opens the link on his Pixel with the app installed.
+Specs 001–010 live (010: b130c00, Pages built). "MSO vs Call · 06/11/2026" published; its link opens on Pages from a browser that has the app (F1 ok on desktop). Pixel check done 2026-11-09 08:51: the link opens the public game view (not the app) and reads well.
 
 ## Active specs
 | Spec | Phase | Current task | Next task | Blocked by |
@@ -34,6 +34,7 @@ Phases: constitution · spec · clarify · plan · tasks · implement · validat
 - Not covered by the 004 demo: RF-13 backdrop tap and back button, RF-2 storage-failure toast.
 
 ## Recently done (keep last 10)
+- 2026-11-09 08:51 · 010 · Kevin opened the public link of "MSO vs Call · 06/11/2026" on his Pixel with the app installed: public view (Perdido 8–17, line score, Totales/Por inning/Más columnas, Equipo row), not the app. Link re-checked in Chrome first
 - 2026-11-08 20:54 · 010 follow-up (Kevin) · image copies to the clipboard (Copiar imagen); phone game view and ver.html: 10 columns + Más columnas, compact line score, names cut at 92 px, no title outline; sw v9. Checked at 360 px on localhost:8001 (app view and ver.html both 294/294 and 321/321 wide, no sideways scroll)
 - 2026-11-08 20:47 · 010 quick fix (Kevin) · game view: Compartir and Editar moved to the top row next to "← Juegos"; checked at 360 px on localhost:8001
 - 2026-11-08 20:24 · 010 · T9 browser demo on localhost:8001 (Kevin signed in): RF-32 note without button; RF-33/34 Equipo (27) checkboxes (aria name, ink), Agregar (0) disabled → (2) → (3) by tapping a name, Vinieron todos, all plain; RF-41 Anotar estadísticas not lime with empty order; RF-1 Ver/Editar/✕; RF-2–5 view (title, Perdido 8–17, line score MSO visitor on top with C, Totales 16 cols + Equipo, Por inning read-only 9 rows 3 out each, legend), focus on h3, switch keeps the dialog top (80→80); RF-11 menu (3 items unpublished, 4 published); RF-23/24 both PNGs captured via a stubbed share: light, 1080, C column, no cut stats, file MSO-vs-Call-06-11-2026.png; RF-12 publish → shareId 16, ' · Publicado', synced; anonymous REST read of the copy: keys game/rows only, no pid/savedAt/shareId; ver.html desktop + 360 px (sideways scroll), RF-27 for #p=x.y and a missing id; RF-18 unpublish confirm (danger, focus Cancelar) → old copy 404; republished (new id) and left published; RF-40 phone header one row + ⋯ popover (date, ±Inning, guide) + bottom bar; desktop header unchanged (one row, date ink); RF-42 phone detail two lines; RF-43 placeholder ink-2. Fixes found in the demo: (1) a clipboard that never answers left no feedback → 3 s fallback shows the link (RF-20), observed; (2) RF-16 'Publicado' was missing in the Juegos row → added, observed. Not observed live: batch add/undo (writes; traced by the T2 review), light theme of ver.html, RF-15/16/28 offline paths.
@@ -46,7 +47,6 @@ Phases: constitution · spec · clarify · plan · tasks · implement · validat
 - 2026-11-06 · 005+006+007 · One deploy (a7fe5e7, Pages built; first load already served the new stats.js). Data ops in prod: Elias Colmenarez 05/11 inning 5 Rolling → JS (1 out, inning still 3 out), "MSO vs Call · 2026-10-29" renamed "MSO vs Call · 29/10/2026" (synced, dirty cleared)
 - 2026-11-06 · 007 · T3, T5, T6, T7 done in parallel worktrees, reviewer APPROVE, merged (131/131, inline scripts node --check OK). Browser demo on localhost:8000 (Kevin's session, nothing saved, game restored by reopening): Abrir juego by game date with "Sin fecha" last; pill "Softball · 5 innings"; "− Inning"; Final hidden at 0–0, shown at 7–6; picker/drag swap/Autoasignar/BD append to the order, replaced BD and "Quitar" keep their place; one solid lime on the main screen (Guardar); picker Space keeps focus (Rolling, Anotó carrera), outlines thin (default) / 2 px (changed); cell names read "Kevin Perez, inning 1, turno 2: E, anotó carrera, turno 10: Fly" and "…, sin turnos"; sheet title "MSO vs Call 2 · 05/11"; Juegos "Récord 2–1–0", "19/10/2026" without "vs rival"; Enter on a player name opens the detail and "← Jugadores" returns focus; at 360 px AVE visible and the name column sticky
 - 2026-11-06 · 007 · T1 (orderAfterAssign, cellName), T2 (dateLabel, sheetTitle, gameTitle, savedByDate, recordText; validIso moved onto Stats at merge), T4 (btn-thin, btn-sm.btn-default, RF-8 demotions) — reviewers APPROVE, merged, 131/131
-- 2026-11-06 · 005+006 · Browser demo on localhost:8000 (Kevin signed in; 127.0.0.1 cannot sign in: the API key's referrer list blocks it): picker 4 labeled rows, JS title/aria-label, chips 44 px, JS → 1 out with "Más detalles" closed; delete → "Turno borrado · Deshacer" restores the turn and its numbering; a later change drops the undo; runner out delete/undo; close + reopen shows no stale notice; Jugadores in RF-1 order with Equipo and key; detail AVE/OBP/OPS between K and Turnos = table (.400/.500/1.400 for Kevin); at 360 px AVE/OBP/SLG visible on open. Fix found in the demo (D2): at 360×640 the picker scrolled and "Listo" sat below the fold → row labels moved to the left of each row (.pa-row); now 413 px, no scroll. Also found: the working lineup on localhost had lost its roster/field/order (saved game intact); reopened the saved game
 
 ## Backlog (ideas not yet specified)
 - (critique "P1 + P2" scope folded into spec 010 by Kevin 2026-11-08)
