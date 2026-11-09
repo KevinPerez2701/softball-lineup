@@ -1178,6 +1178,7 @@ body.locked .gate{
           </div>
           <button class="btn btn-sm no-print" id="btnAutoField" type="button">Autoasignar</button>
           <button class="btn btn-sm no-print" id="btnClearField" type="button">Vaciar campo</button>
+          <span class="hint no-print" id="fieldWhy" aria-live="polite"></span>
         </div>
 
         <div class="field-scroll">
@@ -1328,7 +1329,7 @@ body.locked .gate{
         </div>
       </section>
 
-      <section class="card" aria-label="Banca" data-view="orden">
+      <section class="card" id="benchCard" aria-label="Banca" data-view="orden">
         <div class="panel-head">
           <h2 id="benchTitle" tabindex="-1">Banca</h2>
           <span class="count" id="benchCount">0</span>
@@ -2383,6 +2384,9 @@ function renderRoster(){
   $("orderWhy").textContent = Stats.orderReason(S.roster.length, S.order.length);
   $("btnAutoField").disabled = !S.roster.length;
   $("btnClearField").disabled = !assignedIds().length;
+  $("fieldWhy").textContent = Stats.fieldReason(S.roster.length, assignedIds().length);
+  /* 012 RF-3: partido vacío con equipo ⇒ la Banca sube sobre el Orden al bate (solo CSS order; el DOM no se mueve) */
+  document.body.classList.toggle("game-empty", !S.roster.length && !!TEAM.length);
   /* 010 RF-41: lima solo cuando hay algo que anotar (un bateador en el orden o estadísticas ligadas) */
   $("btnCapture").classList.toggle("btn-key", S.order.length > 0 || !!S.statsId);
   if(!S.roster.length){
@@ -3181,7 +3185,7 @@ function paForm(ri, inn, idx, done){
     outs:src ? Stats.paOuts(src) : 0};
   // RF-27/42: "Más detalles" abierto si el turno ya trae CI, BR u outs distintos del defecto; luego sigue a f.more
   f.more = !!(f.rbi || f.sb || f.outs !== Stats.defaultOuts(f.code));
-  // RF-6: elegido ⇒ borde lima de 2 px, sea o no el valor por defecto, nunca relleno
+  // RF-6: el chip elegido lo dibuja .btn-default (borde en oscuro, relleno + borde en claro; 012 RF-1), sea o no el valor por defecto
   // RF-5: key identifica el chip; tras redibujar el foco vuelve al chip con la misma key
   function chip(label, on, fn, key){
     var b = el("button", on ? "btn btn-default" : "btn", label);
@@ -3888,8 +3892,9 @@ function renderStatsPlayers(body, entries){
   tr.appendChild(th);
   Stats.STAT_COLS.forEach(function(c){ tr.appendChild(statCell("td", players.team, c)); });
   tf.appendChild(tr); tb.appendChild(tf);
-  wrap.appendChild(tb); body.appendChild(wrap);
+  /* 012 RF-8: la nota va sobre la tabla para que se vea al abrir en el teléfono */
   if(anyDim) body.appendChild(el("p", "hint", "Atenuados: menos de " + rk.minAp + " AP"));
+  wrap.appendChild(tb); body.appendChild(wrap);
   var key = el("details", "hint");
   key.appendChild(el("summary", null, "Qué significa cada columna"));
   Stats.STAT_COLS.forEach(function(c){ key.appendChild(el("p", null, c[1] + ": " + Stats.COL_TITLES[c[1]])); });
