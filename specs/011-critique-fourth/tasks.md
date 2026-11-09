@@ -41,6 +41,6 @@ only.
       response, RF-14 link to `./`.
 
 ## Wave 3 — orchestrator
-- [ ] T7. Merge T2–T6, full suite alone, browser demo per the plan's Test strategy (DevTools touch for RF-6/7),
+- [x] T7. Merge T2–T6, full suite alone, browser demo per the plan's Test strategy (DevTools touch for RF-6/7),
       `STATUS.md`, deploy on Kevin's OK, impeccable critique re-run after Pages builds. Deps: T1–T6
       Done when: every RF observed once with the measured sizes in STATUS; critique snapshot saved.
