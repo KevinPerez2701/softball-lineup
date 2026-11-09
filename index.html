@@ -637,6 +637,7 @@ table.stat.view tbody tr{cursor:default}
 div.sheet-cell{cursor:default}
 div.sheet-cell:hover{background:transparent}
 #statsBody h3:focus{outline:none} /* foco por código al abrir (lectores de pantalla); no es un control, sin recuadro */
+dialog .dlg-head h3:focus{outline:none} /* 011 RF-8: igual para el título de cada diálogo al abrirse */
 #statsBody .chips{margin:12px 0 8px}
 
 /* ---------- entrada (login) ---------- */
@@ -948,6 +949,15 @@ body.locked .gate{
   table.inn input{min-height:44px}
   .btn:active,.tab:active,.sheet-item:active,.pickitem:active{filter:brightness(.94)}
   .slot:active{transform:translate(-50%,-50%) scale(.97)}
+  #statsBody .rowacts{gap:12px} /* 011 RF-6: el ✕ lejos de Ver/Editar en Juegos */
+  /* 011 RF-7: en el teléfono, zona de toque por encima y por debajo de la tarjeta (--hit por posición; la
+     infantería queda sin extender: los bordes están a ~1 px). -.3cqw = el borde, que ::before no cuenta */
+  @media (max-width:680px){
+    .slot::before{content:"";position:absolute;left:0;right:0;top:calc(-1*var(--hit,0px) - .3cqw);bottom:calc(-1*var(--hit,0px) - .3cqw)}
+    .slot[data-pos="LF"],.slot[data-pos="CF"],.slot[data-pos="LCF"],.slot[data-pos="RCF"],.slot[data-pos="RF"]{--hit:8px}
+    .slot[data-pos="SF"]{--hit:6px}
+    .slot[data-pos="C"],.slot[data-pos="DH"]{--hit:1px}
+  }
 }
 @media (prefers-reduced-motion:reduce){
   *{transition:none !important;animation:none !important}
@@ -1360,7 +1370,7 @@ body.locked .gate{
 
 <dialog id="sheet" class="sheet">
   <div class="dlg-head">
-    <h3 id="sheetTitle">Más</h3>
+    <h3 id="sheetTitle" tabindex="-1">Más</h3>
     <span style="margin-left:auto"></span>
     <button class="btn btn-sm" id="sheetClose" type="button">Cerrar</button>
   </div>
@@ -1384,7 +1394,7 @@ body.locked .gate{
 
 <dialog id="picker">
   <div class="dlg-head">
-    <h3 id="pickTitle">Asignar</h3>
+    <h3 id="pickTitle" tabindex="-1">Asignar</h3>
     <span class="sub" id="pickSub"></span>
     <span style="margin-left:auto"></span>
     <button class="btn btn-sm" id="pickClose" type="button">Cerrar</button>
@@ -1394,7 +1404,7 @@ body.locked .gate{
 
 <dialog id="teamRoster">
   <div class="dlg-head">
-    <h3>Roster del equipo</h3>
+    <h3 tabindex="-1">Roster del equipo</h3>
     <span class="sub">Marca solo los jugadores que asistieron a este partido</span>
     <span style="margin-left:auto"></span>
     <button class="btn btn-sm" id="teamRosterAll" type="button">Marcar todos</button>
@@ -1414,7 +1424,7 @@ body.locked .gate{
 
 <dialog id="saved">
   <div class="dlg-head">
-    <h3>Abrir juego</h3>
+    <h3 tabindex="-1">Abrir juego</h3>
     <span style="margin-left:auto"></span>
     <button class="btn btn-sm" id="savedClose" type="button">Cerrar</button>
   </div>
@@ -1474,7 +1484,7 @@ body.locked .gate{
 
 <dialog id="statsView">
   <div class="dlg-head">
-    <h3>Estadísticas</h3>
+    <h3 tabindex="-1">Estadísticas</h3>
     <div class="chips" role="group" aria-label="Vista">
       <button class="btn btn-sm" id="statsTabPlayers" type="button" aria-pressed="true">Jugadores</button>
       <button class="btn btn-sm" id="statsTabGames" type="button" aria-pressed="false">Juegos</button>
@@ -2235,6 +2245,8 @@ function nextEmptyPos(from){
   }
   return null;
 }
+/* 011 RF-8: al abrir un diálogo, el foco va a su título (tabindex -1, sin recuadro) */
+function focusHead(id){ var h = $(id).querySelector("h3"); if(h) h.focus(); }
 function openPicker(posKey, chained){
   var p = POS.filter(function(q){ return q.k === posKey; })[0];
   if(posKey === "DH") {
@@ -2296,7 +2308,7 @@ function openPicker(posKey, chained){
     body.appendChild(it);
   });
 
-  $("picker").showModal();
+  if(!$("picker").open){ $("picker").showModal(); focusHead("picker"); } /* el encadenado cierra y vuelve a abrir: cada apertura lleva el foco al título */
 }
 $("pickClose").addEventListener("click", function(){ $("picker").close(); });
 
@@ -2587,7 +2599,7 @@ function renderTeamRoster(){
 
 function openTeamRoster(){
   renderTeamRoster();
-  $("teamRoster").showModal();
+  $("teamRoster").showModal(); focusHead("teamRoster");
 }
 $("btnTeamRoster").addEventListener("click", openTeamRoster);
 $("btnTeamRosterInline").addEventListener("click", openTeamRoster);
@@ -3706,7 +3718,7 @@ $("btnLoad").addEventListener("click", function(){
     it.appendChild(info); it.appendChild(spacer); it.appendChild(acts);
     body.appendChild(it);
   });
-  $("saved").showModal();
+  $("saved").showModal(); focusHead("saved");
 });
 $("savedClose").addEventListener("click", function(){ $("saved").close(); });
 
@@ -3923,7 +3935,7 @@ function openStats(view){
     if(statsViewName === "games"){ statsGame = null; renderStatsGames(body); }
     else { statsDetail = null; renderStatsPlayers(body, entries); }
   }
-  if(!dlg.open) dlg.showModal();
+  if(!dlg.open){ dlg.showModal(); focusHead("statsView"); }
 }
 $("btnStats").addEventListener("click", function(){ closePlayerDetail("players"); });
 $("statsTabPlayers").addEventListener("click", function(){ closePlayerDetail("players"); });
@@ -4567,7 +4579,7 @@ function openActions(title, items){
     });
     body.appendChild(b);
   });
-  $("sheet").showModal();
+  $("sheet").showModal(); focusHead("sheet");
 }
 function openSheet(key){
   var cfg = SHEETS[key];
