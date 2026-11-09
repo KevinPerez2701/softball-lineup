@@ -118,7 +118,7 @@ View.innGrid = function(rec){
   return out;
 };
 
-// "Totales" | "Por inning"; tab "box" o "inn". Marca el elegido (aria-pressed + borde lima) y avisa con onChange(tab).
+// "Totales" | "Por inning"; tab "box" o "inn". Marca el elegido (aria-pressed; el aspecto sale de .btn-default: borde en oscuro, relleno + borde en claro) y avisa con onChange(tab).
 View.switcher = function(tab, onChange){
   var el = View.el, g = el("div", "chips"), btns = [];
   g.setAttribute("role", "group");
